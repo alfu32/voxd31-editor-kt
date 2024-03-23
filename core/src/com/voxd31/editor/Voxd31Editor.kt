@@ -20,7 +20,9 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Array
+import com.voxd31.editor.EditorCameraController
 import com.voxd31.editor.SceneController
+import com.voxd31.editor.tools.AddCubeTool
 import kotlin.random.Random
 
 class Voxd31Editor : ApplicationAdapter() {
@@ -78,11 +80,9 @@ class Voxd31Editor : ApplicationAdapter() {
 
 
 
-        cameraController = CameraInputController(camera).apply {
-            target.set(0f, 0f, 0f) // Set the target point the camera orbits around
-            autoUpdate = true // Automatically update the camera position based on input
-        }
+        cameraController = EditorCameraController(camera)
         Gdx.input.inputProcessor = cameraController
+        scene.addTool(AddCubeTool())
     }
 
     override fun render() {
