@@ -74,9 +74,9 @@ class Voxd31Editor : ApplicationAdapter() {
             scene.addCube(x,y,z)
         }
         val matGround = Material(ColorAttribute.createDiffuse(Color.GRAY))
-        val groundBox = modelBuilder.createBox(20f, 0.1f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
+        val groundBox = modelBuilder.createBox(20f, 0.02f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
 
-        ground = (ModelInstance(groundBox, 0f,-0.55f,0f))
+        ground = (ModelInstance(groundBox, 0f,-0.51f,0f))
 
 
 
