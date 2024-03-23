@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Array
+import com.voxd31.editor.SceneController
 import kotlin.random.Random
 
 class Voxd31Editor : ApplicationAdapter() {
@@ -28,8 +29,9 @@ class Voxd31Editor : ApplicationAdapter() {
     private lateinit var shadowBatch: ModelBatch
     private lateinit var environment: Environment
     private lateinit var shadowLight: DirectionalShadowLight
-    private val cubes = Array<ModelInstance>()
+    private lateinit var scene: SceneController
     private lateinit var modelBuilder: ModelBuilder
+    private lateinit var ground: ModelInstance
 
 
     private lateinit var cameraController: CameraInputController
@@ -43,34 +45,36 @@ class Voxd31Editor : ApplicationAdapter() {
             update()
         }
 
+
         modelBatch = ModelBatch()
         shadowBatch = ModelBatch(DepthShaderProvider())
 
         environment = Environment()
         shadowLight = DirectionalShadowLight(2048, 2048, 60f, 60f, 1f, 300f).apply {
-            set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f)
+            set(0.5f, 0.5f, 0.5f, -1f, -0.8f, -0.2f)
             environment.add(this)
             environment.shadowMap = this
         }
-        environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f))
+        environment.add(DirectionalLight().set(0.5f, 0.5f, 0.5f, -1f, -0.8f, -0.2f))
+        environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f)) // Reduced ambient light
+
 
         modelBuilder = ModelBuilder()
+        scene = SceneController(modelBuilder,camera)
 
         val colors = arrayOf(Color.WHITE,Color.GRAY,Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN)
         // Create 20 cubes with random positions and colors
         for (i in 1..20) {
-            val color = colors[Random.nextInt(colors.size)]
-            val material = Material(ColorAttribute.createDiffuse(color))
-            val model = modelBuilder.createBox(1f, 1f, 1f, material, Usage.Position.toLong() or Usage.Normal.toLong())
             val x = MathUtils.random(-5, 5).toFloat()
             val y = MathUtils.random(0,2).toFloat()
             val z = MathUtils.random(-5, 5).toFloat()
-            cubes.add(ModelInstance(model, x, y, z))
+            scene.currentColor=colors[MathUtils.random(0,colors.size-1)]
+            scene.addCube(x,y,z)
         }
         val matGround = Material(ColorAttribute.createDiffuse(Color.GRAY))
-        val ground = modelBuilder.createBox(20f, 1f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
+        val groundBox = modelBuilder.createBox(20f, 1f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
 
-        cubes.add(ModelInstance(ground, 0f,-1f,0f))
+        ground = (ModelInstance(groundBox, 0f,-1f,0f))
 
 
 
@@ -88,7 +92,8 @@ class Voxd31Editor : ApplicationAdapter() {
 
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
-        cubes.forEach { shadowBatch.render(it) }
+        scene.cubes.map{it.instance}.forEach { shadowBatch.render(it) }
+        shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
 
@@ -97,14 +102,15 @@ class Voxd31Editor : ApplicationAdapter() {
 
         camera.update()
         modelBatch.begin(camera)
-        modelBatch.render(cubes, environment)
+        shadowBatch.render(ground,environment)
+        modelBatch.render(scene.cubes.map { it.instance }, environment)
         modelBatch.end()
     }
 
     override fun dispose() {
         modelBatch.dispose()
         shadowBatch.dispose()
-        cubes.forEach { it.model.dispose() }
+        scene.dispose()
         shadowLight.dispose()
 
         // If you set a different input processor later, you might need to do this
