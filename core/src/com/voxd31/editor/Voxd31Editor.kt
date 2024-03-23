@@ -118,4 +118,12 @@ class Voxd31Editor : ApplicationAdapter() {
             Gdx.input.inputProcessor = null
         }
     }
+
+    override fun resize(width: Int, height: Int) {
+        // Update the camera with the new window size
+        camera.viewportWidth = width.toFloat()
+        camera.viewportHeight = height.toFloat()
+        camera.update()
+    }
+
 }

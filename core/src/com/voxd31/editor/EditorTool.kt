@@ -10,6 +10,6 @@ interface EditorTool {
     fun activate()
     fun deactivate()
     fun acquirePoint(point: Vector3)
-    fun onFinished(callback: fun (scene: SceneControllerpoint: Vector3))
-    fun onProgress(callback: fun (scene: SceneController,point: Vector3))
+    fun onFinished(sceneController: SceneController)//(callback: (scene: SceneController,point: Vector3) -> Unit)
+    fun onProgress(sceneController: SceneController)//(callback: (scene: SceneController,point: Vector3) -> Unit)
 }

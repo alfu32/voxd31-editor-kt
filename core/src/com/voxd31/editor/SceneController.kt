@@ -2,7 +2,6 @@ package com.voxd31.editor
 
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g3d.ModelInstance
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Plane
@@ -33,7 +32,7 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
                 tool.acquirePoint(point)
 
                 if (tool.acquiredPoints.size == tool.requiredPoints) {
-                    tool.execute(this)
+                    tool.onFinished(this)
                     tool.acquiredPoints.clear() // Reset for next operation
                 }
             }
