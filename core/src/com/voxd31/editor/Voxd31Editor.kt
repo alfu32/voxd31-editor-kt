@@ -51,11 +51,11 @@ class Voxd31Editor : ApplicationAdapter() {
 
         environment = Environment()
         shadowLight = DirectionalShadowLight(2048, 2048, 60f, 60f, 1f, 300f).apply {
-            set(0.5f, 0.5f, 0.5f, -1f, -0.8f, -0.2f)
+            set(0.5f, 0.5f, 0.5f, -1f, -1.8f, -1.2f)
             environment.add(this)
             environment.shadowMap = this
         }
-        environment.add(DirectionalLight().set(0.5f, 0.5f, 0.5f, -1f, -0.8f, -0.2f))
+        environment.add(DirectionalLight().set(0.5f, 0.5f, 0.5f, -1f, -1.8f, -1.2f))
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f)) // Reduced ambient light
 
 
@@ -72,9 +72,9 @@ class Voxd31Editor : ApplicationAdapter() {
             scene.addCube(x,y,z)
         }
         val matGround = Material(ColorAttribute.createDiffuse(Color.GRAY))
-        val groundBox = modelBuilder.createBox(20f, 1f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
+        val groundBox = modelBuilder.createBox(20f, 0.1f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
 
-        ground = (ModelInstance(groundBox, 0f,-1f,0f))
+        ground = (ModelInstance(groundBox, 0f,-0.55f,0f))
 
 
 
@@ -92,8 +92,8 @@ class Voxd31Editor : ApplicationAdapter() {
 
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
-        scene.cubes.map{it.instance}.forEach { shadowBatch.render(it) }
-        shadowBatch.render(ground)
+            scene.cubes.map{it.instance}.forEach { shadowBatch.render(it) }
+            shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
 
@@ -102,7 +102,7 @@ class Voxd31Editor : ApplicationAdapter() {
 
         camera.update()
         modelBatch.begin(camera)
-        shadowBatch.render(ground,environment)
+        modelBatch.render(ground,environment)
         modelBatch.render(scene.cubes.map { it.instance }, environment)
         modelBatch.end()
     }
