@@ -27,6 +27,8 @@ class Voxd31Editor : ApplicationAdapter() {
     private lateinit var environment: Environment
     private lateinit var shadowLight: DirectionalShadowLight
     private lateinit var scene: SceneController
+    private lateinit var guides: SceneController
+    private lateinit var feedback: SceneController
     private lateinit var modelBuilder: ModelBuilder
     private lateinit var ground: ModelInstance
     private lateinit var inputProcessors: CompositeInputProcessor
@@ -68,6 +70,8 @@ class Voxd31Editor : ApplicationAdapter() {
 
         modelBuilder = ModelBuilder()
         scene = SceneController(modelBuilder,camera)
+        guides = SceneController(modelBuilder,camera)
+        feedback = SceneController(modelBuilder,camera)
 
         val colors = arrayOf(Color.WHITE,Color.GRAY,Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN)
         val matGround = Material(ColorAttribute.createDiffuse(Color.GRAY))
@@ -122,6 +126,8 @@ class Voxd31Editor : ApplicationAdapter() {
         modelBatch.begin(camera)
         modelBatch.render(ground,environment)
         modelBatch.render(scene.cubes.map { it.instance }, environment)
+        modelBatch.render(guides.cubes.map { it.instance }, environment)
+        modelBatch.render(feedback.cubes.map { it.instance }, environment)
         modelBatch.end()
     }
 
@@ -129,6 +135,8 @@ class Voxd31Editor : ApplicationAdapter() {
         modelBatch.dispose()
         shadowBatch.dispose()
         scene.dispose()
+        guides.dispose()
+        feedback.dispose()
         shadowLight.dispose()
 
         // If you set a different input processor later, you might need to do this
