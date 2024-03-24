@@ -33,7 +33,7 @@ class Voxd31Editor : ApplicationAdapter() {
     private lateinit var ground: ModelInstance
     private lateinit var inputProcessors: CompositeInputProcessor
 
-    public val tools: MutableMap<String, EditorTool> = mutableMapOf() // Map activation keys to tools
+    public val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
     public var activeTool: EditorTool? = null
     public lateinit var inputEventDispatcher: InputEventDispatcher
 
@@ -87,7 +87,38 @@ class Voxd31Editor : ApplicationAdapter() {
 
         Gdx.input.inputProcessor = inputProcessors
 
+        inputEventDispatcher.on("keyUp"){event ->
+            when(event.keyCode){
+                Input.Keys.T -> if(tools.size > 0) {
+                    if (activeTool == null) {
+                        activeTool = tools[0]
+                    } else {
+                        val iof = tools.indexOf(activeTool)
+                        activeTool = tools[(iof + 1) % tools.size]
+                    }
+
+                    println("active tool : ${activeTool?.name}")
+                }
+                else -> {
+                    println("key up : ${event.keyCode}")
+                }
+            }
+        }
+        tools.add(EditorTool(
+                name = "voxel",
+                onClick = fun(self: EditorTool,event: Event) :Boolean{
+                    return true
+                },
+                onMove = fun(self: EditorTool,event: Event): Boolean {
+                    feedback.cubes.add(Cube(event.model.x.toInt(),event.model.y.toInt(),event.model.z.toInt()))
+                    feedback.cubes.add(Cube(event.model.x.toInt(),event.model.y.toInt(),event.model.z.toInt()))
+                    return true
+                }
+            )
+        )
+
         inputEventDispatcher.on("touchUp"){event ->
+            activeTool?.takeEvent(event)
             println(event)
             if(event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT){
                 if(event.keyDown == Input.Keys.ALT_LEFT){

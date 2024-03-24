@@ -6,12 +6,20 @@ import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
 
-abstract class EditorTool(
-    open var name: String,
-    open var scene: SceneController,
-    open var camera: Camera,
+class EditorTool(
+    var name: String,
+    var onClick: (self: EditorTool,event: Event) -> Boolean,
+    var onMove: (self: EditorTool,event: Event) -> Boolean,
 ) {
-    abstract fun onFinished(sceneController: SceneController,point: Vector3)//(callback: (scene: SceneController,point: Vector3) -> Unit)
-    abstract fun onProgress(sceneController: SceneController,point: Vector3)//(callback: (scene: SceneController,point: Vector3) -> Unit)
+    var points:MutableList<Vector3> = mutableListOf()
+    fun takeEvent(event:Event) {
+        val newPoints= points + event.model!!
+        val isFinished  = onClick(this, event)
+        if(isFinished) {
+            points = mutableListOf()
+        } else {
+            points = newPoints.toMutableList()
+        }
+    }
 
 }
