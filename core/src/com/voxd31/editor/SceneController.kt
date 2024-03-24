@@ -8,41 +8,10 @@ import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
 
 class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
-    val cubes: MutableList<Cube> = mutableListOf()
-    private val tools: MutableMap<Int, EditorTool> = mutableMapOf() // Map activation keys to tools
-    private var activeTool: EditorTool? = null
+    var cubes: MutableList<Cube> = mutableListOf()
     var currentColor: Color = Color.RED
 
-    fun addTool(tool: EditorTool) {
-        tools[tool.activationKey] = tool
-    }
-
-    fun handleInput(keyCode: Int, screenX: Int, screenY: Int): Boolean {
-        // Switch tools based on key press
-        tools[keyCode]?.let {
-            activeTool?.deactivate()
-            activeTool = it.apply { activate() }
-            return true
-        }
-
-        // If there's an active tool, process clicks
-        activeTool?.let { tool ->
-            if (tool.acquiredPoints.size < tool.requiredPoints) {
-                val point = screenToModelPoint(screenX, screenY)
-                tool.acquirePoint(point)
-
-                if (tool.acquiredPoints.size == tool.requiredPoints) {
-                    tool.onFinished(this)
-                    tool.acquiredPoints.clear() // Reset for next operation
-                }
-            }
-            return true
-        }
-
-        return false
-    }
-
-    private fun screenToModelPoint(screenX: Int, screenY: Int): Vector3 {
+    public fun screenToModelPoint(screenX: Int, screenY: Int): Vector3 {
         // Implement the conversion from screen coordinates to world coordinates
         val ray = camera.getPickRay(screenX.toFloat(), screenY.toFloat())
         val intersection = Vector3()
@@ -80,6 +49,9 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
         // Implementation to create a cube ModelInstance at the specified coordinates
         // Placeholder implementation
         return Cube(modelBuilder, position = Vector3(x,y,z),currentColor)
+    }
+    fun clear() {
+        cubes = mutableListOf()
     }
 
     fun dispose() {
