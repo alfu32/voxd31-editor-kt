@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Vector3
 import com.voxd31.editor.*
+import kotlin.math.roundToInt
 
 class Voxd31Editor : ApplicationAdapter() {
     private lateinit var camera: PerspectiveCamera
@@ -46,7 +47,7 @@ class Voxd31Editor : ApplicationAdapter() {
     }
 
     override fun create() {
-        camera = PerspectiveCamera(75f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
+        camera = PerspectiveCamera(55f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
             position.set(10f, 10f, 10f)
             lookAt(0f, 0f, 0f)
             near = 1f
@@ -111,15 +112,15 @@ class Voxd31Editor : ApplicationAdapter() {
                     if(event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT){
                         if(event.keyDown == Input.Keys.ALT_LEFT){
                             scene.removeCube(
-                                event.model!!.x.toInt().toFloat(),
-                                event.model!!.y.toInt().toFloat(),
-                                event.model!!.z.toInt().toFloat()
+                                event.model!!.x.roundToInt(),
+                                event.model!!.y.roundToInt(),
+                                event.model!!.z.roundToInt()
                             )
                         } else {
                             scene.addCube(
-                                event.modelNext!!.x.toInt().toFloat(),
-                                event.modelNext!!.y.toInt().toFloat(),
-                                event.modelNext!!.z.toInt().toFloat()
+                                event.modelNext!!.x.roundToInt(),
+                                event.modelNext!!.y.roundToInt(),
+                                event.modelNext!!.z.roundToInt()
                             )
                         }
                     }
@@ -127,8 +128,8 @@ class Voxd31Editor : ApplicationAdapter() {
                 },
                 onMove = fun(self: EditorTool,event: Event): Boolean {
                     feedback.clear()
-                    feedback.addCube(event.model!!.x.toInt().toFloat(),event.model!!.y.toInt().toFloat(),event.model!!.z.toInt().toFloat())
-                    feedback.addCube(event.modelNext!!.x.toInt().toFloat(),event.modelNext!!.y.toInt().toFloat(),event.modelNext!!.z.toInt().toFloat())
+                    feedback.addCube(event.model!!.x.roundToInt(),event.model!!.y.roundToInt(),event.model!!.z.roundToInt(),Color.YELLOW)
+                    feedback.addCube(event.modelNext!!.x.roundToInt(),event.modelNext!!.y.roundToInt(),event.modelNext!!.z.roundToInt(),Color.ORANGE)
                     return true
                 }
             )

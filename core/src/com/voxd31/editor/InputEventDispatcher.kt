@@ -63,9 +63,7 @@ class InputEventDispatcher(
     }
 
     override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean {
-        currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
-        currentEvent.model = scene.screenToModelPoint(x,y)
-        currentEvent.modelNext = currentEvent.model!!.add(0.0f,1.0f,0.0f)
+        update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchDown")
@@ -73,9 +71,7 @@ class InputEventDispatcher(
     }
 
     override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
-        currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
-        currentEvent.model = scene.screenToModelPoint(x,y)
-        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
+        update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchUp")
@@ -83,9 +79,7 @@ class InputEventDispatcher(
     }
 
     override fun touchCancelled(x: Int, y: Int, pointer: Int, button: Int): Boolean {
-        currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
-        currentEvent.model = scene.screenToModelPoint(x,y)
-        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
+        update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchCancelled")
@@ -93,20 +87,27 @@ class InputEventDispatcher(
     }
 
     override fun touchDragged(x: Int, y: Int, pointer: Int): Boolean {
-        currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
-        currentEvent.model = scene.screenToModelPoint(x,y)
-        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
+        update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
         dispatchEvents("touchDragged")
         return true;
     }
 
     override fun mouseMoved(x: Int, y: Int): Boolean {
-        currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
-        currentEvent.model = scene.screenToModelPoint(x,y)
-        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
+        update3dVectorsFromScreenPoint(x, y)
         dispatchEvents("mouseMoved")
         return true;
+    }
+
+    private fun update3dVectorsFromScreenPoint(x: Int, y: Int) {
+        currentEvent.screen = Vector2(x.toFloat(), y.toFloat())
+        val modelIntersect = scene.screenToModelPoint(x, y)
+        currentEvent.model = modelIntersect.point
+        currentEvent.normal = modelIntersect.normal
+        currentEvent.target = modelIntersect.target
+        currentEvent.modelNext = Vector3(currentEvent.model!!).add(modelIntersect.normal)
+
+        println("3d points ${modelIntersect.type} : $currentEvent")
     }
 
     override fun scrolled(amountX: Float, amountY: Float): Boolean {
