@@ -42,7 +42,7 @@ class Voxd31Editor : ApplicationAdapter() {
 
 
     fun addTool(tool: EditorTool) {
-        tools[tool.name] = tool
+        tools.add(tool)
     }
 
     override fun create() {
@@ -72,6 +72,7 @@ class Voxd31Editor : ApplicationAdapter() {
         scene = SceneController(modelBuilder,camera)
         guides = SceneController(modelBuilder,camera)
         feedback = SceneController(modelBuilder,camera)
+        feedback.currentColor = Color.GREEN
 
         val colors = arrayOf(Color.WHITE,Color.GRAY,Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN)
         val matGround = Material(ColorAttribute.createDiffuse(Color.GRAY))
@@ -107,34 +108,37 @@ class Voxd31Editor : ApplicationAdapter() {
         tools.add(EditorTool(
                 name = "voxel",
                 onClick = fun(self: EditorTool,event: Event) :Boolean{
+                    if(event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT){
+                        if(event.keyDown == Input.Keys.ALT_LEFT){
+                            scene.removeCube(
+                                event.model!!.x.toInt().toFloat(),
+                                event.model!!.y.toInt().toFloat(),
+                                event.model!!.z.toInt().toFloat()
+                            )
+                        } else {
+                            scene.addCube(
+                                event.model!!.x.toInt().toFloat(),
+                                event.model!!.y.toInt().toFloat(),
+                                event.model!!.z.toInt().toFloat()
+                            )
+                        }
+                    }
                     return true
                 },
                 onMove = fun(self: EditorTool,event: Event): Boolean {
-                    feedback.cubes.add(Cube(event.model.x.toInt(),event.model.y.toInt(),event.model.z.toInt()))
-                    feedback.cubes.add(Cube(event.model.x.toInt(),event.model.y.toInt(),event.model.z.toInt()))
+                    feedback.clear()
+                    feedback.addCube(event.model!!.x.toInt().toFloat(),event.model!!.y.toInt().toFloat(),event.model!!.z.toInt().toFloat())
                     return true
                 }
             )
         )
-
+        activeTool = tools[0]
+        inputEventDispatcher.on("mouseMoved"){event ->
+            activeTool?.onMove?.let { it(activeTool!!,event) }
+        }
         inputEventDispatcher.on("touchUp"){event ->
             activeTool?.takeEvent(event)
-            println(event)
-            if(event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT){
-                if(event.keyDown == Input.Keys.ALT_LEFT){
-                    scene.removeCube(
-                        event.model!!.x.toInt().toFloat(),
-                        event.model!!.y.toInt().toFloat(),
-                        event.model!!.z.toInt().toFloat()
-                    )
-                } else {
-                    scene.addCube(
-                        event.model!!.x.toInt().toFloat(),
-                        event.model!!.y.toInt().toFloat(),
-                        event.model!!.z.toInt().toFloat()
-                    )
-                }
-            }
+            // activeTool?.onClick?.let { it(activeTool!!,event) }
         }
     }
 

@@ -14,7 +14,11 @@ class Event(
     var normal:Vector3? = null,
     var pointer:Int? = null,
     var button:Int? = null,
-)
+) {
+    override fun toString(): String {
+        return "$keyDown , $screen , $model , $pointer , $button"
+    }
+}
 
 typealias EventListener = (e:Event)->Unit
 class InputEventDispatcher(
@@ -34,27 +38,27 @@ class InputEventDispatcher(
         if(! listeners.containsKey((channel))) {
             listeners[channel]= mutableListOf()
         }
-        listeners[channel]!!.forEach{
-            it(currentEvent)
+        listeners[channel]!!.forEach{listener ->
+            listener(currentEvent)
         }
     }
     override fun keyDown(keycode: Int): Boolean {
         currentEvent.keyCode=keycode
         currentEvent.keyDown=keycode
         dispatchEvents("keyDown")
-        return false;
+        return true;
     }
 
     override fun keyUp(keycode: Int): Boolean {
         currentEvent.keyCode=keycode
         currentEvent.keyDown=0
         dispatchEvents("keyUp")
-        return false;
+        return true;
     }
 
     override fun keyTyped(character: Char): Boolean {
         dispatchEvents("keyTyped")
-        return false;
+        return true;
     }
 
     override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean {
@@ -63,7 +67,7 @@ class InputEventDispatcher(
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchDown")
-        return false;
+        return true;
     }
 
     override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
@@ -72,7 +76,7 @@ class InputEventDispatcher(
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchUp")
-        return false;
+        return true;
     }
 
     override fun touchCancelled(x: Int, y: Int, pointer: Int, button: Int): Boolean {
@@ -89,18 +93,18 @@ class InputEventDispatcher(
         currentEvent.model = scene.screenToModelPoint(x,y)
         currentEvent.pointer=pointer
         dispatchEvents("touchDragged")
-        return false;
+        return true;
     }
 
     override fun mouseMoved(x: Int, y: Int): Boolean {
         currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
         currentEvent.model = scene.screenToModelPoint(x,y)
         dispatchEvents("mouseMoved")
-        return false;
+        return true;
     }
 
     override fun scrolled(amountX: Float, amountY: Float): Boolean {
         currentEvent.scroll = Vector2(amountX,amountY)
-        return false;
+        return true;
     }
 }
