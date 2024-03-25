@@ -10,6 +10,7 @@ class Event(
     var screen:Vector2? = null,
     var scroll:Vector2? = null,
     var model: Vector3? = null,
+    var modelNext: Vector3? = null,
     var target:Cube? = null,
     var normal:Vector3? = null,
     var pointer:Int? = null,
@@ -64,6 +65,7 @@ class InputEventDispatcher(
     override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean {
         currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
         currentEvent.model = scene.screenToModelPoint(x,y)
+        currentEvent.modelNext = currentEvent.model!!.add(0.0f,1.0f,0.0f)
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchDown")
@@ -73,6 +75,7 @@ class InputEventDispatcher(
     override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
         currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
         currentEvent.model = scene.screenToModelPoint(x,y)
+        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchUp")
@@ -82,6 +85,7 @@ class InputEventDispatcher(
     override fun touchCancelled(x: Int, y: Int, pointer: Int, button: Int): Boolean {
         currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
         currentEvent.model = scene.screenToModelPoint(x,y)
+        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
         currentEvent.pointer=pointer
         currentEvent.button=button
         dispatchEvents("touchCancelled")
@@ -91,6 +95,7 @@ class InputEventDispatcher(
     override fun touchDragged(x: Int, y: Int, pointer: Int): Boolean {
         currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
         currentEvent.model = scene.screenToModelPoint(x,y)
+        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
         currentEvent.pointer=pointer
         dispatchEvents("touchDragged")
         return true;
@@ -99,6 +104,7 @@ class InputEventDispatcher(
     override fun mouseMoved(x: Int, y: Int): Boolean {
         currentEvent.screen= Vector2(x.toFloat(),y.toFloat())
         currentEvent.model = scene.screenToModelPoint(x,y)
+        currentEvent.modelNext = currentEvent.model!!.add(1.0f)
         dispatchEvents("mouseMoved")
         return true;
     }

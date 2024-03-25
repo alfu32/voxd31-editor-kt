@@ -117,9 +117,9 @@ class Voxd31Editor : ApplicationAdapter() {
                             )
                         } else {
                             scene.addCube(
-                                event.model!!.x.toInt().toFloat(),
-                                event.model!!.y.toInt().toFloat(),
-                                event.model!!.z.toInt().toFloat()
+                                event.modelNext!!.x.toInt().toFloat(),
+                                event.modelNext!!.y.toInt().toFloat(),
+                                event.modelNext!!.z.toInt().toFloat()
                             )
                         }
                     }
@@ -128,6 +128,7 @@ class Voxd31Editor : ApplicationAdapter() {
                 onMove = fun(self: EditorTool,event: Event): Boolean {
                     feedback.clear()
                     feedback.addCube(event.model!!.x.toInt().toFloat(),event.model!!.y.toInt().toFloat(),event.model!!.z.toInt().toFloat())
+                    feedback.addCube(event.modelNext!!.x.toInt().toFloat(),event.modelNext!!.y.toInt().toFloat(),event.modelNext!!.z.toInt().toFloat())
                     return true
                 }
             )

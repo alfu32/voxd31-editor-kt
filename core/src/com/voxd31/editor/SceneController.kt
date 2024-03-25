@@ -6,16 +6,29 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.Ray
 
 class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
     var cubes: MutableList<Cube> = mutableListOf()
     var currentColor: Color = Color.RED
+    fun rayToPointDistance(ray: Ray, point: Vector3): Float {
+        // Vector from the ray's origin to the point
+        val originToPoint = Vector3(point).sub(ray.origin)
 
+        // Cross product of the direction of the ray and the vector from the ray's origin to the point
+        val crossProduct = ray.direction.crs(originToPoint)
+
+        // Distance formula: magnitude of the cross product divided by the magnitude of the ray's direction
+        return crossProduct.len() / ray.direction.len()
+    }
     public fun screenToModelPoint(screenX: Int, screenY: Int): Vector3 {
         // Implement the conversion from screen coordinates to world coordinates
         val ray = camera.getPickRay(screenX.toFloat(), screenY.toFloat())
         val intersection = Vector3()
         for (cube in cubes){
+            /// if(rayToPointDistance(ray,cube.position)<0.630) {
+            ///     return cube.position
+            /// }
             for(mesh in cube.getModelInstance(modelBuilder).model.meshes){
                 if(Intersector.intersectRayBounds(ray,mesh.calculateBoundingBox(),intersection)){
                     return intersection
