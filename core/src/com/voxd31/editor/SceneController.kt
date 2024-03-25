@@ -2,52 +2,33 @@ package com.voxd31.editor
 
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g3d.ModelInstance
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.Ray
 
 class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
-    val cubes: MutableList<Cube> = mutableListOf()
-    private val tools: MutableMap<Int, EditorTool> = mutableMapOf() // Map activation keys to tools
-    private var activeTool: EditorTool? = null
+    var cubes: MutableList<Cube> = mutableListOf()
     var currentColor: Color = Color.RED
+    fun rayToPointDistance(ray: Ray, point: Vector3): Float {
+        // Vector from the ray's origin to the point
+        val originToPoint = Vector3(point).sub(ray.origin)
 
-    fun addTool(tool: EditorTool) {
-        tools[tool.activationKey] = tool
+        // Cross product of the direction of the ray and the vector from the ray's origin to the point
+        val crossProduct = ray.direction.crs(originToPoint)
+
+        // Distance formula: magnitude of the cross product divided by the magnitude of the ray's direction
+        return crossProduct.len() / ray.direction.len()
     }
-
-    fun handleInput(keyCode: Int, screenX: Int, screenY: Int): Boolean {
-        // Switch tools based on key press
-        tools[keyCode]?.let {
-            activeTool?.deactivate()
-            activeTool = it.apply { activate() }
-            return true
-        }
-
-        // If there's an active tool, process clicks
-        activeTool?.let { tool ->
-            if (tool.acquiredPoints.size < tool.requiredPoints) {
-                val point = screenToModelPoint(screenX, screenY)
-                tool.acquirePoint(point)
-
-                if (tool.acquiredPoints.size == tool.requiredPoints) {
-                    tool.execute(this)
-                    tool.acquiredPoints.clear() // Reset for next operation
-                }
-            }
-            return true
-        }
-
-        return false
-    }
-
-    private fun screenToModelPoint(screenX: Int, screenY: Int): Vector3 {
+    public fun screenToModelPoint(screenX: Int, screenY: Int): Vector3 {
         // Implement the conversion from screen coordinates to world coordinates
         val ray = camera.getPickRay(screenX.toFloat(), screenY.toFloat())
         val intersection = Vector3()
         for (cube in cubes){
+            /// if(rayToPointDistance(ray,cube.position)<0.630) {
+            ///     return cube.position
+            /// }
             for(mesh in cube.getModelInstance(modelBuilder).model.meshes){
                 if(Intersector.intersectRayBounds(ray,mesh.calculateBoundingBox(),intersection)){
                     return intersection
@@ -81,6 +62,9 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
         // Implementation to create a cube ModelInstance at the specified coordinates
         // Placeholder implementation
         return Cube(modelBuilder, position = Vector3(x,y,z),currentColor)
+    }
+    fun clear() {
+        cubes = mutableListOf()
     }
 
     fun dispose() {
