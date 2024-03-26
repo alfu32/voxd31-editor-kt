@@ -133,8 +133,8 @@ class Voxd31Editor : ApplicationAdapter() {
                 },
                 onMove = fun(self: EditorTool,event: Event): Boolean {
                     feedback.clear()
-                    feedback.addCube(event.model!!.x.roundToInt(),event.model!!.y.roundToInt(),event.model!!.z.roundToInt(),a)
-                    feedback.addCube(event.modelNext!!.x.roundToInt(),event.modelNext!!.y.roundToInt(),event.modelNext!!.z.roundToInt(),b)
+                    feedback.addCube(event.model!!.x,event.model!!.y,event.model!!.z,a)
+                    feedback.addCube(event.modelNext!!.x,event.modelNext!!.y,event.modelNext!!.z,b)
                     return true
                 }
             )

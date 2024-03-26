@@ -34,7 +34,7 @@ class ModelIntersection(
 }
 
 
-fun findIntersection(ray: Ray, voxels: List<Cube>,modelBuilder:ModelBuilder): ModelIntersection {
+fun intersectRayWithCubes(ray: Ray, voxels: List<Cube>,modelBuilder:ModelBuilder): ModelIntersection {
     val VXSZ = 0.5F
     var closestIntersection: Vector3? = null
     var intersectionNormal: Vector3? = null
@@ -85,28 +85,90 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
         // Distance formula: magnitude of the cross product divided by the magnitude of the ray's direction
         return crossProduct.len() / ray.direction.len()
     }
+    fun intersectRayWithCube(ray: Ray, cube:Cube): ModelIntersection {
+        val cubeCenter = cube.position
+        val cubeSize = 1f
+        val halfSize = cubeSize / 2
+        val min = cubeCenter.cpy().sub(halfSize, halfSize, halfSize)
+        val max = cubeCenter.cpy().add(halfSize, halfSize, halfSize)
+
+        // Planes of the cube
+        val planes = arrayOf(
+            Vector3(1f, 0f, 0f), Vector3(-1f, 0f, 0f), // +x, -x
+            Vector3(0f, 1f, 0f), Vector3(0f, -1f, 0f), // +y, -y
+            Vector3(0f, 0f, 1f), Vector3(0f, 0f, -1f)  // +z, -z
+        )
+        val distances = FloatArray(planes.size) { Float.MAX_VALUE }
+
+        for ((index, plane) in planes.withIndex()) {
+            val denom = plane.dot(ray.direction)
+            if (denom != 0f) {
+                val t = (plane.dot(cubeCenter) - plane.dot(ray.origin)) / denom
+                if (t > 0) {
+                    // Potential intersection point
+                    val intersection = ray.origin.cpy().add(ray.direction.cpy().scl(t))
+                    // Check if intersection is within cube bounds
+                    if (intersection.x in min.x..max.x && intersection.y in min.y..max.y && intersection.z in min.z..max.z) {
+                        distances[index] = t
+                    }
+                }
+            }
+        }
+
+        val minDistanceIndex = distances.indices.minByOrNull { distances[it] }
+        if (minDistanceIndex == null || distances[minDistanceIndex] == Float.MAX_VALUE) {
+            return ModelIntersection(
+                hit=false,
+                point=Vector3(),
+                normal=Vector3(),
+                target=cube,
+                type="undefined"
+            ) // No intersection
+        }
+
+        val intersectionPoint = ray.origin.cpy().add(ray.direction.cpy().scl(distances[minDistanceIndex]))
+        val normal = planes[minDistanceIndex]
+
+        return ModelIntersection(
+            hit=true,
+            point=intersectionPoint,
+            normal=normal,
+            target=cube,
+            type="cube"
+        )
+        // return Pair(intersectionPoint, normal)
+    }
     public fun screenToModelPoint(screenX: Int, screenY: Int): ModelIntersection {
         // Implement the conversion from screen coordinates to world coordinates
         val ray = camera.getPickRay(screenX.toFloat(), screenY.toFloat())
 
-        val intersectionToScene = findIntersection(ray,cubes,modelBuilder)
-        if ( intersectionToScene.hit ) {
+        // for (cube in cubes) {
+        //     val intersectionToScene = intersectRayWithCube(ray,cube)
+        //     if ( intersectionToScene.hit ) {
+        //         return intersectionToScene
+        //     }
+        // }
+        val intersectionToScene = intersectRayWithCubes(ray,cubes,modelBuilder)
+        if ( intersectionToScene.hit) {
             return intersectionToScene
-        } else {
-            val intersection = Vector3()
-            // Assume a plane at y = 0 for the intersection, you might adjust this based on your scene
-            Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
-            return ModelIntersection(
-                hit = true,
-                point = intersection,
-                normal = Vector3(0f,1f,0f),
-                target = Cube(modelBuilder = ModelBuilder(),position = Vector3(0f,0f,0f), color = Color.CYAN),
-                type = "ground",
-            )
         }
+        val intersection = Vector3()
+        // Assume a plane at y = 0 for the intersection, you might adjust this based on your scene
+        Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
+        return ModelIntersection(
+            hit = true,
+            point = intersection,
+            normal = Vector3(0f,1f,0f),
+            target = Cube(modelBuilder = ModelBuilder(),position = Vector3(0f,0f,0f), color = Color.CYAN),
+            type = "ground",
+        )
     }
 
     fun addCube(x: Int, y: Int, z: Int,color:Color? = null) {
+        val cube = createCubeAt(x, y, z,color)
+        cubes.add(cube)
+    }
+    fun addCube(x: Float, y: Float, z: Float,color:Color? = null) {
         val cube = createCubeAt(x, y, z,color)
         cubes.add(cube)
     }
@@ -125,6 +187,11 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
     }
 
     private fun createCubeAt(x: Int, y: Int, z: Int,color:Color? = null): Cube {
+        // Implementation to create a cube ModelInstance at the specified coordinates
+        // Placeholder implementation
+        return Cube(modelBuilder, position = Vector3(x.toFloat(),y.toFloat(),z.toFloat()),if( color == null ) currentColor else color)
+    }
+    private fun createCubeAt(x: Float, y: Float, z: Float,color:Color? = null): Cube {
         // Implementation to create a cube ModelInstance at the specified coordinates
         // Placeholder implementation
         return Cube(modelBuilder, position = Vector3(x.toFloat(),y.toFloat(),z.toFloat()),if( color == null ) currentColor else color)

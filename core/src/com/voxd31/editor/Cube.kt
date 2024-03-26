@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector3
 import kotlin.random.Random
 
+
 class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
     lateinit var instance: ModelInstance
     companion object{
@@ -26,7 +27,7 @@ class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
         }
     }
     init {
-        instance = ModelInstance(getModel(modelBuilder,color), position.x, position.y, position.z)
+        instance = ModelInstance(getModel(modelBuilder,color), position.x.toFloat()-0.5f, position.y.toFloat()-0.5f, position.z.toFloat()-0.5f)
     }
     fun getModelInstance(modelBuilder: ModelBuilder): ModelInstance{
         return instance
