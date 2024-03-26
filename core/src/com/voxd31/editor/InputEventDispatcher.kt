@@ -17,7 +17,7 @@ class Event(
     var button:Int? = null,
 ) {
     override fun toString(): String {
-        return "$keyDown , $screen , $model , $pointer , $button"
+        return "$keyDown , $screen , $model , $pointer , $button , ${target?.getId()}"
     }
 }
 
@@ -107,7 +107,7 @@ class InputEventDispatcher(
         currentEvent.target = modelIntersect.target
         currentEvent.modelNext = Vector3(currentEvent.model!!).add(modelIntersect.normal)
 
-        println("3d points ${modelIntersect.type} : $currentEvent")
+        //println("3d points ${modelIntersect.type} : $currentEvent")
     }
 
     override fun scrolled(amountX: Float, amountY: Float): Boolean {

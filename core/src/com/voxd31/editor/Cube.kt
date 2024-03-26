@@ -31,4 +31,7 @@ class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
     fun getModelInstance(modelBuilder: ModelBuilder): ModelInstance{
         return instance
     }
+    fun getId() : String {
+        return "{${position.x.toInt()},${position.x.toInt()},${position.x.toInt()}}"
+    }
 }

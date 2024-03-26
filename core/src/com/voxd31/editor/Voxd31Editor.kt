@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector3
 import com.voxd31.editor.*
 import kotlin.math.roundToInt
@@ -33,6 +34,7 @@ class Voxd31Editor : ApplicationAdapter() {
     private lateinit var modelBuilder: ModelBuilder
     private lateinit var ground: ModelInstance
     private lateinit var inputProcessors: CompositeInputProcessor
+    private lateinit var shapeRenderer: ShapeRenderer
 
     public val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
     public var activeTool: EditorTool? = null
@@ -54,6 +56,7 @@ class Voxd31Editor : ApplicationAdapter() {
             far = 300f
             update()
         }
+        shapeRenderer = ShapeRenderer()
 
 
         modelBatch = ModelBatch()
@@ -106,6 +109,8 @@ class Voxd31Editor : ApplicationAdapter() {
                 }
             }
         }
+        val a = Color(1f,1f,0f,0.5f)
+        val b = Color(1f,0.5f,0f,0.5f)
         tools.add(EditorTool(
                 name = "voxel",
                 onClick = fun(self: EditorTool,event: Event) :Boolean{
@@ -118,9 +123,9 @@ class Voxd31Editor : ApplicationAdapter() {
                             )
                         } else {
                             scene.addCube(
-                                event.modelNext!!.x.roundToInt(),
-                                event.modelNext!!.y.roundToInt(),
-                                event.modelNext!!.z.roundToInt()
+                                event.model!!.x.roundToInt(),
+                                event.model!!.y.roundToInt(),
+                                event.model!!.z.roundToInt()
                             )
                         }
                     }
@@ -128,8 +133,8 @@ class Voxd31Editor : ApplicationAdapter() {
                 },
                 onMove = fun(self: EditorTool,event: Event): Boolean {
                     feedback.clear()
-                    feedback.addCube(event.model!!.x.roundToInt(),event.model!!.y.roundToInt(),event.model!!.z.roundToInt(),Color.YELLOW)
-                    feedback.addCube(event.modelNext!!.x.roundToInt(),event.modelNext!!.y.roundToInt(),event.modelNext!!.z.roundToInt(),Color.ORANGE)
+                    feedback.addCube(event.model!!.x.roundToInt(),event.model!!.y.roundToInt(),event.model!!.z.roundToInt(),a)
+                    feedback.addCube(event.modelNext!!.x.roundToInt(),event.modelNext!!.y.roundToInt(),event.modelNext!!.z.roundToInt(),b)
                     return true
                 }
             )
@@ -163,9 +168,20 @@ class Voxd31Editor : ApplicationAdapter() {
         modelBatch.begin(camera)
         modelBatch.render(ground,environment)
         modelBatch.render(scene.cubes.map { it.instance }, environment)
-        modelBatch.render(guides.cubes.map { it.instance }, environment)
-        modelBatch.render(feedback.cubes.map { it.instance }, environment)
         modelBatch.end()
+
+        shapeRenderer.projectionMatrix = camera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        guides.cubes.forEach { c:Cube ->
+            shapeRenderer.color = c.color
+            shapeRenderer.box(c.position.x,c.position.y,c.position.z,1f,1f,1f)
+        }
+        feedback.cubes.forEach { c:Cube ->
+            shapeRenderer.color = c.color
+            shapeRenderer.box(c.position.x,c.position.y,c.position.z,1f,1f,1f)
+        }
+
+        shapeRenderer.end()
     }
 
     override fun dispose() {

@@ -35,7 +35,7 @@ class ModelIntersection(
 
 
 fun findIntersection(ray: Ray, voxels: List<Cube>,modelBuilder:ModelBuilder): ModelIntersection {
-    val VOX_SZ2 = Vector3(0.5f,0.5f,0.5f)
+    val VXSZ = 0.5F
     var closestIntersection: Vector3? = null
     var intersectionNormal: Vector3? = null
     var minDistance = Float.MAX_VALUE
@@ -43,9 +43,10 @@ fun findIntersection(ray: Ray, voxels: List<Cube>,modelBuilder:ModelBuilder): Mo
     var target:Cube? = null
     voxels.forEach{ cube ->
         val bounds = BoundingBox(
-            cube.position.sub(VOX_SZ2),
-            cube.position.add(VOX_SZ2),
+            Vector3(cube.position.x - VXSZ,cube.position.y - VXSZ,cube.position.z - VXSZ),
+            Vector3(cube.position.x + VXSZ,cube.position.y + VXSZ,cube.position.z + VXSZ),
         )
+        //println("bounds: $bounds, ray: $ray")
         val intersection = Vector3()
         if(Intersector.intersectRayBounds(ray,bounds,intersection)){
             val distance = ray.origin.dst2(intersection)
