@@ -33,6 +33,6 @@ class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
         return instance
     }
     fun getId() : String {
-        return "{${position.x.toInt()},${position.x.toInt()},${position.x.toInt()}}"
+        return "{${position.x.toInt()},${position.y.toInt()},${position.z.toInt()}}"
     }
 }

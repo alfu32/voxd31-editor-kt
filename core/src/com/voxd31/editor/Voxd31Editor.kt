@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
+import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.Material
 import com.badlogic.gdx.graphics.g3d.ModelBatch
@@ -35,6 +37,9 @@ class Voxd31Editor : ApplicationAdapter() {
     private lateinit var ground: ModelInstance
     private lateinit var inputProcessors: CompositeInputProcessor
     private lateinit var shapeRenderer: ShapeRenderer
+    private lateinit var font: BitmapFont
+    private lateinit var spriteBatch: SpriteBatch
+    private lateinit var currentEvent: Event
 
     public val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
     public var activeTool: EditorTool? = null
@@ -49,6 +54,9 @@ class Voxd31Editor : ApplicationAdapter() {
     }
 
     override fun create() {
+        font = BitmapFont() // This will use libGDX's default Arial font.
+        spriteBatch = SpriteBatch()
+
         camera = PerspectiveCamera(55f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
             position.set(10f, 10f, 10f)
             lookAt(0f, 0f, 0f)
@@ -82,7 +90,7 @@ class Voxd31Editor : ApplicationAdapter() {
         val matGround = Material(ColorAttribute.createDiffuse(Color.GRAY))
         val groundBox = modelBuilder.createBox(20f, 0.02f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
 
-        ground = (ModelInstance(groundBox, 0f,-0.51f,0f))
+        ground = (ModelInstance(groundBox, 0f,-1f,0f))
 
         cameraController = EditorCameraController(camera)
         inputEventDispatcher = InputEventDispatcher(scene)
@@ -117,24 +125,26 @@ class Voxd31Editor : ApplicationAdapter() {
                     if(event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT){
                         if(event.keyDown == Input.Keys.ALT_LEFT){
                             scene.removeCube(
-                                event.model!!.x.roundToInt(),
-                                event.model!!.y.roundToInt(),
-                                event.model!!.z.roundToInt()
+                                event.modelInt!!.x,
+                                event.modelInt!!.y,
+                                event.modelInt!!.z,
                             )
                         } else {
                             scene.addCube(
-                                event.model!!.x.roundToInt(),
-                                event.model!!.y.roundToInt(),
-                                event.model!!.z.roundToInt()
+                                event.modelInt!!.x,
+                                event.modelInt!!.y,
+                                event.modelInt!!.z,
                             )
                         }
                     }
+                    currentEvent = event
                     return true
                 },
                 onMove = fun(self: EditorTool,event: Event): Boolean {
                     feedback.clear()
-                    feedback.addCube(event.model!!.x,event.model!!.y,event.model!!.z,a)
-                    feedback.addCube(event.modelNext!!.x,event.modelNext!!.y,event.modelNext!!.z,b)
+                    feedback.addCube(event.modelInt!!.x,event.modelInt!!.y,event.modelInt!!.z,a)
+                    feedback.addCube(event.modelIntNext!!.x,event.modelIntNext!!.y,event.modelIntNext!!.z,b)
+                    currentEvent = event
                     return true
                 }
             )
@@ -147,6 +157,7 @@ class Voxd31Editor : ApplicationAdapter() {
             activeTool?.takeEvent(event)
             // activeTool?.onClick?.let { it(activeTool!!,event) }
         }
+        currentEvent= Event()
     }
 
     override fun render() {
@@ -156,7 +167,7 @@ class Voxd31Editor : ApplicationAdapter() {
 
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
-            scene.cubes.map{it.instance}.forEach { shadowBatch.render(it) }
+            scene.cubes.map{ (k,v) -> v.instance}.forEach { shadowBatch.render(it) }
             shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
@@ -167,21 +178,32 @@ class Voxd31Editor : ApplicationAdapter() {
         camera.update()
         modelBatch.begin(camera)
         modelBatch.render(ground,environment)
-        modelBatch.render(scene.cubes.map { it.instance }, environment)
+        modelBatch.render(scene.cubes.map { (k,v) -> v.instance }, environment)
         modelBatch.end()
 
         shapeRenderer.projectionMatrix = camera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        guides.cubes.forEach { c:Cube ->
+        guides.cubes.forEach { (k:String,c:Cube) ->
             shapeRenderer.color = c.color
             shapeRenderer.box(c.position.x,c.position.y,c.position.z,1f,1f,1f)
         }
-        feedback.cubes.forEach { c:Cube ->
+        feedback.cubes.forEach { (k:String,c:Cube) ->
             shapeRenderer.color = c.color
             shapeRenderer.box(c.position.x,c.position.y,c.position.z,1f,1f,1f)
         }
 
         shapeRenderer.end()
+
+        if(currentEvent.screen != null) {
+            spriteBatch.begin()
+            font.draw(
+                spriteBatch,
+                "model:${currentEvent.modelInt}",
+                currentEvent.screen!!.x,
+                camera.viewportHeight-currentEvent.screen!!.y
+            ) // Draws text at the specified position.
+            spriteBatch.end()
+        }
     }
 
     override fun dispose() {

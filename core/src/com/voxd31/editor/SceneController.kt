@@ -43,8 +43,8 @@ fun intersectRayWithCubes(ray: Ray, voxels: List<Cube>,modelBuilder:ModelBuilder
     var target:Cube? = null
     voxels.forEach{ cube ->
         val bounds = BoundingBox(
-            Vector3(cube.position.x - VXSZ,cube.position.y - VXSZ,cube.position.z - VXSZ),
-            Vector3(cube.position.x + VXSZ,cube.position.y + VXSZ,cube.position.z + VXSZ),
+            Vector3(cube.position.x,cube.position.y,cube.position.z),
+            Vector3(cube.position.x + 1.0f,cube.position.y + 1.0f,cube.position.z + 1.0f),
         )
         //println("bounds: $bounds, ray: $ray")
         val intersection = Vector3()
@@ -73,7 +73,7 @@ fun intersectRayWithCubes(ray: Ray, voxels: List<Cube>,modelBuilder:ModelBuilder
 
 
 class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
-    var cubes: MutableList<Cube> = mutableListOf()
+    var cubes: HashMap<String,Cube> = hashMapOf()
     var currentColor: Color = Color.RED
     fun rayToPointDistance(ray: Ray, point: Vector3): Float {
         // Vector from the ray's origin to the point
@@ -148,7 +148,7 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
         //         return intersectionToScene
         //     }
         // }
-        val intersectionToScene = intersectRayWithCubes(ray,cubes,modelBuilder)
+        val intersectionToScene = intersectRayWithCubes(ray,cubes.values.toList(),modelBuilder)
         if ( intersectionToScene.hit) {
             return intersectionToScene
         }
@@ -159,31 +159,28 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
             hit = true,
             point = intersection,
             normal = Vector3(0f,1f,0f),
-            target = Cube(modelBuilder = ModelBuilder(),position = Vector3(0f,0f,0f), color = Color.CYAN),
+            target = Cube(modelBuilder = ModelBuilder(),position = Vector3(intersection.x,intersection.y,intersection.z), color = Color.CYAN),
             type = "ground",
         )
     }
 
     fun addCube(x: Int, y: Int, z: Int,color:Color? = null) {
         val cube = createCubeAt(x, y, z,color)
-        cubes.add(cube)
+        cubes[cube.getId()]=cube
     }
     fun addCube(x: Float, y: Float, z: Float,color:Color? = null) {
-        val cube = createCubeAt(x, y, z,color)
-        cubes.add(cube)
+        val cube = createCubeAt(x.toInt(), y.toInt(), z.toInt(),color)
+        cubes[cube.getId()]=cube
+        println("cubes : ${cubes.size}")
     }
 
     fun removeCube(x: Int, y: Int, z: Int) {
-        // This method will remove the first cube found at the given coordinates
-        // More sophisticated logic might be needed for your specific use case
-        val iterator = cubes.iterator()
-        while (iterator.hasNext()) {
-            val cube = iterator.next()
-            if (cube.position.epsilonEquals(x.toFloat(), y.toFloat(), z.toFloat(), 0.8f)) {
-                iterator.remove()
-                break
-            }
-        }
+        val cube = createCubeAt(x, y, z,Color.RED)
+        cubes.remove(cube.getId())
+    }
+    fun removeCube(x: Float, y: Float, z: Float) {
+        val cube = createCubeAt(x.toInt(), y.toInt(), z.toInt(),Color.RED)
+        cubes.remove(cube.getId())
     }
 
     private fun createCubeAt(x: Int, y: Int, z: Int,color:Color? = null): Cube {
@@ -191,17 +188,13 @@ class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
         // Placeholder implementation
         return Cube(modelBuilder, position = Vector3(x.toFloat(),y.toFloat(),z.toFloat()),if( color == null ) currentColor else color)
     }
-    private fun createCubeAt(x: Float, y: Float, z: Float,color:Color? = null): Cube {
-        // Implementation to create a cube ModelInstance at the specified coordinates
-        // Placeholder implementation
-        return Cube(modelBuilder, position = Vector3(x.toFloat(),y.toFloat(),z.toFloat()),if( color == null ) currentColor else color)
-    }
     fun clear() {
-        cubes = mutableListOf()
+        cubes = hashMapOf()
     }
 
     fun dispose() {
-        cubes.forEach { it.instance.model.dispose() }
+        if(cubes.size > 0)cubes.values.first().instance.model.dispose()
+        /// cubes.forEach { it.instance.model.dispose() }
     }
 
     // Additional methods for scene management...

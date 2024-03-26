@@ -10,7 +10,9 @@ class Event(
     var screen:Vector2? = null,
     var scroll:Vector2? = null,
     var model: Vector3? = null,
+    var modelInt: Vector3? = null,
     var modelNext: Vector3? = null,
+    var modelIntNext: Vector3? = null,
     var target:Cube? = null,
     var normal:Vector3? = null,
     var pointer:Int? = null,
@@ -103,11 +105,25 @@ class InputEventDispatcher(
         currentEvent.screen = Vector2(x.toFloat(), y.toFloat())
         val modelIntersect = scene.screenToModelPoint(x, y)
         currentEvent.model = modelIntersect.point
+        currentEvent.modelInt = Vector3(
+            modelIntersect.point.x.toInt().toFloat(),
+            modelIntersect.point.y.toInt().toFloat(),
+            modelIntersect.point.z.toInt().toFloat(),
+        )
         currentEvent.normal = modelIntersect.normal
         currentEvent.target = modelIntersect.target
         currentEvent.modelNext = Vector3(currentEvent.model!!).add(modelIntersect.normal)
+        currentEvent.modelIntNext = Vector3(
+            modelIntersect.point.x.toInt().toFloat() + currentEvent.normal!!.x,
+            modelIntersect.point.y.toInt().toFloat() + currentEvent.normal!!.y,
+            modelIntersect.point.z.toInt().toFloat() + currentEvent.normal!!.z,
+        )
+        if(modelIntersect.type == "ground") {
+            currentEvent.modelNext = currentEvent.model
+            currentEvent.modelIntNext = currentEvent.modelInt
+        }
 
-        println("3d points ${modelIntersect.type} : $currentEvent")
+        // println("3d points ${modelIntersect.type} : $currentEvent")
     }
 
     override fun scrolled(amountX: Float, amountY: Float): Boolean {
