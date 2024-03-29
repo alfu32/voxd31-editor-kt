@@ -57,11 +57,12 @@ class Voxd31Editor : ApplicationAdapter() {
         font = BitmapFont() // This will use libGDX's default Arial font.
         spriteBatch = SpriteBatch()
 
-        camera = PerspectiveCamera(55f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
+        camera = PerspectiveCamera(45f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
             position.set(10f, 10f, 10f)
             lookAt(0f, 0f, 0f)
             near = 1f
             far = 300f
+            fieldOfView=45f
             update()
         }
         shapeRenderer = ShapeRenderer()
@@ -71,13 +72,19 @@ class Voxd31Editor : ApplicationAdapter() {
         shadowBatch = ModelBatch(DepthShaderProvider())
 
         environment = Environment()
-        shadowLight = DirectionalShadowLight(2048, 2048, 60f, 60f, 1f, 300f).apply {
-            set(0.5f, 0.5f, 0.5f, -1f, -1.8f, -1.2f)
+        shadowLight = DirectionalShadowLight(
+            2048, 2048,
+            60f, 60f, 1f,
+            300f
+        ).apply {
+            set(0.5f, 0.5f, 0.5f, -0.5f, -1.8f, -1.2f)
+            setColor(Color(0f,0f,0f,0.5f))
             environment.add(this)
             environment.shadowMap = this
         }
-        environment.add(DirectionalLight().set(0.5f, 0.5f, 0.5f, -1f, -1.8f, -1.2f))
-        environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f)) // Reduced ambient light
+        environment.add(DirectionalLight().set(0.5f, 0.5f, 0.5f, -0.5f, -1.8f, -1.2f).setColor(Color(0.5f,0.5f,0.5f,0.7f)))
+        environment.add(DirectionalLight().set(0.1f, 0.1f, 0.1f, 1.2f, 1.8f, 0.5f).setColor(Color(0.1f,0.1f,0.1f,0.2f)))
+        environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f,0.5f,0.5f, 0.7f)) // Reduced ambient light
 
 
         modelBuilder = ModelBuilder()
@@ -87,10 +94,10 @@ class Voxd31Editor : ApplicationAdapter() {
         feedback.currentColor = Color.GREEN
 
         val colors = arrayOf(Color.WHITE,Color.GRAY,Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN)
-        val matGround = Material(ColorAttribute.createDiffuse(Color.GRAY))
-        val groundBox = modelBuilder.createBox(20f, 0.02f, 20f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
+        val matGround = Material(ColorAttribute.createDiffuse(Color(0.5f,0.5f,0.5f,0.5f)))
+        val groundBox = modelBuilder.createBox(22f, 0.02f, 22f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
 
-        ground = (ModelInstance(groundBox, 0f,-1f,0f))
+        ground = (ModelInstance(groundBox, 0f,-1.00f,0f))
 
         cameraController = EditorCameraController(camera)
         inputEventDispatcher = InputEventDispatcher(scene)
@@ -125,15 +132,11 @@ class Voxd31Editor : ApplicationAdapter() {
                     if(event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT){
                         if(event.keyDown == Input.Keys.ALT_LEFT){
                             scene.removeCube(
-                                event.modelInt!!.x,
-                                event.modelInt!!.y,
-                                event.modelInt!!.z,
+                                event.target!!
                             )
                         } else {
                             scene.addCube(
-                                event.modelInt!!.x,
-                                event.modelInt!!.y,
-                                event.modelInt!!.z,
+                                event.modelIntNext!!
                             )
                         }
                     }
@@ -142,8 +145,8 @@ class Voxd31Editor : ApplicationAdapter() {
                 },
                 onMove = fun(self: EditorTool,event: Event): Boolean {
                     feedback.clear()
-                    feedback.addCube(event.modelInt!!.x,event.modelInt!!.y,event.modelInt!!.z,a)
-                    feedback.addCube(event.modelIntNext!!.x,event.modelIntNext!!.y,event.modelIntNext!!.z,b)
+                    feedback.addCube(event.modelInt!!,a)
+                    feedback.addCube(event.modelIntNext!!,b)
                     currentEvent = event
                     return true
                 }
@@ -162,8 +165,10 @@ class Voxd31Editor : ApplicationAdapter() {
 
     override fun render() {
 
+
         // Process input and update the camera
         cameraController.update()
+        camera.update()
 
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
@@ -175,32 +180,83 @@ class Voxd31Editor : ApplicationAdapter() {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
-        camera.update()
+
         modelBatch.begin(camera)
         modelBatch.render(ground,environment)
-        modelBatch.render(scene.cubes.map { (k,v) -> v.instance }, environment)
         modelBatch.end()
+
+
 
         shapeRenderer.projectionMatrix = camera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        val gridColorMain=Color.LIGHT_GRAY
+        val gridColorSecondary=Color.DARK_GRAY
+
+        val gridSize = 12 // Total size of the grid
+        val lineSpacing = 1 // Space between lines
+
+        // Draw grid lines parallel to the X axis
+        for (z in -gridSize until (gridSize + lineSpacing) step lineSpacing) {
+            if(z == -gridSize || z == gridSize || z == 0 || z%5 == 0) {
+                if(z == 0) {
+                    shapeRenderer.color = Color.GREEN // Set the color of the grid lines
+                } else {
+                    shapeRenderer.color = gridColorMain // Set the color of the grid lines
+                }
+            } else {
+                shapeRenderer.color = gridColorSecondary // Set the color of the grid lines
+            }
+            shapeRenderer.line(-gridSize.toFloat(), -1f, z.toFloat(), gridSize.toFloat(), -1f, z.toFloat())
+        }
+
+        // Draw grid lines parallel to the Z axis
+        for (x in -gridSize until (gridSize + lineSpacing) step lineSpacing) {
+            if(x == -gridSize || x == gridSize || x == 0 || x%5 == 0) {
+                if(x == 0) {
+                    shapeRenderer.color = Color.RED // Set the color of the grid lines
+                } else {
+                    shapeRenderer.color = gridColorMain // Set the color of the grid lines
+                }
+            } else {
+                shapeRenderer.color = gridColorSecondary // Set the color of the grid lines
+            }
+            shapeRenderer.line(x.toFloat(), -1f, -gridSize.toFloat(), x.toFloat(), -1f, gridSize.toFloat())
+        }
         guides.cubes.forEach { (k:String,c:Cube) ->
             shapeRenderer.color = c.color
-            shapeRenderer.box(c.position.x,c.position.y,c.position.z,1f,1f,1f)
+            shapeRenderer.box(c.position.x-0.5f,c.position.y-0.5f,c.position.z-0.5f,1f,1f,1f)
         }
         feedback.cubes.forEach { (k:String,c:Cube) ->
             shapeRenderer.color = c.color
-            shapeRenderer.box(c.position.x,c.position.y,c.position.z,1f,1f,1f)
+            shapeRenderer.box(c.position.x-0.5f,c.position.y-0.5f,c.position.z-0.5f,1f,1f,1f)
         }
 
+        shapeRenderer.end()
+
+        modelBatch.begin(camera)
+        modelBatch.render(scene.cubes.map { (k,v) -> v.instance }, environment)
+        modelBatch.end()
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        if(currentEvent.modelInt != null ) {
+            shapeRenderer.color = Color.GREEN // Set the color of the grid lines
+            shapeRenderer.line(currentEvent.modelNext, currentEvent.modelNext!!.cpy().add(currentEvent.normal))
+            shapeRenderer.color = Color.BLUE // Set the color of the grid lines
+            shapeRenderer.line(currentEvent.model, currentEvent.model!!.cpy().add(currentEvent.normal))
+        }
         shapeRenderer.end()
 
         if(currentEvent.screen != null) {
             spriteBatch.begin()
             font.draw(
                 spriteBatch,
-                "model:${currentEvent.modelInt}",
-                currentEvent.screen!!.x,
-                camera.viewportHeight-currentEvent.screen!!.y
+                """
+                    xy:${currentEvent.screen}
+                    m:${currentEvent.model}
+                    m:${currentEvent.modelNext}
+                    n: ${currentEvent.normal}
+                """.trimIndent(),
+                10f,80f,
             ) // Draws text at the specified position.
             spriteBatch.end()
         }

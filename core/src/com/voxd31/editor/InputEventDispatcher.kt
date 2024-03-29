@@ -1,8 +1,10 @@
 package com.voxd31.editor
 
 import com.badlogic.gdx.InputProcessor
+import com.badlogic.gdx.math.MathUtils.round
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
+import kotlin.math.floor
 
 class Event(
     var keyCode: Int? = null,
@@ -102,21 +104,22 @@ class InputEventDispatcher(
     }
 
     private fun update3dVectorsFromScreenPoint(x: Int, y: Int) {
+        scene.camera.position
         currentEvent.screen = Vector2(x.toFloat(), y.toFloat())
         val modelIntersect = scene.screenToModelPoint(x, y)
-        currentEvent.model = modelIntersect.point
+        currentEvent.model = modelIntersect.point.cpy()
         currentEvent.modelInt = Vector3(
-            modelIntersect.point.x.toInt().toFloat(),
-            modelIntersect.point.y.toInt().toFloat(),
-            modelIntersect.point.z.toInt().toFloat(),
+            round(modelIntersect.target.position.x).toFloat(),
+            round(modelIntersect.target.position.y).toFloat(),
+            round(modelIntersect.target.position.z).toFloat(),
         )
         currentEvent.normal = modelIntersect.normal
         currentEvent.target = modelIntersect.target
         currentEvent.modelNext = Vector3(currentEvent.model!!).add(modelIntersect.normal)
         currentEvent.modelIntNext = Vector3(
-            modelIntersect.point.x.toInt().toFloat() + currentEvent.normal!!.x,
-            modelIntersect.point.y.toInt().toFloat() + currentEvent.normal!!.y,
-            modelIntersect.point.z.toInt().toFloat() + currentEvent.normal!!.z,
+            round(modelIntersect.target.position.x + currentEvent.normal!!.x).toFloat(),
+            round(modelIntersect.target.position.y + currentEvent.normal!!.y).toFloat(),
+            round(modelIntersect.target.position.z + currentEvent.normal!!.z).toFloat(),
         )
         if(modelIntersect.type == "ground") {
             currentEvent.modelNext = currentEvent.model
