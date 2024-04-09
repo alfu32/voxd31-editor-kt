@@ -1,7 +1,8 @@
 package com.voxd31.editor
 
 import com.badlogic.gdx.InputProcessor
-import com.badlogic.gdx.math.MathUtils.round
+import com.badlogic.gdx.graphics.Camera
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import kotlin.math.floor
@@ -11,24 +12,24 @@ class Event(
     var keyDown: Int? = null,
     var screen:Vector2? = null,
     var scroll:Vector2? = null,
-    var model: Vector3? = null,
-    var modelInt: Vector3? = null,
-    var modelNext: Vector3? = null,
-    var modelIntNext: Vector3? = null,
+    var modelPoint: Vector3? = null,
+    var modelVoxel: Vector3? = null,
+    var modelNextPoint: Vector3? = null,
+    var modelNextVoxel: Vector3? = null,
     var target:Cube? = null,
     var normal:Vector3? = null,
     var pointer:Int? = null,
     var button:Int? = null,
 ) {
     override fun toString(): String {
-        return "keyDown:$keyDown , screen:$screen , model:$model ,modelNext:$modelNext , pointer:$pointer , button:$button , target:${target?.getId()}"
+        return "keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()}"
     }
 }
 
 typealias EventListener = (e:Event)->Unit
 class InputEventDispatcher(
     val scene:SceneController,
-
+    val camera: Camera,
 ):InputProcessor {
     val listeners:MutableMap<String,MutableList<EventListener>> = mutableMapOf()
     var currentEvent = Event()
@@ -102,28 +103,36 @@ class InputEventDispatcher(
         dispatchEvents("mouseMoved")
         return true;
     }
+    private fun Vector3Round(v:Vector3): Vector3 {
+        return Vector3(
+            floor(v.x),
+            floor(v.y),
+            floor(v.z),
+        )
+    }
 
     private fun update3dVectorsFromScreenPoint(x: Int, y: Int) {
-        scene.camera.position
-        currentEvent.screen = Vector2(x.toFloat(), y.toFloat())
-        val modelIntersect = scene.screenToModelPoint(x, y)
-        currentEvent.model = modelIntersect.point.cpy()
-        currentEvent.modelInt = Vector3(
-            round(modelIntersect.target.position.x).toFloat(),
-            round(modelIntersect.target.position.y).toFloat(),
-            round(modelIntersect.target.position.z).toFloat(),
+        val X=x.toFloat()
+        val Y=y.toFloat()
+        currentEvent.screen = Vector2(X, Y)
+
+        // Implement the conversion from screen coordinates to world coordinates
+        val ray = camera.getPickRay(
+            X, Y,
+            X/camera.viewportWidth, Y/camera.viewportHeight,
+            camera.viewportWidth,camera.viewportHeight,
         )
+        val modelIntersect = scene.sceneIntersectRay(ray)
+        currentEvent.modelPoint = modelIntersect.point.cpy()
+        val p = modelIntersect.target.position
+        currentEvent.modelVoxel = Vector3(floor(p.x),floor(p.y),floor(p.z))
         currentEvent.normal = modelIntersect.normal
         currentEvent.target = modelIntersect.target
-        currentEvent.modelNext = Vector3(currentEvent.model!!).add(modelIntersect.normal)
-        currentEvent.modelIntNext = Vector3(
-            round(modelIntersect.target.position.x + currentEvent.normal!!.x).toFloat(),
-            round(modelIntersect.target.position.y + currentEvent.normal!!.y).toFloat(),
-            round(modelIntersect.target.position.z + currentEvent.normal!!.z).toFloat(),
-        )
+        currentEvent.modelNextPoint = modelIntersect.point.cpy().add(modelIntersect.normal)
+        currentEvent.modelNextVoxel = currentEvent.modelVoxel!!.cpy().add(modelIntersect.normal)
         if(modelIntersect.type == "ground") {
-            currentEvent.modelNext = currentEvent.model
-            currentEvent.modelIntNext = currentEvent.modelInt
+            currentEvent.modelNextPoint = currentEvent.modelPoint
+            currentEvent.modelNextVoxel = currentEvent.modelVoxel
         }
 
         // println("3d points ${modelIntersect.type} : $currentEvent")

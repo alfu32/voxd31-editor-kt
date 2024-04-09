@@ -3,16 +3,14 @@ package com.xovd3i.editor
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g3d.Environment
-import com.badlogic.gdx.graphics.g3d.Material
-import com.badlogic.gdx.graphics.g3d.ModelBatch
-import com.badlogic.gdx.graphics.g3d.ModelInstance
+import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight
@@ -21,10 +19,11 @@ import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.BoundingBox
 import com.voxd31.editor.*
-import kotlin.math.roundToInt
 
 class Voxd31Editor : ApplicationAdapter() {
+    private val GNDSZ=100f
     private lateinit var camera: PerspectiveCamera
     private lateinit var modelBatch: ModelBatch
     private lateinit var shadowBatch: ModelBatch
@@ -35,15 +34,16 @@ class Voxd31Editor : ApplicationAdapter() {
     private lateinit var feedback: SceneController
     private lateinit var modelBuilder: ModelBuilder
     private lateinit var ground: ModelInstance
+    private lateinit var sphere: Model
     private lateinit var inputProcessors: CompositeInputProcessor
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var font: BitmapFont
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Event
 
-    public val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
-    public var activeTool: EditorTool? = null
-    public lateinit var inputEventDispatcher: InputEventDispatcher
+    val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
+    var activeTool: EditorTool? = null
+    lateinit var inputEventDispatcher: InputEventDispatcher
 
 
     private lateinit var cameraController: CameraInputController
@@ -81,26 +81,36 @@ class Voxd31Editor : ApplicationAdapter() {
             setColor(Color(0f,0f,0f,0.5f))
             environment.add(this)
             environment.shadowMap = this
+            update(camera)
         }
         environment.add(DirectionalLight().set(0.5f, 0.5f, 0.5f, -0.5f, -1.8f, -1.2f).setColor(Color(0.5f,0.5f,0.5f,0.7f)))
         environment.add(DirectionalLight().set(0.1f, 0.1f, 0.1f, 1.2f, 1.8f, 0.5f).setColor(Color(0.1f,0.1f,0.1f,0.2f)))
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f,0.5f,0.5f, 0.7f)) // Reduced ambient light
+        environment.set(ColorAttribute(ColorAttribute.Specular, 0.5f,0.5f,0.9f, 0.7f)) // Reduced ambient light
 
 
         modelBuilder = ModelBuilder()
-        scene = SceneController(modelBuilder,camera)
-        guides = SceneController(modelBuilder,camera)
-        feedback = SceneController(modelBuilder,camera)
+        scene = SceneController(modelBuilder)
+        guides = SceneController(modelBuilder)
+        feedback = SceneController(modelBuilder)
         feedback.currentColor = Color.GREEN
 
         val colors = arrayOf(Color.WHITE,Color.GRAY,Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN)
-        val matGround = Material(ColorAttribute.createDiffuse(Color(0.5f,0.5f,0.5f,0.5f)))
-        val groundBox = modelBuilder.createBox(22f, 0.02f, 22f, matGround, Usage.Position.toLong() or Usage.Normal.toLong())
+        val matGround = Material(ColorAttribute.createFog(Color(0.3f,0.7f,0.3f,0.3f)))
+        val groundBox = modelBuilder.createRect(
+            -GNDSZ, 0f, -GNDSZ,
+            -GNDSZ, 0f, GNDSZ,
+            GNDSZ, 0f, GNDSZ,
+            GNDSZ, 0f, -GNDSZ,
+            0f, 1f, 0f,
+            matGround, Usage.Position.toLong() or Usage.Normal.toLong())
+        val matBullet = Material(ColorAttribute.createDiffuse(Color.LIME))
+        sphere = modelBuilder.createSphere(0.5f,0.5f,0.5f,3,3,matBullet,Usage.Position.toLong() or Usage.Normal.toLong())
 
-        ground = (ModelInstance(groundBox, 0f,-1.00f,0f))
+        ground = (ModelInstance(groundBox, 0f,-0.5f,0f))
 
         cameraController = EditorCameraController(camera)
-        inputEventDispatcher = InputEventDispatcher(scene)
+        inputEventDispatcher = InputEventDispatcher(scene,camera)
         inputProcessors= CompositeInputProcessor()
         inputProcessors.addInputProcessor(cameraController)
         inputProcessors.addInputProcessor(inputEventDispatcher)
@@ -136,7 +146,7 @@ class Voxd31Editor : ApplicationAdapter() {
                             )
                         } else {
                             scene.addCube(
-                                event.modelIntNext!!
+                                event.modelNextVoxel!!
                             )
                         }
                     }
@@ -145,8 +155,8 @@ class Voxd31Editor : ApplicationAdapter() {
                 },
                 onMove = fun(self: EditorTool,event: Event): Boolean {
                     feedback.clear()
-                    feedback.addCube(event.modelInt!!,a)
-                    feedback.addCube(event.modelIntNext!!,b)
+                    feedback.addCube(event.modelVoxel!!,a)
+                    feedback.addCube(event.modelNextVoxel!!,b)
                     currentEvent = event
                     return true
                 }
@@ -157,7 +167,7 @@ class Voxd31Editor : ApplicationAdapter() {
             activeTool?.onMove?.let { it(activeTool!!,event) }
         }
         inputEventDispatcher.on("touchUp"){event ->
-            activeTool?.takeEvent(event)
+            activeTool?.handleEvent(event)
             // activeTool?.onClick?.let { it(activeTool!!,event) }
         }
         currentEvent= Event()
@@ -175,7 +185,7 @@ class Voxd31Editor : ApplicationAdapter() {
 
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
-            scene.cubes.map{ (k,v) -> v.instance}.forEach { shadowBatch.render(it) }
+        shadowBatch.render(scene.cubes.map { (k, v) -> v.getModelInstance()})
             shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
@@ -189,60 +199,52 @@ class Voxd31Editor : ApplicationAdapter() {
 
         shapeRenderer.projectionMatrix = camera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        val gridColorMain=Color.LIGHT_GRAY
-        val gridColorSecondary=Color.DARK_GRAY
-
-        val gridSize = 12 // Total size of the grid
-        val lineSpacing = 1 // Space between lines
-
-        // Draw grid lines parallel to the X axis
-        for (z in -gridSize until (gridSize + lineSpacing) step lineSpacing) {
-            if(z == -gridSize || z == gridSize || z == 0 || z%5 == 0) {
-                if(z == 0) {
-                    shapeRenderer.color = Color.GREEN // Set the color of the grid lines
-                } else {
-                    shapeRenderer.color = gridColorMain // Set the color of the grid lines
-                }
-            } else {
-                shapeRenderer.color = gridColorSecondary // Set the color of the grid lines
-            }
-            shapeRenderer.line(-gridSize.toFloat(), -1f, z.toFloat(), gridSize.toFloat(), -1f, z.toFloat())
-        }
-
-        // Draw grid lines parallel to the Z axis
-        for (x in -gridSize until (gridSize + lineSpacing) step lineSpacing) {
-            if(x == -gridSize || x == gridSize || x == 0 || x%5 == 0) {
-                if(x == 0) {
-                    shapeRenderer.color = Color.RED // Set the color of the grid lines
-                } else {
-                    shapeRenderer.color = gridColorMain // Set the color of the grid lines
-                }
-            } else {
-                shapeRenderer.color = gridColorSecondary // Set the color of the grid lines
-            }
-            shapeRenderer.line(x.toFloat(), -1f, -gridSize.toFloat(), x.toFloat(), -1f, gridSize.toFloat())
-        }
+        renderGrid(
+            shapeRenderer,
+            camera,
+            Color.LIGHT_GRAY,
+            Color.GRAY,
+            12,
+            1,
+            Vector3(-0.5f,-0.5f,-0.5f)
+        )
         guides.cubes.forEach { (k:String,c:Cube) ->
             shapeRenderer.color = c.color
-            shapeRenderer.box(c.position.x-0.5f,c.position.y-0.5f,c.position.z-0.5f,1f,1f,1f)
+            val bb=c.getBoundingBox()
+            shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
         }
         feedback.cubes.forEach { (k:String,c:Cube) ->
             shapeRenderer.color = c.color
-            shapeRenderer.box(c.position.x-0.5f,c.position.y-0.5f,c.position.z-0.5f,1f,1f,1f)
+            val bb=c.getBoundingBox()
+            shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
         }
 
         shapeRenderer.end()
 
         modelBatch.begin(camera)
-        modelBatch.render(scene.cubes.map { (k,v) -> v.instance }, environment)
+        modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
+        // modelBatch.render(ModelInstance(sphere, currentEvent.modelPoint),environment)
+        // modelBatch.render(ModelInstance(sphere, currentEvent.modelNextPoint),environment)
         modelBatch.end()
+        /// println(scene.cubes.map{c ->
+        ///     val bb= BoundingBox()
+        ///     c.value.getBoundingBox().toString()
+        /// })
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        if(currentEvent.modelInt != null ) {
+        if(currentEvent.modelVoxel != null ) {
+            shapeRenderer.color = Color.YELLOW // Set the color of the grid lines
+            shapeRenderer.line(currentEvent.modelNextPoint, currentEvent.modelNextPoint!!.cpy().add(currentEvent.normal))
+            shapeRenderer.line(currentEvent.modelNextVoxel, currentEvent.modelNextVoxel!!.cpy().add(currentEvent.normal))
+            shapeRenderer.color = Color.ORANGE // Set the color of the grid lines
+            shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().add(currentEvent.normal))
+            shapeRenderer.line(currentEvent.modelVoxel, currentEvent.modelVoxel!!.cpy().add(currentEvent.normal))
             shapeRenderer.color = Color.GREEN // Set the color of the grid lines
-            shapeRenderer.line(currentEvent.modelNext, currentEvent.modelNext!!.cpy().add(currentEvent.normal))
+            shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f,-0.5f, currentEvent.modelPoint!!.z))
             shapeRenderer.color = Color.BLUE // Set the color of the grid lines
-            shapeRenderer.line(currentEvent.model, currentEvent.model!!.cpy().add(currentEvent.normal))
+            shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f, currentEvent.modelPoint!!.y,-0.5f))
+            shapeRenderer.color = Color.RED // Set the color of the grid lines
+            shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub( currentEvent.modelPoint!!.x,-0.5f,-0.5f))
         }
         shapeRenderer.end()
 
@@ -252,14 +254,61 @@ class Voxd31Editor : ApplicationAdapter() {
                 spriteBatch,
                 """
                     xy:${currentEvent.screen}
-                    m:${currentEvent.model}
-                    m:${currentEvent.modelNext}
+                    raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint}
+                    int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel}
                     n: ${currentEvent.normal}
                 """.trimIndent(),
                 10f,80f,
             ) // Draws text at the specified position.
             spriteBatch.end()
         }
+    }
+
+    private fun renderGrid(
+        shapeRenderer: ShapeRenderer,
+        camera: Camera,
+        gridColorMain: Color,
+        gridColorSecondary:Color,
+        gridSize: Int,
+        lineSpacing:Int,
+        anchor: Vector3,
+    ) {
+
+        // Draw grid lines parallel to the X axis
+        for (z in -gridSize until (gridSize + lineSpacing) step lineSpacing) {
+            if (z == -gridSize || z == gridSize || z == 0 || z % 5 == 0) {
+                if (z == 0) {
+                    shapeRenderer.color = Color.RED // Set the color of the grid lines
+                } else {
+                    shapeRenderer.color = gridColorMain // Set the color of the grid lines
+                }
+            } else {
+                shapeRenderer.color = gridColorSecondary // Set the color of the grid lines
+            }
+            shapeRenderer.line(
+                anchor.x-gridSize.toFloat(), anchor.y, anchor.z + z.toFloat(),
+                anchor.z+gridSize.toFloat(), anchor.y, anchor.z+z.toFloat(),
+            )
+        }
+
+        // Draw grid lines parallel to the Z axis
+        for (x in -gridSize until (gridSize + lineSpacing) step lineSpacing) {
+            if (x == -gridSize || x == gridSize || x == 0 || x % 5 == 0) {
+                if (x == 0) {
+                    shapeRenderer.color = Color.GREEN // Set the color of the grid lines
+                } else {
+                    shapeRenderer.color = gridColorMain // Set the color of the grid lines
+                }
+            } else {
+                shapeRenderer.color = gridColorSecondary // Set the color of the grid lines
+            }
+            shapeRenderer.line(
+                anchor.x+x.toFloat(), anchor.y, anchor.z-gridSize.toFloat(),
+                anchor.x+x.toFloat(), anchor.y, anchor.z+gridSize.toFloat(),
+            )
+        }
+        shapeRenderer.color = Color.BLUE // Set the color of the grid lines
+        shapeRenderer.line(anchor.x,  -gridSize.toFloat(),anchor.z, anchor.x, gridSize.toFloat(), anchor.z)
     }
 
     override fun dispose() {
