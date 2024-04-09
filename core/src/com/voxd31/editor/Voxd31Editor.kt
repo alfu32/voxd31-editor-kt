@@ -20,8 +20,10 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector3
 import com.voxd31.editor.*
+import com.voxd31.editor.exporters.readCubesCsv
+import com.voxd31.editor.exporters.saveCubesAsCsv
 
-class Voxd31Editor : ApplicationAdapter() {
+class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private val GNDSZ=100f
     private lateinit var camera: PerspectiveCamera
     private lateinit var modelBatch: ModelBatch
@@ -91,6 +93,9 @@ class Voxd31Editor : ApplicationAdapter() {
 
         modelBuilder = ModelBuilder()
         scene = SceneController(modelBuilder)
+        readCubesCsv(filename) { v:Vector3,c:Color ->
+            scene.addCube(v,c)
+        }
         guides = SceneController(modelBuilder)
         feedback = SceneController(modelBuilder)
         feedback.currentColor = Color.GREEN
@@ -314,6 +319,7 @@ class Voxd31Editor : ApplicationAdapter() {
         if (Gdx.input.inputProcessor == cameraController) {
             Gdx.input.inputProcessor = null
         }
+        saveCubesAsCsv(scene.cubes.values.toList(),filename)
     }
 
     override fun resize(width: Int, height: Int) {

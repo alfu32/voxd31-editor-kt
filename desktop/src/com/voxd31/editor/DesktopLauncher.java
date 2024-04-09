@@ -12,6 +12,8 @@ public class DesktopLauncher {
 		config.setTitle("voxd31-editor");
 		config.setResizable(true);
 		config.setWindowedMode(1900,1200);
-		new Lwjgl3Application(new Voxd31Editor(), config);
+		System.out.println(String.format("arguments %d",arg.length));
+		System.out.println(String.join(",",arg));
+		new Lwjgl3Application(new Voxd31Editor(arg.length>1?arg[1]:"default.vxdi"), config);
 	}
 }
