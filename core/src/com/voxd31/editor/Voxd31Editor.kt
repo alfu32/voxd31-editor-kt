@@ -18,10 +18,20 @@ import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.Button
+import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable
+import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
+
 
 class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private val GNDSZ=100f
@@ -38,6 +48,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var sphere: Model
     private lateinit var inputProcessors: CompositeInputProcessor
     private lateinit var shapeRenderer: ShapeRenderer
+    private lateinit var shapeRenderer2d: ShapeRenderer
     private lateinit var font: BitmapFont
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Event
@@ -68,6 +79,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             update()
         }
         shapeRenderer = ShapeRenderer()
+        shapeRenderer2d = ShapeRenderer()
 
 
         modelBatch = ModelBatch()
@@ -75,7 +87,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         environment = Environment()
         shadowLight = DirectionalShadowLight(
-            2048, 2048,
+            4096, 4096,
             60f, 60f, 1f,
             300f
         ).apply {
@@ -115,6 +127,22 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         ground = (ModelInstance(groundBox, 0f,-0.5f,0f))
 
         cameraController = EditorCameraController(camera)
+        tools.add(EditorTool.VoxelEditor(scene,feedback))
+        tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeVolume(s,e,op)
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Segment",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeSegment(s,e,op)
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeShell(s,e,op)
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Frame",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeFrame(s,e,op)
+        })
+        tools.add(EditorTool.PlaneEditor(scene,feedback))
+        activeTool = tools[activeToolIndex]
+
         inputEventDispatcher = InputEventDispatcher(scene,camera)
         inputProcessors= CompositeInputProcessor()
         inputProcessors.addInputProcessor(cameraController)
@@ -136,23 +164,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
         }
-        val a = Color(1f,1f,0f,0.5f)
-        val b = Color(1f,0.5f,0f,0.5f)
-        tools.add(EditorTool.VoxelEditor(scene,feedback))
-        tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeVolume(s,e,op)
-        })
-        tools.add(EditorTool.makeTwoInputEditor("Segment",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeSegment(s,e,op)
-        })
-        tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeShell(s,e,op)
-        })
-        tools.add(EditorTool.makeTwoInputEditor("Frame",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeFrame(s,e,op)
-        })
-        tools.add(EditorTool.PlaneEditor(scene,feedback))
-        activeTool = tools[activeToolIndex]
         inputEventDispatcher.on("mouseMoved"){event ->
             activeTool?.onMove?.let { it(activeTool!!,event) }
             currentEvent=event
@@ -173,12 +184,13 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         camera.update()
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
+        Gdx.gl.glClearColor(0.5F, 0.9F, 0.9F, 1F); // Set a clear color different from your UI elements
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
         shadowBatch.render(scene.cubes.map { (k, v) -> v.getModelInstance()})
-        modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
+        shadowBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
             shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
@@ -242,22 +254,35 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         shapeRenderer.end()
 
+        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
+        for( hue in 0 .. 14) {
+            val color = Color()
+            color.fromHsv(hue*24.0f,1f,1f)
+            shapeRenderer2d.rect(10f+hue.toFloat()*40f,Gdx.graphics.height+120f,35f,40f,color,color,color,color)
+        }
+        shapeRenderer2d.end()
 
-        if(currentEvent.screen != null) {
-            spriteBatch.begin()
+        spriteBatch.begin()
+        if(activeTool != null) {
             font.draw(
                 spriteBatch,
                 """
-                    currentTool : ${activeTool?.name}
-                    xy:${currentEvent.screen}
-                    raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint}
-                    int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel}
-                    n: ${currentEvent.normal}
+                    Active Tool : ${tools.mapIndexed{ i,t ->if(i == activeToolIndex) t.name.uppercase() else t.name}.joinToString(" ")} (T to cycle-through)
                 """.trimIndent(),
-                10f,80f,
+                10f,Gdx.graphics.height.toFloat()+180f,
             ) // Draws text at the specified position.
-            spriteBatch.end()
+
         }
+        if(currentEvent.screen != null) {
+            font.draw(
+                spriteBatch,
+                """
+                    xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
+                """.trimIndent(),
+                10f,25f,
+            ) // Draws text at the specified position.
+        }
+        spriteBatch.end()
     }
 
     private fun renderGrid(
