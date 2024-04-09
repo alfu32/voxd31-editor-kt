@@ -20,6 +20,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.BoundingBox
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Button
 import com.badlogic.gdx.scenes.scene2d.ui.Label
@@ -256,9 +257,45 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
         for( hue in 0 .. 14) {
+            val rx = 10f+hue.toFloat()*40f
+            val ry = Gdx.graphics.height+120f
             val color = Color()
             color.fromHsv(hue*24.0f,1f,1f)
-            shapeRenderer2d.rect(10f+hue.toFloat()*40f,Gdx.graphics.height+120f,35f,40f,color,color,color,color)
+            if(
+                currentEvent.screen != null &&
+                (currentEvent.screen!!.x<(rx + 40f)) &&
+                (currentEvent.screen!!.x>rx)&&
+                (currentEvent.screen!!.y<60f) &&
+                (currentEvent.screen!!.y>20f)
+            ){
+                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLUE,Color.BLUE,Color.BLUE,Color.BLUE)
+                scene.currentColor=color
+            }
+            if(scene.currentColor == color){
+                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK)
+            }
+
+            shapeRenderer2d.rect(rx,ry,35f,40f,color,color,color,color)
+        }
+        for( gs in 0 until 100 step 10) {
+            val rx = 10f+gs.toFloat()*4f
+            val ry = Gdx.graphics.height+70f
+            val color = Color()
+            color.set(gs/100f,gs/100f,gs/100f,1f)
+            if(
+                currentEvent.screen != null &&
+                (currentEvent.screen!!.x<(rx + 40f)) &&
+                (currentEvent.screen!!.x>rx)&&
+                (currentEvent.screen!!.y<100f) &&
+                (currentEvent.screen!!.y>60f)
+            ){
+                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLUE,Color.BLUE,Color.BLUE,Color.BLUE)
+                scene.currentColor=color
+            }
+            if(scene.currentColor == color){
+                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK)
+            }
+            shapeRenderer2d.rect(rx,Gdx.graphics.height+70f,35f,40f,color,color,color,color)
         }
         shapeRenderer2d.end()
 
