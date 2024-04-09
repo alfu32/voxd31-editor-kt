@@ -10,6 +10,8 @@ public class DesktopLauncher {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setTitle("voxd31-editor");
+		config.setResizable(true);
+		config.setWindowedMode(1900,1200);
 		new Lwjgl3Application(new Voxd31Editor(), config);
 	}
 }

@@ -96,7 +96,7 @@ class Voxd31Editor : ApplicationAdapter() {
         feedback.currentColor = Color.GREEN
 
         val colors = arrayOf(Color.WHITE,Color.GRAY,Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN)
-        val matGround = Material(ColorAttribute.createFog(Color(0.3f,0.7f,0.3f,0.3f)))
+        val matGround = Material(ColorAttribute.createDiffuse(Color(0.3f,0.35f,0.3f,0.5f)))
         val groundBox = modelBuilder.createRect(
             -GNDSZ, 0f, -GNDSZ,
             -GNDSZ, 0f, GNDSZ,
@@ -204,7 +204,7 @@ class Voxd31Editor : ApplicationAdapter() {
             camera,
             Color.LIGHT_GRAY,
             Color.GRAY,
-            12,
+            50,
             1,
             Vector3(-0.5f,-0.5f,-0.5f)
         )
@@ -233,18 +233,20 @@ class Voxd31Editor : ApplicationAdapter() {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         if(currentEvent.modelVoxel != null ) {
-            shapeRenderer.color = Color.YELLOW // Set the color of the grid lines
+            shapeRenderer.color = Color.NAVY // Set the color of the grid lines
             shapeRenderer.line(currentEvent.modelNextPoint, currentEvent.modelNextPoint!!.cpy().add(currentEvent.normal))
-            shapeRenderer.line(currentEvent.modelNextVoxel, currentEvent.modelNextVoxel!!.cpy().add(currentEvent.normal))
-            shapeRenderer.color = Color.ORANGE // Set the color of the grid lines
+            /////////// shapeRenderer.line(currentEvent.modelNextVoxel, currentEvent.modelNextVoxel!!.cpy().add(currentEvent.normal))
+            shapeRenderer.color = Color.MAGENTA // Set the color of the grid lines
             shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().add(currentEvent.normal))
-            shapeRenderer.line(currentEvent.modelVoxel, currentEvent.modelVoxel!!.cpy().add(currentEvent.normal))
-            shapeRenderer.color = Color.GREEN // Set the color of the grid lines
-            shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f,-0.5f, currentEvent.modelPoint!!.z))
-            shapeRenderer.color = Color.BLUE // Set the color of the grid lines
-            shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f, currentEvent.modelPoint!!.y,-0.5f))
-            shapeRenderer.color = Color.RED // Set the color of the grid lines
-            shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub( currentEvent.modelPoint!!.x,-0.5f,-0.5f))
+            /////////////////// /////////// shapeRenderer.line(currentEvent.modelVoxel, currentEvent.modelVoxel!!.cpy().add(currentEvent.normal))
+            /////////////////// shapeRenderer.color = Color.GREEN // Set the color of the grid lines
+            /////////////////// shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f,-0.5f, currentEvent.modelPoint!!.z))
+            ///////////////////
+            /////////////////// shapeRenderer.color = Color.BLUE // Set the color of the grid lines
+            /////////////////// shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f, currentEvent.modelPoint!!.y,-0.5f))
+            ///////////////////
+            /////////////////// shapeRenderer.color = Color.RED // Set the color of the grid lines
+            /////////////////// shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub( currentEvent.modelPoint!!.x,-0.5f,-0.5f))
         }
         shapeRenderer.end()
 
