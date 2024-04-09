@@ -19,7 +19,6 @@ import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.math.collision.BoundingBox
 import com.voxd31.editor.*
 
 class Voxd31Editor : ApplicationAdapter() {
@@ -43,6 +42,7 @@ class Voxd31Editor : ApplicationAdapter() {
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
     var activeTool: EditorTool? = null
+    var activeToolIndex = 0
     lateinit var inputEventDispatcher: InputEventDispatcher
 
 
@@ -116,18 +116,15 @@ class Voxd31Editor : ApplicationAdapter() {
         inputProcessors.addInputProcessor(inputEventDispatcher)
 
         Gdx.input.inputProcessor = inputProcessors
-
         inputEventDispatcher.on("keyUp"){event ->
             when(event.keyCode){
-                Input.Keys.T -> if(tools.size > 0) {
-                    if (activeTool == null) {
-                        activeTool = tools[0]
-                    } else {
-                        val iof = tools.indexOf(activeTool)
-                        activeTool = tools[(iof + 1) % tools.size]
+                Input.Keys.T -> {
+                    if(tools.size > 0) {
+                        activeToolIndex=(activeToolIndex + 1) % tools.size
+                        println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
+                        activeTool = tools[activeToolIndex]
+                        println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
                     }
-
-                    println("active tool : ${activeTool?.name}")
                 }
                 else -> {
                     println("key up : ${event.keyCode}")
@@ -136,39 +133,29 @@ class Voxd31Editor : ApplicationAdapter() {
         }
         val a = Color(1f,1f,0f,0.5f)
         val b = Color(1f,0.5f,0f,0.5f)
-        tools.add(EditorTool(
-                name = "voxel",
-                onClick = fun(self: EditorTool,event: Event) :Boolean{
-                    if(event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT){
-                        if(event.keyDown == Input.Keys.ALT_LEFT){
-                            scene.removeCube(
-                                event.target!!
-                            )
-                        } else {
-                            scene.addCube(
-                                event.modelNextVoxel!!
-                            )
-                        }
-                    }
-                    currentEvent = event
-                    return true
-                },
-                onMove = fun(self: EditorTool,event: Event): Boolean {
-                    feedback.clear()
-                    feedback.addCube(event.modelVoxel!!,a)
-                    feedback.addCube(event.modelNextVoxel!!,b)
-                    currentEvent = event
-                    return true
-                }
-            )
-        )
-        activeTool = tools[0]
+        tools.add(EditorTool.VoxelEditor(scene,feedback))
+        tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeVolume(s,e,op)
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Segment",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeSegment(s,e,op)
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeShell(s,e,op)
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Frame",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeFrame(s,e,op)
+        })
+        tools.add(EditorTool.PlaneEditor(scene,feedback))
+        activeTool = tools[activeToolIndex]
         inputEventDispatcher.on("mouseMoved"){event ->
             activeTool?.onMove?.let { it(activeTool!!,event) }
+            currentEvent=event
         }
         inputEventDispatcher.on("touchUp"){event ->
             activeTool?.handleEvent(event)
             // activeTool?.onClick?.let { it(activeTool!!,event) }
+            currentEvent=event
         }
         currentEvent= Event()
     }
@@ -186,6 +173,7 @@ class Voxd31Editor : ApplicationAdapter() {
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
         shadowBatch.render(scene.cubes.map { (k, v) -> v.getModelInstance()})
+        modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
             shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
@@ -208,6 +196,18 @@ class Voxd31Editor : ApplicationAdapter() {
             1,
             Vector3(-0.5f,-0.5f,-0.5f)
         )
+        shapeRenderer.end()
+
+
+        modelBatch.begin(camera)
+        modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
+        modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
+        // modelBatch.render(ModelInstance(sphere, currentEvent.modelPoint),environment)
+        // modelBatch.render(ModelInstance(sphere, currentEvent.modelNextPoint),environment)
+        modelBatch.end()
+
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         guides.cubes.forEach { (k:String,c:Cube) ->
             shapeRenderer.color = c.color
             val bb=c.getBoundingBox()
@@ -219,19 +219,6 @@ class Voxd31Editor : ApplicationAdapter() {
             shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
         }
 
-        shapeRenderer.end()
-
-        modelBatch.begin(camera)
-        modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
-        // modelBatch.render(ModelInstance(sphere, currentEvent.modelPoint),environment)
-        // modelBatch.render(ModelInstance(sphere, currentEvent.modelNextPoint),environment)
-        modelBatch.end()
-        /// println(scene.cubes.map{c ->
-        ///     val bb= BoundingBox()
-        ///     c.value.getBoundingBox().toString()
-        /// })
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         if(currentEvent.modelVoxel != null ) {
             shapeRenderer.color = Color.NAVY // Set the color of the grid lines
             shapeRenderer.line(currentEvent.modelNextPoint, currentEvent.modelNextPoint!!.cpy().add(currentEvent.normal))
@@ -250,11 +237,13 @@ class Voxd31Editor : ApplicationAdapter() {
         }
         shapeRenderer.end()
 
+
         if(currentEvent.screen != null) {
             spriteBatch.begin()
             font.draw(
                 spriteBatch,
                 """
+                    currentTool : ${activeTool?.name}
                     xy:${currentEvent.screen}
                     raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint}
                     int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel}

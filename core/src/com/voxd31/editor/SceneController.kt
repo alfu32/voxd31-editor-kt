@@ -75,5 +75,10 @@ class SceneController(val modelBuilder: ModelBuilder) {
         /// cubes.forEach { it.instance.model.dispose() }
     }
 
+    fun removeCube(v: Vector3) {
+        val c=createCubeAt(v)
+        removeCube(c)
+    }
+
     // Additional methods for scene management...
 }
