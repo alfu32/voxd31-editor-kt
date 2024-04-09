@@ -14,6 +14,6 @@ public class DesktopLauncher {
 		config.setWindowedMode(1900,1200);
 		System.out.println(String.format("arguments %d",arg.length));
 		System.out.println(String.join(",",arg));
-		new Lwjgl3Application(new Voxd31Editor(arg.length>1?arg[1]:"default.vxdi"), config);
+		new Lwjgl3Application(new Voxd31Editor(arg.length>0?arg[0]:"default.vxdi"), config);
 	}
 }
