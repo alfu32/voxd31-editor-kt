@@ -2,8 +2,6 @@ package com.voxd31.editor
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
-import com.badlogic.gdx.math.Intersector
-import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.Ray
 import kotlin.math.floor
@@ -13,7 +11,7 @@ class ModelIntersection(
     var point: Vector3 = Vector3(0f,0f,0f),
     var normal: Vector3 = Vector3(0f,0f,0f),
     var target: Cube,// = Cube(modelBuilder = ModelBuilder(),position = Vector3(0f,0f,0f), color = Color.CYAN),
-    val type: String = "undefined"
+    var type: String = "undefined"
 ) {
     operator fun component1(): Boolean {
         return hit
@@ -36,21 +34,33 @@ class ModelIntersection(
 class SceneController(val modelBuilder: ModelBuilder) {
     var cubes: HashMap<String,Cube> = hashMapOf()
     var currentColor: Color = Color.RED
-    fun sceneIntersectRay(ray: Ray): ModelIntersection {
+    fun sceneIntersectCubesRay(ray: Ray): ModelIntersection {
         val intersections = cubes.map { (id, cube) -> cube.intersectsRay(ray) }.filterNotNull().filter{ it.hit }
-        if (intersections.isEmpty()) {
-            val intersection = Vector3()
-            // Assume a plane at y = 0 for the intersection, you might adjust this based on your scene
-            Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
-            return ModelIntersection(
-                hit = true,
-                point = intersection,
-                normal = Vector3(0f,1f,0f),
-                target = Cube(modelBuilder = ModelBuilder(),position = Vector3(intersection.x,intersection.y,intersection.z), color = Color.CYAN),
-                type = "ground",
-            )
-        } else {
+        if (!intersections.isEmpty()) {
             return intersections.minByOrNull { mi -> mi.point.cpy().dst2(ray.origin) }!!
+        } else {
+            return ModelIntersection(
+                hit = false,
+                point = Vector3(),
+                normal = Vector3(0f,1f,0f),
+                target = Cube(modelBuilder = ModelBuilder(),position = Vector3(), color = Color.CYAN),
+                type = "origin",
+            )
+        }
+    }
+
+    fun sceneIntersectGuidesRay(ray: Ray): ModelIntersection {
+        val intersections = cubes.map { (id, cube) -> cube.intersectsGuidesRay(ray) }.filterNotNull().filter{ it.hit }
+        if (!intersections.isEmpty()) {
+            return intersections.minByOrNull { mi -> mi.point.cpy().dst2(ray.origin) }!!
+        } else {
+            return ModelIntersection(
+                hit = false,
+                point = Vector3(),
+                normal = Vector3(0f,1f,0f),
+                target = Cube(modelBuilder = ModelBuilder(),position = Vector3(), color = Color.CYAN),
+                type = "origin",
+            )
         }
     }
     fun addCube(position: Vector3,color:Color? = null) {

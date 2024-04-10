@@ -135,7 +135,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         tools.add(EditorTool.PlaneEditor(scene,feedback))
         activeTool = tools[activeToolIndex]
 
-        inputEventDispatcher = InputEventDispatcher(scene,camera)
+        inputEventDispatcher = InputEventDispatcher(scene,camera,guides)
         inputProcessors= CompositeInputProcessor()
         inputProcessors.addInputProcessor(cameraController)
         inputProcessors.addInputProcessor(inputEventDispatcher)
@@ -152,6 +152,27 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
                         activeTool!!.reset()
                     }
+                }
+                Input.Keys.G -> {
+                    val mp = event.modelVoxel!!
+                    guides.addCube(Vector3(mp),Color.WHITE)
+
+                    for(i in 2 until 21) {
+                        guides.addCube(Vector3(mp).set(mp.x+i.toFloat(),mp.y,mp.z),Color.RED)
+                        guides.addCube(Vector3(mp).set(mp.x-i.toFloat(),mp.y,mp.z),Color.RED)
+                        guides.addCube(Vector3(mp).set(mp.x,mp.y+i.toFloat(),mp.z),Color.BLUE)
+                        guides.addCube(Vector3(mp).set(mp.x,mp.y-i.toFloat(),mp.z),Color.BLUE)
+                        guides.addCube(Vector3(mp).set(mp.x,mp.y,mp.z+i.toFloat()),Color.GREEN)
+                        guides.addCube(Vector3(mp).set(mp.x,mp.y,mp.z-i.toFloat()),Color.GREEN)
+                    }
+                }
+                Input.Keys.SPACE -> {
+                    guides.clear()
+                    activeTool!!.reset()
+                    activeToolIndex = 0
+                    activeTool = tools[activeToolIndex]
+                    activeTool!!.reset()
+
                 }
                 else -> {
                     println("key up : ${event.keyCode}")
@@ -187,8 +208,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         for( hue in 0 .. 14) {
             val bg = Color()
             bg.fromHsv(hue*24.0f,1f,0.7f)
+            bg.a=1f
             val color = Color()
             color.fromHsv(hue*24.0f,1f,1f)
+            color.a=1f
             uiElements.add(
                 UiElementButton(
                     position = Vector2(10f+hue.toFloat()*40f,80f),
@@ -205,11 +228,11 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             )
             val bg1 = Color()
-            bg1.fromHsv(hue*24.0f,1f,0.7f)
-            bg1.a=0.1f
-            val color1 = Color()
-            color1.fromHsv(hue*24.0f,1f,1f)
+            bg1.fromHsv(hue*24.0f,0.2f,0.5f)
             bg1.a=0.3f
+            val color1 = Color()
+            color1.fromHsv(hue*24.0f,0.2f,0.9f)
+            color1.a=0.4f
             uiElements.add(
                 UiElementButton(
                     position = Vector2(10f+hue.toFloat()*40f,130f),
@@ -266,7 +289,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             )
 
         }
-        println(uiElements)
+        // println(uiElements)
 
     }
 
@@ -282,21 +305,23 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         cameraController.update()
         camera.update()
 
+        // render shadows
         shadowLight.begin(Vector3.Zero, camera.direction)
-        shadowBatch.begin(shadowLight.camera)
-        shadowBatch.render(scene.cubes.map { (k, v) -> v.getModelInstance()})
-        shadowBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
-            shadowBatch.render(ground)
-        shadowBatch.end()
+            shadowBatch.begin(shadowLight.camera)
+                shadowBatch.render(scene.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k, v) -> v.getModelInstance()})
+                shadowBatch.render(feedback.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k,v) -> v.getModelInstance() }, environment)
+                shadowBatch.render(ground)
+            shadowBatch.end()
         shadowLight.end()
 
-
+        // render ground
         modelBatch.begin(camera)
         modelBatch.render(ground,environment)
         modelBatch.end()
 
 
 
+        // render grid
         shapeRenderer.projectionMatrix = camera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         renderGrid(
@@ -310,25 +335,29 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         )
         shapeRenderer.end()
 
-
+        //render model
         modelBatch.begin(camera)
-        modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
+        modelBatch.render(scene.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k,v) -> v.getModelInstance() }, environment)
         modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
+        Gdx.gl.glDepthMask(false);
+        modelBatch.render(scene.cubes.filter{c -> c.value.color.a <= 0.99f}.map { (k,v) -> v.getModelInstance() }, environment)
+        Gdx.gl.glDepthMask(true);
         // modelBatch.render(ModelInstance(sphere, currentEvent.modelPoint),environment)
         // modelBatch.render(ModelInstance(sphere, currentEvent.modelNextPoint),environment)
         modelBatch.end()
+        Gdx.gl.glDisable(GL20.GL_BLEND);
 
-
+        // render guides
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        guides.cubes.forEach { (k:String,c:Cube) ->
-            shapeRenderer.color = c.color
-            val bb=c.getBoundingBox()
+        guides.cubes.forEach { (k:String,cub:Cube) ->
+            shapeRenderer.color = cub.color
+            val bb=cub.getBoundingBox()
             shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
-        }
-        feedback.cubes.forEach { (k:String,c:Cube) ->
-            shapeRenderer.color = c.color
-            val bb=c.getBoundingBox()
-            shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
+            //// var c=Vector3()
+            //// bb.getCenter(c)
+            //// shapeRenderer.line(c.x-100,c.y,c.z,c.x+100,c.y,c.z,Color.RED,Color.RED)
+            //// shapeRenderer.line(c.x,c.y-100,c.z,c.x,c.y+100,c.z,Color.GREEN,Color.GREEN)
+            //// shapeRenderer.line(c.x,c.y,c.z-100,c.x,c.y,c.z+100,Color.BLUE,Color.BLUE)
         }
 
         if(currentEvent.modelVoxel != null ) {

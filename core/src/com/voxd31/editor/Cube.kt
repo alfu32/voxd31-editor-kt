@@ -1,17 +1,17 @@
 package com.voxd31.editor
 
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.Mesh
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.VertexAttributes
 import com.badlogic.gdx.graphics.g3d.*
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
 import com.badlogic.gdx.math.collision.Ray
-import com.badlogic.gdx.utils.Array
-import com.badlogic.gdx.utils.Pool
+
 
 class RayIntersection(
     var point: Vector3,
@@ -19,7 +19,8 @@ class RayIntersection(
     var distance: Float,
 )
 class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
-    var instance: ModelInstance = ModelInstance(getModel(modelBuilder,color),
+    var instance: ModelInstance = ModelInstance(
+        getModel(modelBuilder, color),
         position,
     )
 
@@ -29,7 +30,10 @@ class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
         val models: HashMap<Color,Model> = hashMapOf()
         fun getModel(modelBuilder: ModelBuilder,color: Color):Model {
             if(!models.contains(color)){
-                val material = Material(ColorAttribute.createDiffuse(color))
+                val material = Material(ColorAttribute.createDiffuse(color.r,color.g,color.b,color.a))
+                if(color.a < 0.99) {
+                    material.set(BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA, color.a))
+                }
                 val model = modelBuilder.createBox(1f, 1f, 1f, material, VertexAttributes.Usage.Position.toLong() or VertexAttributes.Usage.Normal.toLong())
                 models[color]=model
             }
@@ -125,5 +129,57 @@ class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
             } else null
 
         } else null
+    }
+
+    fun intersectsGuidesRay(ray: Ray): ModelIntersection? {
+        val result = Vector3()
+        val normal = Vector3()
+
+        // Find the nearest point on each axis
+
+        val nearestZ0 = findClosestPoints(ray, Ray(position,Vector3.Y.cpy()))
+
+        // Find the nearest point among the three
+        val distanceZ0 = if(nearestZ0!=null)ray.origin.dst2(nearestZ0) else Float.MAX_VALUE
+
+        if (nearestZ0!=null){
+            result.set(nearestZ0)
+            normal.set(Vector3.Z)
+        }
+
+        return if (result.isZero)  null
+            else  ModelIntersection(
+                hit = true,
+                point = result,
+                normal = normal,
+                target = Cube(modelBuilder = ModelBuilder(),position = result.cpy(), color = Color.CYAN),
+                type = "guide",
+            )
+    }
+
+
+    fun findClosestPoints(ray1: Ray, ray2: Ray): Vector3? {
+        val p1 = ray1.origin
+        val p2 = ray2.origin
+        val d1 = Vector3().set(ray1.direction).nor() // Normalize to ensure we're working with unit vectors
+        val d2 = Vector3().set(ray2.direction).nor() // Normalize
+
+        val n = Vector3().set(d1).crs(d2) // Cross product to find a vector normal to the plane containing d1 and d2
+        val n1 = Vector3().set(d2).crs(n) // Cross product to find the normal to the plane containing p2, d2, and n
+        val n2 = Vector3().set(n).crs(d1) // Cross product to find the normal to the plane containing p1, d1, and n
+
+        val c1 = (p2.cpy().sub(p1).dot(n2)) / (d1.dot(n2))
+        val c2 = (p1.cpy().add(d1.scl(c1)).sub(p2).dot(n1)) / (d2.dot(n1))
+
+        val closestPointOnRay1 = p1.cpy().add(d1.cpy().scl(c1))
+        val closestPointOnRay2 = p2.cpy().add(d2.cpy().scl(c2))
+
+        if(closestPointOnRay1.dst2(closestPointOnRay2)<0.25) {
+            println("points found between $ray1 and $ray2 -> $closestPointOnRay1 $closestPointOnRay2")
+            return closestPointOnRay2
+        } else {
+            println("points not close enough between $ray1 and $ray2 -> $closestPointOnRay1 $closestPointOnRay2")
+            return null
+        }
     }
 }

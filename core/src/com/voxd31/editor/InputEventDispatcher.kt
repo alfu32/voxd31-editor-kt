@@ -2,9 +2,9 @@ package com.voxd31.editor
 
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.Camera
-import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
+import com.badlogic.gdx.math.*
 import kotlin.math.floor
 
 class Event(
@@ -31,6 +31,7 @@ typealias EventListener = (e:Event)->Unit
 class InputEventDispatcher(
     val scene:SceneController,
     val camera: Camera,
+    val guides:SceneController,
 ):InputProcessor {
     val listeners:MutableMap<String,MutableList<EventListener>> = mutableMapOf()
     var currentEvent = Event()
@@ -131,7 +132,25 @@ class InputEventDispatcher(
             X/camera.viewportWidth, Y/camera.viewportHeight,
             camera.viewportWidth,camera.viewportHeight,
         )
-        val modelIntersect = scene.sceneIntersectRay(ray)
+        var modelIntersect = scene.sceneIntersectCubesRay(ray)
+        if(!modelIntersect.hit){
+            modelIntersect = guides.sceneIntersectCubesRay(ray)
+            if(modelIntersect.hit){
+                modelIntersect.type="guide"
+            }
+        }
+        if(!modelIntersect.hit){
+            val intersection = Vector3()
+            // Assume a plane at y = 0 for the intersection, you might adjust this based on your scene
+            Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
+            modelIntersect= ModelIntersection(
+                hit = true,
+                point = intersection,
+                normal = Vector3(0f,1f,0f),
+                target = Cube(modelBuilder = ModelBuilder(),position = Vector3(intersection.x,intersection.y,intersection.z), color = Color.CYAN),
+                type = "ground",
+            )
+        }
         currentEvent.modelPoint = modelIntersect.point.cpy()
         val p = modelIntersect.target.position
         currentEvent.modelVoxel = Vector3(floor(p.x),floor(p.y),floor(p.z))
@@ -139,7 +158,7 @@ class InputEventDispatcher(
         currentEvent.target = modelIntersect.target
         currentEvent.modelNextPoint = modelIntersect.point.cpy().add(modelIntersect.normal)
         currentEvent.modelNextVoxel = currentEvent.modelVoxel!!.cpy().add(modelIntersect.normal)
-        if(modelIntersect.type == "ground") {
+        if(modelIntersect.type == "ground" || modelIntersect.type == "guide" ) {
             currentEvent.modelNextPoint = currentEvent.modelPoint
             currentEvent.modelNextVoxel = currentEvent.modelVoxel
         }

@@ -33,7 +33,7 @@ open class EditorTool(
                 onMove = fun(self: EditorTool, event: Event): Boolean {
                     feedback.clear()
                     feedback.addCube(event.modelVoxel!!, a)
-                    feedback.addCube(event.modelNextVoxel!!, b)
+                    feedback.addCube(event.modelNextVoxel!!,  scene.currentColor)
                     //currentEvent = event
                     return true
                 }
@@ -81,11 +81,11 @@ open class EditorTool(
                     when(state){
                         0 ->{
                             feedback.addCube(event.modelVoxel!!, a)
-                            feedback.addCube(event.modelNextVoxel!!, b)
+                            feedback.addCube(event.modelNextVoxel!!,  scene.currentColor)
                         }
                         1->{
                             rasterizer(points[0],event.modelNextVoxel!!){
-                                feedback.addCube(it,a)
+                                feedback.addCube(it, scene.currentColor)
                             }
                         }
                     }
@@ -140,16 +140,16 @@ open class EditorTool(
                     when(state){
                         0 ->{
                             feedback.addCube(event.modelVoxel!!, a)
-                            feedback.addCube(event.modelNextVoxel!!, b)
+                            feedback.addCube(event.modelNextVoxel!!, scene.currentColor)
                         }
                         1->{
                             voxelRangeSegment(points[0],event.modelNextVoxel!!){
-                                feedback.addCube(it,a)
+                                feedback.addCube(it, scene.currentColor)
                             }
                         }
                         2->{
                             voxelRangePlane(points[0],points[1],event.modelNextVoxel!!){
-                                feedback.addCube(it,a)
+                                feedback.addCube(it, scene.currentColor)
                             }
                         }
                     }
