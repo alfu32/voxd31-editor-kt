@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.collision.BoundingBox
 import kotlin.math.ceil
 import kotlin.math.floor
 
-val VOX_LIMIT=10000
+val VOX_LIMIT=32768
 fun voxelRangeVolume(start: Vector3,end:Vector3,callback: (p:Vector3)->Unit):Unit{
     val bb=BoundingBox(start,end)
 

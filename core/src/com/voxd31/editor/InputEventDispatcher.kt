@@ -20,6 +20,7 @@ class Event(
     var normal:Vector3? = null,
     var pointer:Int? = null,
     var button:Int? = null,
+    var channel:String = "none"
 ) {
     override fun toString(): String {
         return "keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()}"
@@ -51,6 +52,7 @@ class InputEventDispatcher(
     override fun keyDown(keycode: Int): Boolean {
         currentEvent.keyCode=keycode
         currentEvent.keyDown=keycode
+        currentEvent.channel="keyDown"
         dispatchEvents("keyDown")
         return true;
     }
@@ -58,11 +60,13 @@ class InputEventDispatcher(
     override fun keyUp(keycode: Int): Boolean {
         currentEvent.keyCode=keycode
         currentEvent.keyDown=0
+        currentEvent.channel="keyUp"
         dispatchEvents("keyUp")
         return true;
     }
 
     override fun keyTyped(character: Char): Boolean {
+        currentEvent.channel="keyTyped"
         dispatchEvents("keyTyped")
         return true;
     }
@@ -71,6 +75,7 @@ class InputEventDispatcher(
         update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
         currentEvent.button=button
+        currentEvent.channel="touchDown"
         dispatchEvents("touchDown")
         return true;
     }
@@ -79,6 +84,7 @@ class InputEventDispatcher(
         update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
         currentEvent.button=button
+        currentEvent.channel="touchUp"
         dispatchEvents("touchUp")
         return true;
     }
@@ -87,6 +93,7 @@ class InputEventDispatcher(
         update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
         currentEvent.button=button
+        currentEvent.channel="touchCancelled"
         dispatchEvents("touchCancelled")
         return false
     }
@@ -94,12 +101,14 @@ class InputEventDispatcher(
     override fun touchDragged(x: Int, y: Int, pointer: Int): Boolean {
         update3dVectorsFromScreenPoint(x, y)
         currentEvent.pointer=pointer
+        currentEvent.channel="touchDragged"
         dispatchEvents("touchDragged")
         return true;
     }
 
     override fun mouseMoved(x: Int, y: Int): Boolean {
         update3dVectorsFromScreenPoint(x, y)
+        currentEvent.channel="mouseMoved"
         dispatchEvents("mouseMoved")
         return true;
     }

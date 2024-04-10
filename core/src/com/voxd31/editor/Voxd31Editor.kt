@@ -3,10 +3,7 @@ package com.xovd3i.editor
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
-import com.badlogic.gdx.graphics.Camera
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.PerspectiveCamera
+import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -19,16 +16,8 @@ import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Matrix4
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.math.collision.BoundingBox
-import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.Button
-import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable
-import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
@@ -53,6 +42,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var font: BitmapFont
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Event
+    private var uiElements = UiElementsCollection()
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
     var activeTool: EditorTool? = null
@@ -67,6 +57,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         tools.add(tool)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
         font = BitmapFont() // This will use libGDX's default Arial font.
         spriteBatch = SpriteBatch()
@@ -158,35 +149,138 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
                         activeTool = tools[activeToolIndex]
                         println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
+
+                        activeTool!!.reset()
                     }
                 }
                 else -> {
                     println("key up : ${event.keyCode}")
                 }
             }
+            uiElements.dispatch(event)
         }
         inputEventDispatcher.on("mouseMoved"){event ->
-            activeTool?.onMove?.let { it(activeTool!!,event) }
-            currentEvent=event
+
+            uiElements.dispatch(event)
+            if(!uiElements.isHovered) {
+                activeTool?.onMove?.let { it(activeTool!!, event) }
+                currentEvent = event
+            }
         }
         inputEventDispatcher.on("touchUp"){event ->
-            activeTool?.handleEvent(event)
-            // activeTool?.onClick?.let { it(activeTool!!,event) }
-            currentEvent=event
+            if(!uiElements.isClicked) {
+                activeTool?.handleEvent(event)
+                // activeTool?.onClick?.let { it(activeTool!!,event) }
+                currentEvent = event
+            }
+        }
+        inputEventDispatcher.on("touchDown"){event ->
+            uiElements.dispatch(event)
+        }
+        inputEventDispatcher.on("keyDown"){event ->
+            uiElements.dispatch(event)
         }
         currentEvent= Event()
+
+
+
+        for( hue in 0 .. 14) {
+            val bg = Color()
+            bg.fromHsv(hue*24.0f,1f,0.7f)
+            val color = Color()
+            color.fromHsv(hue*24.0f,1f,1f)
+            uiElements.add(
+                UiElementButton(
+                    position = Vector2(10f+hue.toFloat()*40f,80f),
+                    size = Vector2(35f,40f),
+                    background = bg,
+                    hover=color,
+                    text= "${ (hue * 24) }".padStart(3, 48.toChar())
+                ){ target:UiElement,ev:Event ->
+                    target.background = if(scene.currentColor == color)color else bg
+                    target.color = if(scene.currentColor == color)Color.WHITE else Color.DARK_GRAY
+                    if(target.isClicked && ev.channel == "touchDown") {
+                        scene.currentColor = color
+                    }
+                }
+            )
+            val bg1 = Color()
+            bg1.fromHsv(hue*24.0f,1f,0.7f)
+            bg1.a=0.1f
+            val color1 = Color()
+            color1.fromHsv(hue*24.0f,1f,1f)
+            bg1.a=0.3f
+            uiElements.add(
+                UiElementButton(
+                    position = Vector2(10f+hue.toFloat()*40f,130f),
+                    size = Vector2(35f,40f),
+                    background = bg1,
+                    hover=color1,
+                    text= "${ (hue * 24) }".padStart(3, 48.toChar())
+                ){ target:UiElement,ev:Event ->
+                    target.background = if(scene.currentColor == color1)color1 else bg1
+                    target.color = if(scene.currentColor == color1)Color.WHITE else Color.DARK_GRAY
+                    if(target.isClicked && ev.channel == "touchDown") {
+                        scene.currentColor = color1
+                    }
+                }
+            )
+        }
+        for( gs in 0 until 100 step 10) {
+            val bg = Color(gs/100f,gs/100f,gs/100f,0.7f)
+            val color = Color(gs/100f,gs/100f,gs/100f,1f)
+            uiElements.add(
+                UiElementButton(
+                    position = Vector2(10f+gs.toFloat()*4f,180f),
+                    size = Vector2(35f,40f),
+                    background = bg,
+                    hover=color,
+                    text= "$gs%"
+                ){ target:UiElement,ev:Event ->
+                    target.background = if(scene.currentColor == color)color else bg
+                    target.color = if(scene.currentColor == color)Color.WHITE else Color.DARK_GRAY
+                    if(target.isClicked && ev.channel == "touchDown") {
+                        scene.currentColor = color
+                    }
+                }
+            )
+        }
+        tools.forEachIndexed{
+            i,t ->
+            uiElements.add(
+                UiElementButton(
+                    position = Vector2(10f+i.toFloat()*90f,30f),
+                    size = Vector2(85f,40f),
+                    background = Color.DARK_GRAY,
+                    hover=Color.LIGHT_GRAY,
+                    text= t.name
+                ){ target:UiElement,ev:Event ->
+                    target.background = if(activeToolIndex == i)Color.GOLD else Color.DARK_GRAY
+                    target.color = if(activeToolIndex == i)Color.WHITE else Color.DARK_GRAY
+                    if(target.isClicked && ev.channel == "touchDown") {
+                        activeToolIndex = i
+                        activeTool = tools[activeToolIndex]
+                        activeTool!!.reset()
+                    }
+                }
+            )
+
+        }
+        println(uiElements)
+
     }
 
     override fun render() {
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
+        Gdx.gl.glClearColor(0.5F, 0.9F, 0.9F, 1F); // Set a clear color different from your UI elements
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
 
 
         // Process input and update the camera
         cameraController.update()
         camera.update()
-
-        Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
-        Gdx.gl.glClearColor(0.5F, 0.9F, 0.9F, 1F); // Set a clear color different from your UI elements
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
         shadowLight.begin(Vector3.Zero, camera.direction)
         shadowBatch.begin(shadowLight.camera)
@@ -255,51 +349,20 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         shapeRenderer.end()
 
-        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
-        for( hue in 0 .. 14) {
-            val rx = 10f+hue.toFloat()*40f
-            val ry = Gdx.graphics.height+120f
-            val color = Color()
-            color.fromHsv(hue*24.0f,1f,1f)
-            if(
-                currentEvent.screen != null &&
-                (currentEvent.screen!!.x<(rx + 40f)) &&
-                (currentEvent.screen!!.x>rx)&&
-                (currentEvent.screen!!.y<60f) &&
-                (currentEvent.screen!!.y>20f)
-            ){
-                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLUE,Color.BLUE,Color.BLUE,Color.BLUE)
-                scene.currentColor=color
-            }
-            if(scene.currentColor == color){
-                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK)
-            }
 
-            shapeRenderer2d.rect(rx,ry,35f,40f,color,color,color,color)
-        }
-        for( gs in 0 until 100 step 10) {
-            val rx = 10f+gs.toFloat()*4f
-            val ry = Gdx.graphics.height+70f
-            val color = Color()
-            color.set(gs/100f,gs/100f,gs/100f,1f)
-            if(
-                currentEvent.screen != null &&
-                (currentEvent.screen!!.x<(rx + 40f)) &&
-                (currentEvent.screen!!.x>rx)&&
-                (currentEvent.screen!!.y<100f) &&
-                (currentEvent.screen!!.y>60f)
-            ){
-                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLUE,Color.BLUE,Color.BLUE,Color.BLUE)
-                scene.currentColor=color
-            }
-            if(scene.currentColor == color){
-                shapeRenderer2d.rect(rx-2f,ry+2f,39f,44f,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK)
-            }
-            shapeRenderer2d.rect(rx,Gdx.graphics.height+70f,35f,40f,color,color,color,color)
-        }
+        shapeRenderer.projectionMatrix =
+            Matrix4().setToOrtho2D(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).scale(-1f, -1f, 1f)
+        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
+        uiElements.draw(shapeRenderer2d)
+        shapeRenderer2d.end()
+        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Line)
+        uiElements.drawLines(shapeRenderer2d)
         shapeRenderer2d.end()
 
         spriteBatch.begin()
+
+        uiElements.drawText(spriteBatch,font)
+
         if(activeTool != null) {
             font.draw(
                 spriteBatch,

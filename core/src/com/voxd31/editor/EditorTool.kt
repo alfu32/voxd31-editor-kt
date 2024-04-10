@@ -4,16 +4,16 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector3
 
-class EditorTool(
+open class EditorTool(
     var name: String,
     var onClick: (self: EditorTool,event: Event) -> Boolean,
     var onMove: (self: EditorTool,event: Event) -> Boolean,
 ) {
     companion object {
-        val VoxelEditor = { scene: SceneController, feedback: SceneController ->
+        fun VoxelEditor(scene: SceneController, feedback: SceneController):EditorTool{
             val a = Color(1f,1f,0f,0.5f)
             val b = Color(1f,0.5f,0f,0.5f)
-            EditorTool(
+            return object:EditorTool(
                 name = "voxel",
                 onClick = fun(self: EditorTool, event: Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
@@ -37,7 +37,7 @@ class EditorTool(
                     //currentEvent = event
                     return true
                 }
-            )
+            ){}
         }
         fun makeTwoInputEditor(
             name:String,
@@ -49,7 +49,7 @@ class EditorTool(
             val b = Color(1f,0.5f,0f,0.5f)
             val points= mutableListOf(Vector3(),Vector3())
             var state=0
-            return EditorTool(
+            return object:EditorTool(
                 name = name,
                 onClick = fun(self: EditorTool, event: Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
@@ -92,14 +92,19 @@ class EditorTool(
                     //currentEvent = event
                     return true
                 }
-            )
+            ){
+                override fun reset() {
+                    state=0
+                }
+
+            }
         }
-        val PlaneEditor = { scene: SceneController, feedback: SceneController ->
+        fun PlaneEditor(scene: SceneController, feedback: SceneController):EditorTool{
             val a = Color(1f,1f,0f,0.5f)
             val b = Color(1f,0.5f,0f,0.5f)
             val points= mutableListOf(Vector3(),Vector3(),Vector3())
             var state=0
-            EditorTool(
+            return object:EditorTool(
                 name = "plane",
                 onClick = fun(self: EditorTool, event: Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
@@ -151,7 +156,11 @@ class EditorTool(
                     //currentEvent = event
                     return true
                 }
-            )
+            ){
+                override fun reset() {
+                    state=0
+                }
+            }
         }
     }
     var points:MutableList<Vector3> = mutableListOf()
@@ -165,4 +174,5 @@ class EditorTool(
         }
     }
 
+    open fun reset(){}
 }
