@@ -122,12 +122,13 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         ground = (ModelInstance(groundBox, 0f,-0.5f,0f))
 
         cameraController = EditorCameraController(camera)
-        tools.add(EditorTool.makeTwoInputEditor("Select",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+        tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
             var cc=Color()
-            cc.fromHsv(120f,0.5f,0.8f)
-            cc.a=0.3f
-            selected.clear()
+            cc.fromHsv(120f,0.8f,0.8f)
+            cc.a=0.5f
+            if(s!=e)selected.clear()
             feedback.clear()
+            feedback.addCube(s,cc)
             voxelRangeShell(s,e){ p->
                 feedback.addCube(p,cc)
             }
@@ -138,7 +139,46 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     selected.cubes[c.getId()] = c
                 }
             }
-        })
+        }, onEnd = { s:Vector3,e:Vector3 ->
+        }))
+        tools.add(EditorTool.makeTwoInputEditor("Move", onFeedback = { s:Vector3,e:Vector3 ->
+            feedback.clear()
+            var cc=Color()
+            cc.fromHsv(120f,0.5f,0.8f)
+
+            feedback.addCube(s,cc)
+            voxelRangeSegment(s,e){ p->
+                feedback.addCube(p,cc)
+            }
+            feedback.addCube(e,cc)
+            val delta = e.cpy().sub(s)
+            selected.cubes.forEach{ i,c->
+                val sc = scene.cubes[i]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    feedback.addCube(sc.position.cpy().add(delta),cl)
+                }
+            }
+        },onEnd={  s:Vector3,e:Vector3 ->
+            val delta = e.cpy().sub(s)
+            val moved = selected.cubes.map{ kv->
+                val sc = scene.cubes[kv.key]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().add(delta),cl)
+                } else {
+                    null
+                }
+            }.filterNotNull()
+            selected.clear()
+            synchronized(moved){
+                moved.forEach{ (a,m) ->
+                    scene.removeCube(a)
+                    scene.addCube(m.position,m.color)
+                    selected.addCube(m.position,m.color)
+                }
+            }
+        }))
         tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeVolume(s,e,op)
