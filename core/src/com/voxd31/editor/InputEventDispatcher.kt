@@ -134,6 +134,7 @@ class InputEventDispatcher(
         )
         var modelIntersect = scene.sceneIntersectCubesRay(ray)
         if(!modelIntersect.hit){
+            // modelIntersect = guides.sceneIntersectGuidesRay(ray)
             modelIntersect = guides.sceneIntersectCubesRay(ray)
             if(modelIntersect.hit){
                 modelIntersect.type="guide"

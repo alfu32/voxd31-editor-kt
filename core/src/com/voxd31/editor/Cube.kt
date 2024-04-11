@@ -8,9 +8,11 @@ import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Intersector
+import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
 import com.badlogic.gdx.math.collision.Ray
+import kotlin.math.abs
 
 
 class RayIntersection(
@@ -130,31 +132,35 @@ class Cube (modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
 
         } else null
     }
-
+    fun projectVectorOntoVector(vectorToProject: Vector3, targetVector: Vector3): Vector3 {
+        val dotProduct = vectorToProject.dot(targetVector)
+        val magnitudeSquared = targetVector.len2()
+        val scalarProjection = dotProduct / magnitudeSquared
+        return Vector3(targetVector).cpy().scl(scalarProjection)
+    }
     fun intersectsGuidesRay(ray: Ray): ModelIntersection? {
-        val result = Vector3()
-        val normal = Vector3()
+        val localAxes=mutableListOf(Vector3.X,Vector3.Y,Vector3.Z)
+        val intersection = localAxes
+            .flatMap{ normal ->
+                val intersection = Vector3.Zero
 
-        // Find the nearest point on each axis
-
-        val nearestZ0 = findClosestPoints(ray, Ray(position,Vector3.Y.cpy()))
-
-        // Find the nearest point among the three
-        val distanceZ0 = if(nearestZ0!=null)ray.origin.dst2(nearestZ0) else Float.MAX_VALUE
-
-        if (nearestZ0!=null){
-            result.set(nearestZ0)
-            normal.set(Vector3.Z)
-        }
-
-        return if (result.isZero)  null
-            else  ModelIntersection(
-                hit = true,
-                point = result,
-                normal = normal,
-                target = Cube(modelBuilder = ModelBuilder(),position = result.cpy(), color = Color.CYAN),
-                type = "guide",
-            )
+                if(Intersector.intersectRayPlane(ray, Plane(normal,position),intersection)){
+                    localAxes.map { ax ->
+                        val comp = projectVectorOntoVector(intersection.cpy().sub(position),ax)
+                        ModelIntersection(
+                            hit = true,
+                            point = comp.cpy().add(position),
+                            normal = ax.cpy(),
+                            target = Cube(modelBuilder = ModelBuilder(),position = comp.cpy().add(position), color = Color.CYAN),
+                            type = "guide",
+                        )
+                    }.filter{ mi -> mi.point.epsilonEquals(position,0.01f)}
+                } else {
+                    listOf()
+                }
+            }
+            .minByOrNull{mi -> -mi.point.dst2(ray.origin)}
+        return intersection
     }
 
 

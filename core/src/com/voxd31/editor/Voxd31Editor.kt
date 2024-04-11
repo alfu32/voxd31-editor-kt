@@ -228,10 +228,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             )
             val bg1 = Color()
-            bg1.fromHsv(hue*24.0f,0.2f,0.5f)
+            bg1.fromHsv(hue*24.0f,0.4f,0.5f)
             bg1.a=0.3f
             val color1 = Color()
-            color1.fromHsv(hue*24.0f,0.2f,0.9f)
+            color1.fromHsv(hue*24.0f,0.4f,0.9f)
             color1.a=0.4f
             uiElements.add(
                 UiElementButton(
@@ -337,11 +337,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         //render model
         modelBatch.begin(camera)
-        modelBatch.render(scene.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k,v) -> v.getModelInstance() }, environment)
+        modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
         modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
-        Gdx.gl.glDepthMask(false);
-        modelBatch.render(scene.cubes.filter{c -> c.value.color.a <= 0.99f}.map { (k,v) -> v.getModelInstance() }, environment)
-        Gdx.gl.glDepthMask(true);
         // modelBatch.render(ModelInstance(sphere, currentEvent.modelPoint),environment)
         // modelBatch.render(ModelInstance(sphere, currentEvent.modelNextPoint),environment)
         modelBatch.end()
@@ -352,12 +349,14 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         guides.cubes.forEach { (k:String,cub:Cube) ->
             shapeRenderer.color = cub.color
             val bb=cub.getBoundingBox()
-            shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
-            //// var c=Vector3()
-            //// bb.getCenter(c)
-            //// shapeRenderer.line(c.x-100,c.y,c.z,c.x+100,c.y,c.z,Color.RED,Color.RED)
-            //// shapeRenderer.line(c.x,c.y-100,c.z,c.x,c.y+100,c.z,Color.GREEN,Color.GREEN)
-            //// shapeRenderer.line(c.x,c.y,c.z-100,c.x,c.y,c.z+100,Color.BLUE,Color.BLUE)
+            // shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
+            val pad=0.40f
+            shapeRenderer.box(bb.min.x+pad,bb.min.y+pad,bb.max.z-pad,bb.width-2*pad,bb.height-2*pad,bb.depth-2*pad)
+            /// var c=Vector3()
+            /// bb.getCenter(c)
+            /// shapeRenderer.line(c.x-100,c.y,c.z,c.x+100,c.y,c.z,Color.RED,Color.RED)
+            /// shapeRenderer.line(c.x,c.y-100,c.z,c.x,c.y+100,c.z,Color.GREEN,Color.GREEN)
+            /// shapeRenderer.line(c.x,c.y,c.z-100,c.x,c.y,c.z+100,Color.BLUE,Color.BLUE)
         }
 
         if(currentEvent.modelVoxel != null ) {
