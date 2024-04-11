@@ -28,6 +28,14 @@ class ModelIntersection(
     operator fun component5(): String {
         return type
     }
+
+    fun copy(): ModelIntersection  = ModelIntersection(
+        hit = hit,
+        point = point.cpy(),
+        normal = normal.cpy(),
+        target = target.copy(),
+        type=type,
+    )
 }
 
 

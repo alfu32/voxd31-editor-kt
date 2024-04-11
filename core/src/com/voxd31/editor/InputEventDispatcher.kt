@@ -132,34 +132,36 @@ class InputEventDispatcher(
             X/camera.viewportWidth, Y/camera.viewportHeight,
             camera.viewportWidth,camera.viewportHeight,
         )
+        var points= mutableListOf<ModelIntersection>()
         var modelIntersect = scene.sceneIntersectCubesRay(ray)
-        if(!modelIntersect.hit){
-            // modelIntersect = guides.sceneIntersectGuidesRay(ray)
-            modelIntersect = guides.sceneIntersectCubesRay(ray)
-            if(modelIntersect.hit){
-                modelIntersect.type="guide"
-            }
+        if(modelIntersect.hit){
+            points.add(modelIntersect.copy())
         }
-        if(!modelIntersect.hit){
-            val intersection = Vector3()
-            // Assume a plane at y = 0 for the intersection, you might adjust this based on your scene
-            Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
-            modelIntersect= ModelIntersection(
+        modelIntersect = guides.sceneIntersectCubesRay(ray)
+        if(modelIntersect.hit){
+            modelIntersect.type="guide"
+            points.add(modelIntersect.copy())
+        }
+        val intersection = Vector3()
+        Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
+        points.add(
+            ModelIntersection(
                 hit = true,
                 point = intersection,
                 normal = Vector3(0f,1f,0f),
                 target = Cube(modelBuilder = ModelBuilder(),position = Vector3(intersection.x,intersection.y,intersection.z), color = Color.CYAN),
                 type = "ground",
             )
-        }
-        currentEvent.modelPoint = modelIntersect.point.cpy()
-        val p = modelIntersect.target.position
+        )
+        val mi=points.minBy { mi0 -> mi0.point.dst2(ray.origin) }
+        currentEvent.modelPoint = mi.point.cpy()
+        val p = mi.target.position
         currentEvent.modelVoxel = Vector3(floor(p.x),floor(p.y),floor(p.z))
-        currentEvent.normal = modelIntersect.normal
-        currentEvent.target = modelIntersect.target
-        currentEvent.modelNextPoint = modelIntersect.point.cpy().add(modelIntersect.normal)
-        currentEvent.modelNextVoxel = currentEvent.modelVoxel!!.cpy().add(modelIntersect.normal)
-        if(modelIntersect.type == "ground" || modelIntersect.type == "guide" ) {
+        currentEvent.normal = mi.normal
+        currentEvent.target = mi.target
+        currentEvent.modelNextPoint = modelIntersect.point.cpy().add(mi.normal)
+        currentEvent.modelNextVoxel = currentEvent.modelVoxel!!.cpy().add(mi.normal)
+        if(mi.type == "ground" || mi.type == "guide" ) {
             currentEvent.modelNextPoint = currentEvent.modelPoint
             currentEvent.modelNextVoxel = currentEvent.modelVoxel
         }
