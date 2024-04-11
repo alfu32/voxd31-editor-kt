@@ -98,5 +98,10 @@ class SceneController(val modelBuilder: ModelBuilder) {
         removeCube(c)
     }
 
+    fun cubeAt(p: Vector3): Cube? {
+        val c=createCubeAt(p)
+        return cubes[c.getId()]
+    }
+
     // Additional methods for scene management...
 }

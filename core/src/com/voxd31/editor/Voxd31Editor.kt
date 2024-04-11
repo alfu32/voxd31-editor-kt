@@ -31,6 +31,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var environment: Environment
     private lateinit var shadowLight: DirectionalShadowLight
     private lateinit var scene: SceneController
+    private lateinit var selected: SceneController
     private lateinit var guides: SceneController
     private lateinit var feedback: SceneController
     private lateinit var modelBuilder: ModelBuilder
@@ -43,6 +44,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Event
     private var uiElements = UiElementsCollection()
+
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
     var activeTool: EditorTool? = null
@@ -101,6 +103,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             scene.addCube(v,c)
         }
         guides = SceneController(modelBuilder)
+        selected = SceneController(modelBuilder)
         feedback = SceneController(modelBuilder)
         feedback.currentColor = Color.GREEN
 
@@ -119,6 +122,23 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         ground = (ModelInstance(groundBox, 0f,-0.5f,0f))
 
         cameraController = EditorCameraController(camera)
+        tools.add(EditorTool.makeTwoInputEditor("Select",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            var cc=Color()
+            cc.fromHsv(120f,0.5f,0.8f)
+            cc.a=0.3f
+            selected.clear()
+            feedback.clear()
+            voxelRangeShell(s,e){ p->
+                feedback.addCube(p,cc)
+            }
+            voxelRangeVolume(s,e){
+                p ->
+                val c = scene.cubeAt(p)
+                if(c!=null){
+                    selected.cubes[c.getId()] = c
+                }
+            }
+        })
         tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeVolume(s,e,op)
@@ -167,12 +187,16 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     }
                 }
                 Input.Keys.SPACE -> {
+
                     guides.clear()
                     activeTool!!.reset()
                     activeToolIndex = 0
                     activeTool = tools[activeToolIndex]
                     activeTool!!.reset()
 
+                }
+                Input.Keys.ESCAPE -> {
+                    selected.clear()
                 }
                 else -> {
                     println("key up : ${event.keyCode}")
@@ -357,6 +381,18 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             /// shapeRenderer.line(c.x-100,c.y,c.z,c.x+100,c.y,c.z,Color.RED,Color.RED)
             /// shapeRenderer.line(c.x,c.y-100,c.z,c.x,c.y+100,c.z,Color.GREEN,Color.GREEN)
             /// shapeRenderer.line(c.x,c.y,c.z-100,c.x,c.y,c.z+100,Color.BLUE,Color.BLUE)
+        }
+        selected.cubes.forEach { (k:String,cub:Cube) ->
+            shapeRenderer.color = cub.color
+            val bb=cub.getBoundingBox()
+            shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
+            /// val pad=0.40f
+            /// shapeRenderer.box(bb.min.x+pad,bb.min.y+pad,bb.max.z-pad,bb.width-2*pad,bb.height-2*pad,bb.depth-2*pad)
+            /// /// var c=Vector3()
+            /// /// bb.getCenter(c)
+            /// /// shapeRenderer.line(c.x-100,c.y,c.z,c.x+100,c.y,c.z,Color.RED,Color.RED)
+            /// /// shapeRenderer.line(c.x,c.y-100,c.z,c.x,c.y+100,c.z,Color.GREEN,Color.GREEN)
+            /// /// shapeRenderer.line(c.x,c.y,c.z-100,c.x,c.y,c.z+100,Color.BLUE,Color.BLUE)
         }
 
         if(currentEvent.modelVoxel != null ) {
