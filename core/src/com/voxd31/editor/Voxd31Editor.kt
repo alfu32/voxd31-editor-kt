@@ -18,6 +18,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.utils.viewport.ExtendViewport
+import com.badlogic.gdx.utils.viewport.FitViewport
+import com.badlogic.gdx.utils.viewport.ScreenViewport
+import com.badlogic.gdx.utils.viewport.Viewport
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
@@ -26,7 +30,10 @@ import kotlin.math.floor
 
 class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private val GNDSZ=100f
-    private lateinit var camera: PerspectiveCamera
+    private lateinit var camera3D: PerspectiveCamera
+    private lateinit var camera2D: OrthographicCamera
+    private lateinit var viewport3D: Viewport
+    private lateinit var viewport2D: Viewport
     private lateinit var modelBatch: ModelBatch
     private lateinit var shadowBatch: ModelBatch
     private lateinit var environment: Environment
@@ -62,10 +69,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
+
+
+        // Fetch initial window dimensions
+        val initialWidth = Gdx.graphics.width.toFloat()
+        val initialHeight = Gdx.graphics.height.toFloat()
         font = BitmapFont() // This will use libGDX's default Arial font.
         spriteBatch = SpriteBatch()
 
-        camera = PerspectiveCamera(45f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).apply {
+        camera3D = PerspectiveCamera(45f, initialWidth, initialHeight).apply {
             position.set(10f, 10f, 10f)
             lookAt(0f, 0f, 0f)
             near = 1f
@@ -98,6 +110,12 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         environment.set(ColorAttribute(ColorAttribute.Specular, 0.5f,0.5f,0.9f, 0.7f)) // Reduced ambient light
 
 
+        viewport3D = ScreenViewport(camera3D)
+
+        camera2D = OrthographicCamera()
+        viewport2D = ExtendViewport(initialWidth, initialHeight, camera2D)
+        viewport2D.apply(true)
+
         modelBuilder = ModelBuilder()
         scene = SceneController(modelBuilder)
         readCubesCsv(filename) { v:Vector3,c:Color ->
@@ -108,7 +126,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         feedback = SceneController(modelBuilder)
         feedback.currentColor = Color.GREEN
 
-        val colors = arrayOf(Color.WHITE,Color.GRAY,Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA, Color.CYAN)
         val matGround = Material(ColorAttribute.createDiffuse(Color(0.3f,0.35f,0.3f,0.5f)))
         val groundBox = modelBuilder.createRect(
             -GNDSZ, 0f, -GNDSZ,
@@ -122,9 +139,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         ground = (ModelInstance(groundBox, 0f,-0.5f,0f))
 
-        cameraController = EditorCameraController(camera)
+        cameraController = EditorCameraController(camera3D)
         tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
-            var cc=Color()
+            val cc=Color()
             cc.fromHsv(120f,0.8f,0.8f)
             cc.a=0.5f
             if(s!=e)selected.clear()
@@ -172,9 +189,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }.filterNotNull()
             selected.clear()
+            var remove = true
+            if(currentEvent.keyDown == Input.Keys.CONTROL_LEFT){
+                remove = false
+            }
             synchronized(moved){
                 moved.forEach{ (a,m) ->
-                    scene.removeCube(a)
+                    //if(remove) {
+                        scene.removeCube(a)
+                    //}
                     scene.addCube(m.position,m.color)
                     selected.addCube(m.position,m.color)
                 }
@@ -196,7 +219,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         tools.add(EditorTool.PlaneEditor(scene,feedback))
         activeTool = tools[activeToolIndex]
 
-        inputEventDispatcher = InputEventDispatcher(scene,camera,guides)
+        inputEventDispatcher = InputEventDispatcher(scene,camera2D,camera3D,guides)
         inputProcessors= CompositeInputProcessor()
         inputProcessors.addInputProcessor(cameraController)
         inputProcessors.addInputProcessor(inputEventDispatcher)
@@ -216,7 +239,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
                 Input.Keys.R -> {
                     if(tools.size > 0) {
-                        activeToolIndex=if(activeToolIndex - 1 < 0) activeToolIndex - 1 else tools.size -1
+                        activeToolIndex=if(activeToolIndex < 1) tools.size -1 else activeToolIndex - 1
                         println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
                         activeTool = tools[activeToolIndex]
                         println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
@@ -369,7 +392,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             uiElements.add(
                 UiElementButton(
                     position = Vector2(10f,y),
-                    size = Vector2(85f,40f),
+                    size = Vector2(85f,30f),
                     background = Color.DARK_GRAY,
                     hover=Color.LIGHT_GRAY,
                     text= t.name
@@ -383,7 +406,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     }
                 }
             )
-            y+=45f
+            y+=35f
 
         }
         // println(uiElements)
@@ -391,7 +414,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     }
 
     override fun render() {
-        Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
+        Gdx.gl.glViewport(0, 0, viewport2D.screenX,viewport2D.screenY)
         Gdx.gl.glClearColor(0.5F, 0.9F, 0.9F, 1F); // Set a clear color different from your UI elements
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
         Gdx.gl.glEnable(GL20.GL_BLEND)
@@ -400,10 +423,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         // Process input and update the camera
         cameraController.update()
-        camera.update()
+        camera3D.update()
 
         // render shadows
-        shadowLight.begin(Vector3.Zero, camera.direction)
+        shadowLight.begin(Vector3.Zero, camera3D.direction)
             shadowBatch.begin(shadowLight.camera)
                 shadowBatch.render(scene.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k, v) -> v.getModelInstance()})
                 shadowBatch.render(feedback.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k,v) -> v.getModelInstance() }, environment)
@@ -412,18 +435,18 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         shadowLight.end()
 
         // render ground
-        modelBatch.begin(camera)
+        modelBatch.begin(camera3D)
         modelBatch.render(ground,environment)
         modelBatch.end()
 
 
 
         // render grid
-        shapeRenderer.projectionMatrix = camera.combined
+        shapeRenderer.projectionMatrix = camera3D.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         renderGrid(
             shapeRenderer,
-            camera,
+            camera3D,
             Color.LIGHT_GRAY,
             Color.GRAY,
             50,
@@ -433,7 +456,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         shapeRenderer.end()
 
         //render model
-        modelBatch.begin(camera)
+        modelBatch.begin(camera3D)
         modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
         modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
         // modelBatch.render(ModelInstance(sphere, currentEvent.modelPoint),environment)
@@ -487,39 +510,34 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         shapeRenderer.end()
 
 
-        //shapeRenderer.projectionMatrix =
-        //    Matrix4().setToOrtho2D(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat()).scale(-1f, -1f, 1f)
+        shapeRenderer2d.projectionMatrix = camera2D.combined
         shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
         uiElements.draw(shapeRenderer2d)
         shapeRenderer2d.end()
         shapeRenderer2d.begin(ShapeRenderer.ShapeType.Line)
         uiElements.drawLines(shapeRenderer2d)
-        shapeRenderer2d.end()
 
+        spriteBatch.projectionMatrix = camera2D.combined
         spriteBatch.begin()
 
         uiElements.drawText(spriteBatch,font)
-
-        if(activeTool != null) {
-            font.draw(
-                spriteBatch,
-                """
-                    Active Tool : ${tools.mapIndexed{ i,t ->if(i == activeToolIndex) t.name.uppercase() else t.name}.joinToString(" ")} (T to cycle-through)
-                """.trimIndent(),
-                10f,Gdx.graphics.height.toFloat()+180f,
-            ) // Draws text at the specified position.
-
-        }
         if(currentEvent.screen != null) {
             font.draw(
                 spriteBatch,
                 """
-                    xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
+                    cubes:${scene.cubes.size} xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
                 """.trimIndent(),
                 10f,25f,
             ) // Draws text at the specified position.
+            font.draw(
+                spriteBatch,
+                """${activeTool!!.name} ${currentEvent.modelVoxel}""".trimIndent(),
+                currentEvent.screen!!.x, currentEvent.screen!!.y+15f,
+            ) // Draws text at the specified position.
         }
         spriteBatch.end()
+
+        shapeRenderer2d.end()
     }
 
     private fun renderGrid(
@@ -585,10 +603,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     }
 
     override fun resize(width: Int, height: Int) {
+        viewport3D.update(width, height, false);
+        viewport2D.update(width, height, true);
+
+        camera2D.position.set(camera2D.viewportWidth / 2, camera2D.viewportHeight / 2, 0f);
+        camera2D.update();
         // Update the camera with the new window size
-        camera.viewportWidth = width.toFloat()
-        camera.viewportHeight = height.toFloat()
-        camera.update()
+        camera3D.viewportWidth = width.toFloat()
+        camera3D.viewportHeight = height.toFloat()
+        camera3D.update()
     }
 
 }

@@ -28,7 +28,8 @@ abstract class UiElement(
         isClicked=false
         isHovered=false
         val p = position.cpy()
-        p.y= Gdx.graphics.height - position.y - 40
+        // p.y= Gdx.graphics.height - position.y - 40
+        // p.x = p.x + 20f
         if (
             e.screen != null &&
             e.screen!!.x > p.x && e.screen!!.x < p.x + size.x &&

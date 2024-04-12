@@ -1,11 +1,16 @@
 package com.voxd31.editor
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
-import com.badlogic.gdx.math.*
+import com.badlogic.gdx.math.Intersector
+import com.badlogic.gdx.math.Plane
+import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.math.Vector3
 import kotlin.math.floor
+
 
 class Event(
     var keyCode: Int? = null,
@@ -30,7 +35,8 @@ class Event(
 typealias EventListener = (e:Event)->Unit
 class InputEventDispatcher(
     val scene:SceneController,
-    val camera: Camera,
+    val camera2D: Camera,
+    val camera3D: Camera,
     val guides:SceneController,
 ):InputProcessor {
     val listeners:MutableMap<String,MutableList<EventListener>> = mutableMapOf()
@@ -122,15 +128,18 @@ class InputEventDispatcher(
     }
 
     private fun update3dVectorsFromScreenPoint(x: Int, y: Int) {
-        val X=x.toFloat()
-        val Y=y.toFloat()
+        val touchPos = Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)
+        camera2D.unproject(touchPos); // Transforms the touch/mouse position to world coordinates
+        val X=touchPos.x
+        val Y=touchPos.y
+
         currentEvent.screen = Vector2(X, Y)
 
         // Implement the conversion from screen coordinates to world coordinates
-        val ray = camera.getPickRay(
-            X, Y,
-            X/camera.viewportWidth, Y/camera.viewportHeight,
-            camera.viewportWidth,camera.viewportHeight,
+        val ray = camera3D.getPickRay(
+            x.toFloat(), y.toFloat(),
+            x/camera3D.viewportWidth, y/camera3D.viewportHeight,
+            camera3D.viewportWidth,camera3D.viewportHeight,
         )
         var points= mutableListOf<ModelIntersection>()
         var modelIntersect = scene.sceneIntersectCubesRay(ray)
