@@ -1,15 +1,16 @@
 package com.voxd31.editor
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
+
 class UIStyle()
 abstract class UiElement(
-    open var position:Vector2=Vector2(0f,0f,),
+    open var position:Vector2=Vector2(0f, 0f),
     open var size: Vector2=Vector2(20f,20f),
     open var background: Color =Color.WHITE,
     open var hover: Color =Color.WHITE,
@@ -64,7 +65,7 @@ abstract class UiElement(
     }
 }
 class UiElementsCollection(
-    override var position:Vector2=Vector2(0f,0f,),
+    override var position:Vector2=Vector2(0f, 0f),
     override var size: Vector2=Vector2(20f,20f),
     override var background: Color =Color.WHITE,
     override var hover: Color =Color.WHITE,
@@ -115,7 +116,7 @@ class UiElementsCollection(
     }
 }
 class UiElementButton(
-    override var position:Vector2=Vector2(0f,0f,),
+    override var position:Vector2=Vector2(0f, 0f),
     override var size: Vector2=Vector2(20f,20f),
     override var background: Color =Color.WHITE,
     override var hover: Color =Color.WHITE,
@@ -133,8 +134,12 @@ class UiElementButton(
     }
     override fun drawLines(shapeRenderer2d:ShapeRenderer){
         shapeRenderer2d.rect(position.x,position.y,size.x,size.y,color,color,color,color)
+        shapeRenderer2d.rect(position.x-1,position.y-1,size.x+2,size.y+2,color,color,color,color)
     }
     override fun drawText(spriteBatch:SpriteBatch, font: BitmapFont){
-        font.draw(spriteBatch,text,position.x+1, position.y+15)
+        val layout = GlyphLayout()
+        layout.setText(font, text)
+        val sz=size.cpy().sub(layout.width,layout.height).scl(0.5f,0.5f)
+        font.draw(spriteBatch,text,position.x+sz.x, position.y+sz.y+layout.height)
     }
 }

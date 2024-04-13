@@ -146,6 +146,59 @@ open class EditorTool(
 
             }
         }
+        fun makeThreeInputEditor(
+            name:String,
+            onFeedback: (a:Vector3,b:Vector3,c:Vector3)->Unit,
+            onEnd: (a:Vector3,b:Vector3,c:Vector3)->Unit,
+        ):EditorTool {
+            val points= mutableListOf(Vector3(),Vector3(),Vector3())
+            var state=0
+            return object:EditorTool(
+                name = name,
+                onClick = fun(self: EditorTool, event: Event): Boolean {
+                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                        when(state){
+                            0 -> {
+                                points[0]=event.modelNextVoxel!!.cpy()
+                                state=1
+                            }
+                            1 -> {
+                                points[1]=event.modelNextVoxel!!.cpy()
+                                onEnd(points[0],points[1],points[1])
+                                state=2
+                            }
+                            2 -> {
+                                points[2]=event.modelNextVoxel!!.cpy()
+                                onEnd(points[0],points[1],points[2])
+                                state=0
+                            }
+                        }
+                    }
+                    //currentEvent = event
+                    return true
+                },
+                onMove = fun(self: EditorTool, event: Event): Boolean {
+                    when(state){
+                        0 ->{
+                            onFeedback(event.modelNextVoxel!!,event.modelNextVoxel!!,event.modelNextVoxel!!)
+                        }
+                        1->{
+                            onFeedback(points[0],event.modelNextVoxel!!,event.modelNextVoxel!!)
+                        }
+                        2->{
+                            onFeedback(points[0],points[1],event.modelNextVoxel!!)
+                        }
+                    }
+                    //currentEvent = event
+                    return true
+                }
+            ){
+                override fun reset() {
+                    state=0
+                }
+
+            }
+        }
         fun PlaneEditor(scene: SceneController, feedback: SceneController):EditorTool{
             val a = Color(1f,1f,0f,0.5f)
             val b = Color(1f,0.5f,0f,0.5f)

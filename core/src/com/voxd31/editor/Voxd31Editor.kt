@@ -159,17 +159,19 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             }
         }, onEnd = { s:Vector3,e:Vector3 ->
         }))
+        var toolsCopy=false
         tools.add(EditorTool.makeTwoInputEditor("Move", onFeedback = { s:Vector3,e:Vector3 ->
             feedback.clear()
-            var cc=Color()
+            val cc=Color()
             cc.fromHsv(120f,0.5f,0.8f)
 
-            feedback.addCube(s,cc)
             voxelRangeSegment(s,e){ p->
                 feedback.addCube(p,cc)
             }
-            feedback.addCube(e,cc)
+            feedback.addCube(s,Color.RED)
+            feedback.addCube(e,Color.GREEN)
             val delta = Vector3(floor(e.x)-floor(s.x), floor(e.y)-floor(s.y), floor(e.z)-floor(s.z))
+
             selected.cubes.forEach{ i,c->
                 val sc = scene.cubes[i]
                 if(sc!=null){
@@ -189,15 +191,55 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }.filterNotNull()
             selected.clear()
-            var remove = true
-            if(currentEvent.keyDown == Input.Keys.CONTROL_LEFT){
-                remove = false
-            }
             synchronized(moved){
                 moved.forEach{ (a,m) ->
-                    //if(remove) {
+                    if(!toolsCopy) {
                         scene.removeCube(a)
-                    //}
+                    }
+                    scene.addCube(m.position,m.color)
+                    selected.addCube(m.position,m.color)
+                }
+            }
+        }))
+        tools.add(EditorTool.makeThreeInputEditor("Rotate", onFeedback = { s:Vector3,m:Vector3,e:Vector3 ->
+            feedback.clear()
+            val cc=Color()
+            cc.fromHsv(120f,0.5f,0.8f)
+
+            voxelRangeSegment(s,m){ p->
+                feedback.addCube(p,cc)
+            }
+            voxelRangeSegment(s,e){ p->
+                feedback.addCube(p,cc)
+            }
+            feedback.addCube(s,Color.RED)
+            feedback.addCube(m,Color.GREEN)
+            feedback.addCube(e,Color.BLUE)
+            val rmx = calculateRotationMatrix(s,m,e)
+            selected.cubes.forEach{ i,c->
+                val sc = scene.cubes[i]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    feedback.addCube(sc.position.cpy().mul(rmx),cl)
+                }
+            }
+        },onEnd={  s:Vector3,m:Vector3,e:Vector3 ->
+            val rmx = calculateRotationMatrix(s,m,e)
+            val moved = selected.cubes.map{ kv->
+                val sc = scene.cubes[kv.key]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().mul(rmx),cl)
+                } else {
+                    null
+                }
+            }.filterNotNull()
+            selected.clear()
+            synchronized(moved){
+                moved.forEach{ (a,m) ->
+                    if(!toolsCopy) {
+                        scene.removeCube(a)
+                    }
                     scene.addCube(m.position,m.color)
                     selected.addCube(m.position,m.color)
                 }
@@ -267,9 +309,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         selected.clear()
                     } else if (activeToolIndex != 0) {
                         activeTool!!.reset()
-                    } else {
-                        activeToolIndex = 0
-                        activeTool = tools[activeToolIndex]
                     }
                 }
                 Input.Keys.ESCAPE -> {
@@ -282,6 +321,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     } else {
                         activeToolIndex = 0
                         activeTool = tools[activeToolIndex]
+                        activeTool!!.reset()
                     }
                 }
                 else -> {
@@ -326,7 +366,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             uiElements.add(
                 UiElementButton(
                     position = Vector2(10f,y),
-                    size = Vector2(35f,40f),
+                    size = Vector2(30f,25f),
                     background = bg,
                     hover=color,
                     text= "${ (hue * 24) }".padStart(3, 48.toChar())
@@ -347,7 +387,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             uiElements.add(
                 UiElementButton(
                     position = Vector2(50f,y),
-                    size = Vector2(35f,40f),
+                    size = Vector2(30f,25f),
                     background = bg1,
                     hover=color1,
                     text= "${ (hue * 24) }".padStart(3, 48.toChar())
@@ -359,7 +399,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     }
                 }
             )
-            y+=42f
+            y+=30f
         }
         y=30f
         for( gs in 0 until 101 step 10) {
@@ -371,7 +411,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             uiElements.add(
                 UiElementButton(
                     position = Vector2(90f,y),
-                    size = Vector2(35f,40f),
+                    size = Vector2(30f,25f),
                     background = color,
                     hover=hover,
                     text= "$gs%"
@@ -384,15 +424,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             )
 
-            y+=42f
+            y+=30f
         }
-        y=30f+15f*42f
+        y=30f+15f*31f
         tools.forEachIndexed{
             i,t ->
             uiElements.add(
                 UiElementButton(
                     position = Vector2(10f,y),
-                    size = Vector2(85f,30f),
+                    size = Vector2(85f,25f),
                     background = Color.DARK_GRAY,
                     hover=Color.LIGHT_GRAY,
                     text= t.name
@@ -406,9 +446,26 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     }
                 }
             )
-            y+=35f
+            y+=30f
 
         }
+
+        uiElements.add(
+            UiElementButton(
+                position = Vector2(100f,30f+15f*31f+30f),
+                size = Vector2(20f,58f),
+                background = Color.DARK_GRAY,
+                hover=Color.LIGHT_GRAY,
+                color=Color.DARK_GRAY,
+                text= "+"
+            ){ target:UiElement,ev:Event ->
+                if(target.isClicked && ev.channel == "touchDown") {
+                    toolsCopy = !toolsCopy
+                    target.background = if(toolsCopy)Color.GOLD else Color.DARK_GRAY
+                    target.color = if(toolsCopy)Color.WHITE else Color.DARK_GRAY
+                }
+            }
+        )
         // println(uiElements)
 
     }
