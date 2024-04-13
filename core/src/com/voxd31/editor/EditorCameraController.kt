@@ -4,6 +4,9 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
+import com.badlogic.gdx.math.Intersector
+import com.badlogic.gdx.math.Plane
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 
 class EditorCameraController(camera: Camera) : CameraInputController(camera) {
@@ -64,11 +67,20 @@ class EditorCameraController(camera: Camera) : CameraInputController(camera) {
 
         // Adjusted panning logic
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            val modelDelta = Vector3()
+            val ray = camera.getPickRay(
+                screenX.toFloat(), screenY.toFloat(),
+                screenX.toFloat()/camera.viewportWidth, screenY.toFloat()/camera.viewportHeight,
+                camera.viewportWidth,camera.viewportHeight,
+            )
+            val plane = Plane()
+            plane.set(0f,0f,0f,0f,1f,0f)
+            Intersector.intersectRayPlane(ray, plane,modelDelta)
             val panningScalar=0.5f // * (camera.position.sub(target).len())
             translateButton = Input.Buttons.LEFT // Temporarily enable panning
             // Temporarily adjust translateUnits to scale with panningScalar
             val prevTranslateUnits = translateUnits
-            translateUnits *= panningScalar
+            translateUnits *= panningScalar*modelDelta.len()
             val result = super.touchDragged(screenX, screenY, pointer)
             translateButton = -1 // Disable again
             translateUnits = prevTranslateUnits // Reset translateUnits to original

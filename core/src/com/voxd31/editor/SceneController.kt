@@ -1,74 +1,106 @@
 package com.voxd31.editor
 
-import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
-import com.badlogic.gdx.math.Intersector
-import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.Ray
+import kotlin.math.floor
 
-class SceneController(val modelBuilder: ModelBuilder, val camera: Camera) {
-    var cubes: MutableList<Cube> = mutableListOf()
+class ModelIntersection(
+    var hit : Boolean,
+    var point: Vector3 = Vector3(0f,0f,0f),
+    var normal: Vector3 = Vector3(0f,0f,0f),
+    var target: Cube,// = Cube(modelBuilder = ModelBuilder(),position = Vector3(0f,0f,0f), color = Color.CYAN),
+    var type: String = "undefined"
+) {
+    operator fun component1(): Boolean {
+        return hit
+    }
+    operator fun component2(): Vector3 {
+        return point
+    }
+    operator fun component3(): Vector3 {
+        return normal
+    }
+    operator fun component4(): Cube {
+        return target
+    }
+    operator fun component5(): String {
+        return type
+    }
+
+    fun copy(): ModelIntersection  = ModelIntersection(
+        hit = hit,
+        point = point.cpy(),
+        normal = normal.cpy(),
+        target = target.copy(),
+        type=type,
+    )
+}
+
+
+class SceneController(val modelBuilder: ModelBuilder) {
+    var cubes: HashMap<String,Cube> = hashMapOf()
     var currentColor: Color = Color.RED
-    fun rayToPointDistance(ray: Ray, point: Vector3): Float {
-        // Vector from the ray's origin to the point
-        val originToPoint = Vector3(point).sub(ray.origin)
-
-        // Cross product of the direction of the ray and the vector from the ray's origin to the point
-        val crossProduct = ray.direction.crs(originToPoint)
-
-        // Distance formula: magnitude of the cross product divided by the magnitude of the ray's direction
-        return crossProduct.len() / ray.direction.len()
-    }
-    public fun screenToModelPoint(screenX: Int, screenY: Int): Vector3 {
-        // Implement the conversion from screen coordinates to world coordinates
-        val ray = camera.getPickRay(screenX.toFloat(), screenY.toFloat())
-        val intersection = Vector3()
-        for (cube in cubes){
-            /// if(rayToPointDistance(ray,cube.position)<0.630) {
-            ///     return cube.position
-            /// }
-            for(mesh in cube.getModelInstance(modelBuilder).model.meshes){
-                if(Intersector.intersectRayBounds(ray,mesh.calculateBoundingBox(),intersection)){
-                    return intersection
-                }
-            }
-        }
-        // Assume a plane at y = 0 for the intersection, you might adjust this based on your scene
-        Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
-        return intersection
-    }
-
-    fun addCube(x: Float, y: Float, z: Float) {
-        val cube = createCubeAt(x, y, z)
-        cubes.add(cube)
-    }
-
-    fun removeCube(x: Float, y: Float, z: Float) {
-        // This method will remove the first cube found at the given coordinates
-        // More sophisticated logic might be needed for your specific use case
-        val iterator = cubes.iterator()
-        while (iterator.hasNext()) {
-            val cube = iterator.next()
-            if (cube.position.epsilonEquals(x, y, z, 0.8f)) {
-                iterator.remove()
-                break
-            }
+    fun sceneIntersectCubesRay(ray: Ray): ModelIntersection {
+        val intersections = cubes.map { (id, cube) -> cube.intersectsRay(ray) }.filterNotNull().filter{ it.hit }
+        if (!intersections.isEmpty()) {
+            return intersections.minByOrNull { mi -> mi.point.cpy().dst2(ray.origin) }!!
+        } else {
+            return ModelIntersection(
+                hit = false,
+                point = Vector3(),
+                normal = Vector3(0f,1f,0f),
+                target = Cube(modelBuilder = ModelBuilder(),position = Vector3(), color = Color.CYAN),
+                type = "origin",
+            )
         }
     }
 
-    private fun createCubeAt(x: Float, y: Float, z: Float): Cube {
+    fun sceneIntersectGuidesRay(ray: Ray): ModelIntersection {
+        val intersections = cubes.map { (id, cube) -> cube.intersectsGuidesRay(ray) }.filterNotNull().filter{ it.hit }
+        if (!intersections.isEmpty()) {
+            return intersections.minByOrNull { mi -> mi.point.cpy().dst2(ray.origin) }!!
+        } else {
+            return ModelIntersection(
+                hit = false,
+                point = Vector3(),
+                normal = Vector3(0f,1f,0f),
+                target = Cube(modelBuilder = ModelBuilder(),position = Vector3(), color = Color.CYAN),
+                type = "origin",
+            )
+        }
+    }
+    fun addCube(position: Vector3,color:Color? = null) {
+        val cube = createCubeAt(position,color)
+        cubes[cube.getId()]=cube
+        /// println("cubes : ${cubes.size}")
+    }
+    fun removeCube(c: Cube) {
+        cubes.remove(c.getId())
+    }
+    fun createCubeAt(p:Vector3,color:Color? = null): Cube {
         // Implementation to create a cube ModelInstance at the specified coordinates
         // Placeholder implementation
-        return Cube(modelBuilder, position = Vector3(x,y,z),currentColor)
+        return Cube(modelBuilder, position = Vector3(floor(p.x),floor(p.y),floor(p.z)), color ?: currentColor)
     }
     fun clear() {
-        cubes = mutableListOf()
+        cubes = hashMapOf()
     }
 
     fun dispose() {
-        cubes.forEach { it.instance.model.dispose() }
+        if(cubes.size > 0)cubes.values.first().getModelInstance().model.dispose()
+        /// cubes.forEach { it.instance.model.dispose() }
+    }
+
+    fun removeCube(v: Vector3) {
+        val c=createCubeAt(v)
+        removeCube(c)
+    }
+
+    fun cubeAt(p: Vector3): Cube? {
+        val c=createCubeAt(p)
+        return cubes[c.getId()]
     }
 
     // Additional methods for scene management...
