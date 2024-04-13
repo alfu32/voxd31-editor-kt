@@ -22,9 +22,12 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.utils.viewport.Viewport
+import com.sk89q.worldedit.WorldEdit
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
+import com.voxd31.editor.exporters.saveSchematicToFile
+import java.io.File
 import kotlin.math.floor
 
 
@@ -69,7 +72,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
-
+        val we = WorldEdit.getInstance()
 
         // Fetch initial window dimensions
         val initialWidth = Gdx.graphics.width.toFloat()
@@ -657,6 +660,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             Gdx.input.inputProcessor = null
         }
         saveCubesAsCsv(scene.cubes.values.toList(),filename)
+        // saveSchematicToFile(scene.cubes.values.toList(), "$filename.schematic")
     }
 
     override fun resize(width: Int, height: Int) {

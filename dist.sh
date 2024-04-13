@@ -18,5 +18,5 @@ do
     sdk use java "$jdk_release"
     ./gradlew clean dist  "-PjavaCompatVersion=$major_version" -PreleaseNumber=$tag
     mv desktop/build/libs/*.jar dist/
-    git add -f dist/voxd31-editor-desktop-jvm$major_version-$tag.jar
+    ## git add -f dist/voxd31-editor-desktop-jvm$major_version-$tag.jar
 done
