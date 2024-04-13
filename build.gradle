@@ -68,10 +68,8 @@ project(":core") {
     dependencies {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        //// // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
-        //// compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.3.0'
-        // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
-        compileOnly group: 'com.sk89q.worldedit', name: 'worldedit-bukkit', version: '7.2.20'
+        // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
+        // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
 
 
     }

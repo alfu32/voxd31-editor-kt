@@ -9,6 +9,7 @@ open class EditorTool(
     var onClick: (self: EditorTool,event: Event) -> Boolean,
     var onMove: (self: EditorTool,event: Event) -> Boolean,
 ) {
+    public var commands= mutableListOf<String>()
     companion object {
         fun VoxelEditor(scene: SceneController, feedback: SceneController):EditorTool{
             val a = Color(1f,1f,0f,0.5f)
@@ -17,14 +18,17 @@ open class EditorTool(
                 name = "voxel",
                 onClick = fun(self: EditorTool, event: Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                        val a=Vector3i.fromFloats(event.target!!.position.x,event.target!!.position.y,event.target!!.position.z)
                         if (event.keyDown == Input.Keys.ALT_LEFT) {
                             scene.removeCube(
                                 event.target!!
                             )
+                            self.commands.add("/setblock ${a.x} ${a.y} ${a.z} air replace")
                         } else {
                             scene.addCube(
                                 event.modelNextVoxel!!
                             )
+                            self.commands.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
                         }
                     }
                     //currentEvent = event
@@ -42,7 +46,7 @@ open class EditorTool(
         fun makeTwoInputEditor(
             name:String,
             onFeedback: (a:Vector3,b:Vector3)->Unit,
-            onEnd: (a:Vector3,b:Vector3)->Unit,
+            onEnd: (a:Vector3,b:Vector3)->List<String>,
         ):EditorTool {
             val a = Color(1f,1f,0f,0.5f)
             val b = Color(1f,0.5f,0f,0.5f)
@@ -59,7 +63,7 @@ open class EditorTool(
                             }
                             1 -> {
                                 points[1]=event.modelNextVoxel!!.cpy()
-                                onEnd(points[0],points[1])
+                                self.commands.addAll(onEnd(points[0],points[1]))
                                 state=0
                             }
                         }
@@ -90,7 +94,7 @@ open class EditorTool(
             name:String,
             scene: SceneController,
             feedback: SceneController,
-            rasterizer: (a:Vector3,b:Vector3,op:(v:Vector3)->Unit)->Unit
+            rasterizer: (a:Vector3,b:Vector3,op:(v:Vector3)->Unit)->List<String>
         ):EditorTool {
             val a = Color(1f,1f,0f,0.5f)
             val b = Color(1f,0.5f,0f,0.5f)
@@ -112,9 +116,10 @@ open class EditorTool(
                                         scene.removeCube(it)
                                     }
                                 } else {
-                                    rasterizer(points[0],points[1]){
+                                    val cmds = rasterizer(points[0],points[1]){
                                         scene.addCube(it)
                                     }
+                                    self.commands.addAll(cmds)
                                 }
                                 state=0
                             }
@@ -149,7 +154,7 @@ open class EditorTool(
         fun makeThreeInputEditor(
             name:String,
             onFeedback: (a:Vector3,b:Vector3,c:Vector3)->Unit,
-            onEnd: (a:Vector3,b:Vector3,c:Vector3)->Unit,
+            onEnd: (a:Vector3,b:Vector3,c:Vector3)->List<String>,
         ):EditorTool {
             val points= mutableListOf(Vector3(),Vector3(),Vector3())
             var state=0
@@ -169,7 +174,8 @@ open class EditorTool(
                             }
                             2 -> {
                                 points[2]=event.modelNextVoxel!!.cpy()
-                                onEnd(points[0],points[1],points[2])
+                                val cmds = onEnd(points[0],points[1],points[2])
+                                self.commands.addAll(cmds)
                                 state=0
                             }
                         }
@@ -224,8 +230,16 @@ open class EditorTool(
                                         scene.removeCube(it)
                                     }
                                 } else {
-                                    voxelRangePlane(points[0],points[1],points[2]){
-                                        scene.addCube(it)
+                                    val a=Vector3i.fromFloats(points[0].x,points[0].y,points[0].z)
+                                    val b=Vector3i.fromFloats(points[1].x,points[1].y,points[1].z)
+                                    val c=Vector3i.fromFloats(points[2].x,points[2].y,points[2].z)
+                                    self.commands = mutableListOf(
+                                        "# Plane ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${c.x} ${c.y} ${c.z}  ${scene.currentColor}",
+                                    )
+                                    voxelRangePlane(points[0],points[1],points[2]){ p ->
+                                        scene.addCube(p)
+                                        val a=Vector3i.fromFloats(p.x,p.y,p.z)
+                                        self.commands.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
                                     }
                                 }
                                 state=0
