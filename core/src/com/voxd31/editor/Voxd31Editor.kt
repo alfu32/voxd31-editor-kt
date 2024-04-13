@@ -22,11 +22,9 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.utils.viewport.Viewport
-import com.sk89q.worldedit.WorldEdit
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
-import com.voxd31.editor.exporters.saveSchematicToFile
 import java.io.File
 import kotlin.math.floor
 
@@ -61,6 +59,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     var activeTool: EditorTool? = null
     var activeToolIndex = 0
     lateinit var inputEventDispatcher: InputEventDispatcher
+    val commands = mutableListOf<String>()
 
 
     private lateinit var cameraController: CameraInputController
@@ -72,7 +71,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
-        val we = WorldEdit.getInstance()
 
         // Fetch initial window dimensions
         val initialWidth = Gdx.graphics.width.toFloat()
@@ -161,6 +159,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
         }, onEnd = { s:Vector3,e:Vector3 ->
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf("//select ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z}")
         }))
         var toolsCopy=false
         tools.add(EditorTool.makeTwoInputEditor("Move", onFeedback = { s:Vector3,e:Vector3 ->
@@ -203,6 +204,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     selected.addCube(m.position,m.color)
                 }
             }
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf("//move ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z}")
         }))
         tools.add(EditorTool.makeThreeInputEditor("Rotate", onFeedback = { s:Vector3,m:Vector3,e:Vector3 ->
             feedback.clear()
@@ -247,19 +251,64 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     selected.addCube(m.position,m.color)
                 }
             }
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(m.x,m.y,m.z)
+            val c=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf("//rotate ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${c.x} ${c.y} ${c.z}")
         }))
         tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeVolume(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf(
+                "# Volume ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+            )
         })
         tools.add(EditorTool.makeTwoInputEditor("Segment",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeSegment(s,e,op)
+
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            val list=mutableListOf(
+                "# Segment ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+            )
+            voxelRangeSegment(s,e){ p->
+                val a=Vector3i.fromFloats(p.x,p.y,p.z)
+                op(p)
+                list.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
+            }
+            list
         })
         tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeShell(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf(
+                "# Shell ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
+            )
         })
         tools.add(EditorTool.makeTwoInputEditor("Frame",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeFrame(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf(
+                "# Frame ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${a.x} ${b.y} ${a.z} minecraft:stone",
+                "/fill ${a.x} ${b.y} ${a.z} ${b.x} ${b.y} ${a.z} minecraft:stone",
+                "/fill ${b.x} ${b.y} ${a.z} ${b.x} ${a.y} ${a.z} minecraft:stone",
+                "/fill ${b.x} ${a.y} ${a.z} ${a.x} ${a.y} ${a.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${a.z} ${a.x} ${a.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${b.y} ${a.z} ${a.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${b.x} ${b.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${b.x} ${a.y} ${a.z} ${b.x} ${a.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${b.z} ${a.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${b.y} ${b.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${b.x} ${b.y} ${b.z} ${b.x} ${a.y} ${b.z} minecraft:stone",
+                "/fill ${b.x} ${a.y} ${b.z} ${a.x} ${a.y} ${b.z} minecraft:stone",
+            )
         })
         tools.add(EditorTool.PlaneEditor(scene,feedback))
         activeTool = tools[activeToolIndex]
@@ -661,6 +710,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         saveCubesAsCsv(scene.cubes.values.toList(),filename)
         // saveSchematicToFile(scene.cubes.values.toList(), "$filename.schematic")
+        val text = tools.flatMap { tool -> tool.commands }.joinToString("\n")
+        File("$filename.mccmd").appendText(text)
     }
 
     override fun resize(width: Int, height: Int) {
