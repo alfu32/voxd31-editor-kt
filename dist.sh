@@ -6,18 +6,17 @@ export SDKMAN_DIR="$HOME/.sdkman"
 tag=$1
 
 echo $tag
+# Define a list of version strings
+versions="8.0.402-tem 11.0.22-tem 17.0.10-tem 21.0.2-tem"
 
-echo "creating dist/desktop-jvm17-$tag.jar"
-
-sdk use java 17.0.10-tem
-./gradlew clean dist  -PjavaCompatVersion=17
-mv desktop/build/libs/desktop-1.0.jar dist/desktop-jvm17-$tag.jar
-git add dist/desktop-jvm17-$tag.jar
-
-echo "creating dist/desktop-jvm8-$tag.jar"
-sdk use java 8.0.402-tem
-./gradlew clean dist  -PjavaCompatVersion=8
-mv desktop/build/libs/desktop-1.0.jar dist/desktop-jvm8-$tag.jar
-git add dist/desktop-jvm8-$tag.jar
-
-sdk use java 17.0.10-tem
+# Iterate over the list of versions
+for jdk_release in $versions
+do
+    # Extract the major version number (the first number before the dot)
+    major_version="${jdk_release%%.*}"
+    echo "creating dist/voxd31-editor-desktop-jvm$major_version-$tag.jar using sdk release $jdk_release"
+    sdk use java "$jdk_release"
+    ./gradlew clean dist  "-PjavaCompatVersion=$major_version" -PreleaseNumber=$tag
+    mv desktop/build/libs/*.jar dist/
+    git add -f dist/voxd31-editor-desktop-jvm$major_version-$tag.jar
+done
