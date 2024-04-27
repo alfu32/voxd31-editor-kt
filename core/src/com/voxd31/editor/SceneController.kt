@@ -42,6 +42,15 @@ class ModelIntersection(
 class SceneController(val modelBuilder: ModelBuilder) {
     var cubes: HashMap<String,Cube> = hashMapOf()
     var currentColor: Color = Color.RED
+
+    /**
+     * possible values :
+     *  - addWithoutReplace
+     *  - addOrReplace
+     *  - replaceCube
+     * default value is addOrReplace
+     */
+    var addMode = "addOrReplace"
     fun sceneIntersectCubesRay(ray: Ray): ModelIntersection {
         val intersections = cubes.map { (id, cube) -> cube.intersectsRay(ray) }.filterNotNull().filter{ it.hit }
         if (!intersections.isEmpty()) {
@@ -72,6 +81,19 @@ class SceneController(val modelBuilder: ModelBuilder) {
         }
     }
     fun addCube(position: Vector3,color:Color? = null) {
+        when(addMode){
+            "addWithoutReplace" ->{
+                add(position,color)
+            }
+            "addOrReplace" ->{
+                addOrReplaceCube(position,color)
+            }
+            "replaceCube" ->{
+                replaceCube(position,color)
+            }
+        }
+    }
+    fun add(position: Vector3,color:Color? = null) {
         val cube = createCubeAt(position,color)
         if(cubes[cube.getId()] == null ) {
             cubes[cube.getId()] = cube
