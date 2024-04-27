@@ -73,7 +73,20 @@ class SceneController(val modelBuilder: ModelBuilder) {
     }
     fun addCube(position: Vector3,color:Color? = null) {
         val cube = createCubeAt(position,color)
+        if(cubes[cube.getId()] == null ) {
+            cubes[cube.getId()] = cube
+        }/// println("cubes : ${cubes.size}")
+    }
+    fun addOrReplaceCube(position: Vector3,color:Color? = null) {
+        val cube = createCubeAt(position,color)
         cubes[cube.getId()]=cube
+        /// println("cubes : ${cubes.size}")
+    }
+    fun replaceCube(position: Vector3,color:Color? = null) {
+        val cube = createCubeAt(position,color)
+        if(cubes[cube.getId()] != null ) {
+            cubes[cube.getId()] = cube
+        }
         /// println("cubes : ${cubes.size}")
     }
     fun removeCube(c: Cube) {

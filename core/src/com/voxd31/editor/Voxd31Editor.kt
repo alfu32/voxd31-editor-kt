@@ -142,6 +142,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         ground = (ModelInstance(groundBox, 0f,-0.5f,0f))
 
         cameraController = EditorCameraController(camera3D)
+
+        tools.add(EditorTool.VoidEditor(scene,feedback))
+        tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
             val cc=Color()
             cc.fromHsv(120f,0.8f,0.8f)
@@ -256,7 +259,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val c=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf("//rotate ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${c.x} ${c.y} ${c.z}")
         }))
-        tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeVolume(s,e,op)
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
@@ -311,6 +313,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             )
         })
         tools.add(EditorTool.PlaneEditor(scene,feedback))
+
+        println(tools.map{t -> t.name})
+
         activeTool = tools[activeToolIndex]
 
         inputEventDispatcher = InputEventDispatcher(scene,camera2D,camera3D,guides)
@@ -361,6 +366,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         selected.clear()
                     } else if (activeToolIndex != 0) {
                         activeTool!!.reset()
+                    } else {
                     }
                 }
                 Input.Keys.ESCAPE -> {
@@ -370,7 +376,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         selected.clear()
                     } else if (activeToolIndex != 0) {
                         activeTool!!.reset()
-                    } else {
                         activeToolIndex = 0
                         activeTool = tools[activeToolIndex]
                         activeTool!!.reset()
@@ -509,7 +514,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         uiElements.add(
             UiElementButton(
-                position = Vector2(100f, 30f + 15f * 31f + 30f),
+                position = Vector2(100f, 30f + 16f * 31f + 30f),
                 size = Vector2(20f, 58f),
                 background = Color.DARK_GRAY,
                 hover = Color.LIGHT_GRAY,
