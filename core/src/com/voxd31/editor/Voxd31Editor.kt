@@ -359,17 +359,21 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         guides.addCube(Vector3(mp).set(mp.x,mp.y,mp.z-i.toFloat()),Color.GREEN)
                     }
                 }
+                Input.Keys.S -> {
+                    saveCubesAsCsv(scene.cubes.values.toList(),filename)
+                }
                 Input.Keys.SPACE -> {
+                    saveCubesAsCsv(scene.cubes.values.toList(),filename)
                     if(guides.cubes.isNotEmpty()) {
                         guides.clear()
                     } else if(selected.cubes.isNotEmpty()) {
                         selected.clear()
                     } else if (activeToolIndex != 0) {
                         activeTool!!.reset()
-                    } else {
                     }
                 }
                 Input.Keys.ESCAPE -> {
+                    saveCubesAsCsv(scene.cubes.values.toList(),filename)
                     if(guides.cubes.isNotEmpty()) {
                         guides.clear()
                     } else if(selected.cubes.isNotEmpty()) {
@@ -401,11 +405,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 // activeTool?.onClick?.let { it(activeTool!!,event) }
                 currentEvent = event
             }
+            uiElements.dispatch(event)
         }
         inputEventDispatcher.on("touchDown"){event ->
             uiElements.dispatch(event)
         }
         inputEventDispatcher.on("keyDown"){event ->
+            uiElements.dispatch(event)
+        }
+        inputEventDispatcher.on("keyUp"){event ->
             uiElements.dispatch(event)
         }
         currentEvent= Event()
@@ -528,6 +536,64 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
         )
+        uiElements.addAll( listOf(
+            UiElementButton(
+                position = Vector2(10f, 30f + y + 30f),
+                size = Vector2(30f, 25f),
+                background = Color.DARK_GRAY,
+                hover = Color.LIGHT_GRAY,
+                color = Color.DARK_GRAY,
+                radius = 3f,
+                text = "ctrl"
+            ) { target: UiElement, ev: Event ->
+                val kd= (ev.channel == "keyDown" && ev.keyCode == Input.Keys.CONTROL_LEFT)
+                val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.CONTROL_LEFT)
+                target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
+                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+            },
+            UiElementButton(
+                position = Vector2(45f, 30f + y + 30f),
+                size = Vector2(30f, 25f),
+                background = Color.DARK_GRAY,
+                hover = Color.LIGHT_GRAY,
+                color = Color.DARK_GRAY,
+                radius = 3f,
+                text = "shift"
+            ) { target: UiElement, ev: Event ->
+                val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.SHIFT_LEFT)
+                val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.SHIFT_LEFT)
+                target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
+                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+            },
+            UiElementButton(
+                position = Vector2(80f, 30f + y + 30f),
+                size = Vector2(20f, 25f),
+                background = Color.DARK_GRAY,
+                hover = Color.LIGHT_GRAY,
+                color = Color.DARK_GRAY,
+                radius = 3f,
+                text = "alt"
+            ) { target: UiElement, ev: Event ->
+                val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.ALT_LEFT)
+                val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.ALT_LEFT)
+                target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
+                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+            },
+            UiElementButton(
+                position = Vector2(105f, 30f + y + 30f),
+                size = Vector2(50f, 25f),
+                background = Color.DARK_GRAY,
+                hover = Color.LIGHT_GRAY,
+                color = Color.DARK_GRAY,
+                radius = 3f,
+                text = "mouse"
+            ) { target: UiElement, ev: Event ->
+                val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
+                val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
+                target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
+                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+            }
+        ))
     }
 
     override fun render() {
