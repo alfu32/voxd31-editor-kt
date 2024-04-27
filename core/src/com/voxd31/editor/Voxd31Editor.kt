@@ -60,6 +60,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     var activeToolIndex = 0
     lateinit var inputEventDispatcher: InputEventDispatcher
     val commands = mutableListOf<String>()
+    var toolsCopy=false
 
 
     private lateinit var cameraController: CameraInputController
@@ -163,7 +164,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf("//select ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z}")
         }))
-        var toolsCopy=false
         tools.add(EditorTool.makeTwoInputEditor("Move", onFeedback = { s:Vector3,e:Vector3 ->
             feedback.clear()
             val cc=Color()
@@ -406,120 +406,123 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         currentEvent= Event()
 
 
-        var x=10f
-        var y=30f
-        for( hue in 0 .. 14) {
+        initUi(uiElements)
+        // println(uiElements)
+
+    }
+
+    private fun initUi(uiElements: UiElementsCollection) {
+        var x = 10f
+        var y = 30f
+        for (hue in 0..14) {
             val bg = Color()
-            bg.fromHsv(hue*24.0f,1f,0.7f)
-            bg.a=1f
+            bg.fromHsv(hue * 24.0f, 1f, 0.7f)
+            bg.a = 1f
             val color = Color()
-            color.fromHsv(hue*24.0f,1f,1f)
-            color.a=1f
+            color.fromHsv(hue * 24.0f, 1f, 1f)
+            color.a = 1f
             uiElements.add(
                 UiElementButton(
-                    position = Vector2(10f,y),
-                    size = Vector2(30f,25f),
+                    position = Vector2(10f, y),
+                    size = Vector2(30f, 25f),
                     background = bg,
-                    hover=color,
-                    text= "${ (hue * 24) }".padStart(3, 48.toChar())
-                ){ target:UiElement,ev:Event ->
-                    target.background = if(scene.currentColor == color)color else bg
-                    target.color = if(scene.currentColor == color)Color.WHITE else Color.DARK_GRAY
-                    if(target.isClicked && ev.channel == "touchDown") {
+                    hover = color,
+                    text = "${(hue * 24)}".padStart(3, 48.toChar())
+                ) { target: UiElement, ev: Event ->
+                    target.background = if (scene.currentColor == color) color else bg
+                    target.color = if (scene.currentColor == color) Color.WHITE else Color.DARK_GRAY
+                    if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color
                     }
                 }
             )
             val bg1 = Color()
-            bg1.fromHsv(hue*24.0f,0.4f,0.5f)
-            bg1.a=0.3f
+            bg1.fromHsv(hue * 24.0f, 0.4f, 0.5f)
+            bg1.a = 0.3f
             val color1 = Color()
-            color1.fromHsv(hue*24.0f,0.4f,0.9f)
-            color1.a=0.4f
+            color1.fromHsv(hue * 24.0f, 0.4f, 0.9f)
+            color1.a = 0.4f
             uiElements.add(
                 UiElementButton(
-                    position = Vector2(50f,y),
-                    size = Vector2(30f,25f),
+                    position = Vector2(50f, y),
+                    size = Vector2(30f, 25f),
                     background = bg1,
-                    hover=color1,
-                    text= "${ (hue * 24) }".padStart(3, 48.toChar())
-                ){ target:UiElement,ev:Event ->
-                    target.background = if(scene.currentColor == color1)color1 else bg1
-                    target.color = if(scene.currentColor == color1)Color.WHITE else Color.DARK_GRAY
-                    if(target.isClicked && ev.channel == "touchDown") {
+                    hover = color1,
+                    text = "${(hue * 24)}".padStart(3, 48.toChar())
+                ) { target: UiElement, ev: Event ->
+                    target.background = if (scene.currentColor == color1) color1 else bg1
+                    target.color = if (scene.currentColor == color1) Color.WHITE else Color.DARK_GRAY
+                    if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color1
                     }
                 }
             )
-            y+=30f
+            y += 30f
         }
-        y=30f
-        for( gs in 0 until 101 step 10) {
-            val hh=gs/100f
-            val hover = Color(0.5f,0.5f,0.8f,1f)
-            val color = Color(hh,hh,hh,1f)
-            val dimmed = Color(hh,hh,hh,1f)
-            dimmed.a=0.8f
+        y = 30f
+        for (gs in 0 until 101 step 10) {
+            val hh = gs / 100f
+            val hover = Color(0.5f, 0.5f, 0.8f, 1f)
+            val color = Color(hh, hh, hh, 1f)
+            val dimmed = Color(hh, hh, hh, 1f)
+            dimmed.a = 0.8f
             uiElements.add(
                 UiElementButton(
-                    position = Vector2(90f,y),
-                    size = Vector2(30f,25f),
+                    position = Vector2(90f, y),
+                    size = Vector2(30f, 25f),
                     background = color,
-                    hover=hover,
-                    text= "$gs%"
-                ){ target:UiElement,ev:Event ->
-                    target.background = if(scene.currentColor == color)color else dimmed
-                    target.color = if(scene.currentColor == color)Color.WHITE else Color.DARK_GRAY
-                    if(target.isClicked && ev.channel == "touchDown") {
+                    hover = hover,
+                    text = "$gs%"
+                ) { target: UiElement, ev: Event ->
+                    target.background = if (scene.currentColor == color) color else dimmed
+                    target.color = if (scene.currentColor == color) Color.WHITE else Color.DARK_GRAY
+                    if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color
                     }
                 }
             )
 
-            y+=30f
+            y += 30f
         }
-        y=30f+15f*31f
-        tools.forEachIndexed{
-            i,t ->
+        y = 30f + 15f * 31f
+        tools.forEachIndexed { i, t ->
             uiElements.add(
                 UiElementButton(
-                    position = Vector2(10f,y),
-                    size = Vector2(85f,25f),
+                    position = Vector2(10f, y),
+                    size = Vector2(85f, 25f),
                     background = Color.DARK_GRAY,
-                    hover=Color.LIGHT_GRAY,
-                    text= t.name
-                ){ target:UiElement,ev:Event ->
-                    target.background = if(activeToolIndex == i)Color.GOLD else Color.DARK_GRAY
-                    target.color = if(activeToolIndex == i)Color.WHITE else Color.DARK_GRAY
-                    if(target.isClicked && ev.channel == "touchDown") {
+                    hover = Color.LIGHT_GRAY,
+                    text = t.name
+                ) { target: UiElement, ev: Event ->
+                    target.background = if (activeToolIndex == i) Color.GOLD else Color.DARK_GRAY
+                    target.color = if (activeToolIndex == i) Color.WHITE else Color.DARK_GRAY
+                    if (target.isClicked && ev.channel == "touchDown") {
                         activeToolIndex = i
                         activeTool = tools[activeToolIndex]
                         activeTool!!.reset()
                     }
                 }
             )
-            y+=30f
+            y += 30f
 
         }
 
         uiElements.add(
             UiElementButton(
-                position = Vector2(100f,30f+15f*31f+30f),
-                size = Vector2(20f,58f),
+                position = Vector2(100f, 30f + 15f * 31f + 30f),
+                size = Vector2(20f, 58f),
                 background = Color.DARK_GRAY,
-                hover=Color.LIGHT_GRAY,
-                color=Color.DARK_GRAY,
-                text= "+"
-            ){ target:UiElement,ev:Event ->
-                if(target.isClicked && ev.channel == "touchDown") {
+                hover = Color.LIGHT_GRAY,
+                color = Color.DARK_GRAY,
+                text = "+"
+            ) { target: UiElement, ev: Event ->
+                if (target.isClicked && ev.channel == "touchDown") {
                     toolsCopy = !toolsCopy
-                    target.background = if(toolsCopy)Color.GOLD else Color.DARK_GRAY
-                    target.color = if(toolsCopy)Color.WHITE else Color.DARK_GRAY
+                    target.background = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
+                    target.color = if (toolsCopy) Color.WHITE else Color.DARK_GRAY
                 }
             }
         )
-        // println(uiElements)
-
     }
 
     override fun render() {
