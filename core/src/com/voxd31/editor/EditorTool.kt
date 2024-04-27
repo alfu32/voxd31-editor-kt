@@ -43,6 +43,23 @@ open class EditorTool(
                 }
             ){}
         }
+        fun VoidEditor(scene: SceneController, feedback: SceneController):EditorTool{
+            val a = Color(1f,1f,0f,0.5f)
+            val b = Color(1f,0.5f,0f,0.5f)
+            return object:EditorTool(
+                name = "nothing",
+                onClick = fun(self: EditorTool, event: Event): Boolean {
+                    return true
+                },
+                onMove = fun(self: EditorTool, event: Event): Boolean {
+                    feedback.clear()
+                    feedback.addCube(event.modelVoxel!!, a)
+                    feedback.addCube(event.modelNextVoxel!!,  b)
+                    //currentEvent = event
+                    return true
+                }
+            ){}
+        }
         fun makeTwoInputEditor(
             name:String,
             onFeedback: (a:Vector3,b:Vector3)->Unit,
