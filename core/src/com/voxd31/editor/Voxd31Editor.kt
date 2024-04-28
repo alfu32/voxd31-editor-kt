@@ -472,7 +472,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Event ->
                     target.background = if (scene.currentColor == color) color else bg
-                    target.color = if (scene.currentColor == color) Color.WHITE else Color.DARK_GRAY
+                    target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color
                     }
@@ -494,7 +494,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Event ->
                     target.background = if (scene.currentColor == color1) color1 else bg1
-                    target.color = if (scene.currentColor == color1) Color.WHITE else Color.DARK_GRAY
+                    target.color = if (scene.currentColor == color1) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color1
                     }
@@ -519,7 +519,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Event ->
                     target.background = if (scene.currentColor == color) color else dimmed
-                    target.color = if (scene.currentColor == color) Color.WHITE else Color.DARK_GRAY
+                    target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color
                     }
@@ -539,7 +539,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     text = t.name
                 ) { target: UiElement, ev: Event ->
                     target.background = if (activeToolIndex == i) Color.GOLD else Color.DARK_GRAY
-                    target.color = if (activeToolIndex == i) Color.WHITE else Color.DARK_GRAY
+                    target.color = if (activeToolIndex == i) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         activeToolIndex = i
                         activeTool = tools[activeToolIndex]
@@ -563,7 +563,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 if (target.isClicked && ev.channel == "touchDown") {
                     toolsCopy = !toolsCopy
                     target.background = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
-                    target.color = if (toolsCopy) Color.WHITE else Color.DARK_GRAY
+                    target.color = if (toolsCopy) Color.LIGHT_GRAY else Color.DARK_GRAY
                 }
             }
         )
@@ -583,7 +583,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 )
             ) { target: UiElement, ev: Event,old:String,new:String ->
                 println("changed add mode from $old to $new ")
-                // scene.addMode = new
+                scene.addMode = new
             }
         )
 
@@ -601,7 +601,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 val kd= (ev.channel == "keyDown" && ev.keyCode == Input.Keys.CONTROL_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.CONTROL_LEFT)
                 target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },
             UiElementButton(
                 position = Vector2(55f, y + 130f),
@@ -616,7 +616,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.SHIFT_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.SHIFT_LEFT)
                 target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },
             UiElementButton(
                 position = Vector2(95f, y + 130f),
@@ -631,7 +631,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.ALT_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.ALT_LEFT)
                 target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
                 //target.hover = if (kd) Color.DARK_GRAY else if (ku) Color.WHITE else target.color
             },
             UiElementButton(
@@ -647,7 +647,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
                 val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
                 target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },
         ))
     }

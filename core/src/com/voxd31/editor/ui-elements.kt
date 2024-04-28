@@ -225,17 +225,14 @@ class UiElementButton(
     override var clicked:(target:UiElement,event:Event)->Unit={ t,e -> }
 ):UiElement(position, size, background, hover, color, border, text, clicked){
     override fun draw(shapeRenderer2d:ShapeRenderer){
-        if(isHovered){
-            drawRoundedRectangle(shapeRenderer2d,position.x, position.y,size.x,size.y,radius,hover)
-            //shapeRenderer2d.rect(position.x, position.y,size.x,size.y,hover,hover,hover,hover)
-        } else {
-            drawRoundedRectangle(shapeRenderer2d,position.x, position.y,size.x,size.y,radius,background)
-            //shapeRenderer2d.rect(position.x,position.y,size.x,size.y,background,background,background,background)
-        }
+        val useColor = if(isHovered){ hover } else { background }
+        drawRoundedRectangle(shapeRenderer2d,position.x, position.y,size.x,size.y,radius,useColor)
+        //shapeRenderer2d.rect(position.x, position.y,size.x,size.y,hover,hover,hover,useColor)
     }
     override fun drawLines(shapeRenderer2d:ShapeRenderer){
-        drawRoundedRectangleLines(shapeRenderer2d,position.x,position.y,size.x,size.y,radius,color)
-        drawRoundedRectangleLines(shapeRenderer2d,position.x-1,position.y-1,size.x+2,size.y+2,radius,color)
+        val useColor = if(isHovered){ hover } else { border }
+        drawRoundedRectangleLines(shapeRenderer2d,position.x,position.y,size.x,size.y,radius,useColor)
+        drawRoundedRectangleLines(shapeRenderer2d,position.x-1,position.y-1,size.x+2,size.y+2,radius,useColor)
         //shapeRenderer2d.rect(position.x,position.y,size.x,size.y,color,color,color,color)
         //shapeRenderer2d.rect(position.x-1,position.y-1,size.x+2,size.y+2,color,color,color,color)
     }
@@ -245,7 +242,7 @@ class UiElementButton(
         layout.setText(font, text)
         val sz=size.cpy().sub(layout.width,layout.height).scl(0.5f,0.5f)
         val cl = spriteBatch.color
-        spriteBatch.color = color
+        spriteBatch.color = if(isHovered){ background } else { color }
         font.draw(spriteBatch,text,position.x+sz.x, position.y+sz.y+layout.height)
         spriteBatch.color = cl
     }
@@ -299,8 +296,8 @@ class UiElementOptgroup<T>(
                         changed(target,ev,options[selectedIndex],options[i])
                         selectedIndex = i
                     }
-                    target.background = if (selectedIndex == i) Color.GOLD else Color.DARK_GRAY
-                    target.color = if (selectedIndex == i) Color.BLACK else Color.DARK_GRAY
+                    target.background = if (selectedIndex == i) hover else background
+                    target.color = if (selectedIndex == i) border else color
                 }
             )
             prev.set(current)
