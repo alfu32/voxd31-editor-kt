@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
+import com.xovd3i.editor.Voxd31Editor
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -26,7 +27,7 @@ abstract class UiElement(
     var isClicked = false
     abstract fun draw(shapeRenderer2d:ShapeRenderer)
     abstract fun drawLines(shapeRenderer2d:ShapeRenderer)
-    abstract fun drawText(spriteBatch:SpriteBatch,font: BitmapFont)
+    abstract fun drawText(spriteBatch:SpriteBatch)
 
     open fun dispatch(e:Event){
         isClicked=false
@@ -75,7 +76,7 @@ class UiElementsCollection(
     override var color: Color=Color.BLACK,
     override var border: Color=Color.GRAY,
     var elements: MutableList<UiElement> = mutableListOf()
-):UiElement(position, size, background, hover, color, border){
+):UiElement(position, size, background, hover, color, border,){
     override fun draw(shapeRenderer2d:ShapeRenderer){
         for (e in elements) {
             e.draw(shapeRenderer2d)
@@ -86,9 +87,9 @@ class UiElementsCollection(
             e.drawLines(shapeRenderer2d)
         }
     }
-    override fun drawText(spriteBatch:SpriteBatch, font: BitmapFont){
+    override fun drawText(spriteBatch:SpriteBatch){
         for (e in elements) {
-            e.drawText(spriteBatch,font)
+            e.drawText(spriteBatch)
         }
     }
 
@@ -126,9 +127,7 @@ class UiElementButton(
     override var color: Color=Color.BLACK,
     override var border: Color=Color.GRAY,
     override var text:String="",
-    /**
-     * possible values : box, pill
-     */
+    var font: String="default",
     var radius:Float=0f,
     override var clicked:(target:UiElement,event:Event)->Unit={ t,e -> }
 ):UiElement(position, size, background, hover, color, border, text, clicked){
@@ -170,49 +169,24 @@ class UiElementButton(
     ) {
         val srcolor=shapeRenderer.color
         shapeRenderer.color = color
+        // Central rectangle
+        // shapeRenderer.rect(x + radius, y + radius, width - 2 * radius, height - 2 * radius)
 
-        // Total points for the corners
-        val cornerPoints = if(radius<1.0f) 1 else (Math.PI*radius/2).toInt()// More points for a smoother corner
+        // Four side lines
+        // bottom
+        shapeRenderer.line(x + radius, y, x+width - radius, y)
+        // top
+        shapeRenderer.line(x + radius, y + height, x+width - radius, y + height)
+        // left
+        shapeRenderer.line(x, y + radius, x, y+height - radius)
+        // right
+        shapeRenderer.line(x + width, y + radius, x + width, y+height - radius)
 
-
-        // Create an array to hold points for the polyline
-        val points = FloatArray((cornerPoints + 1) * 8) // +1 for each segment in corner and 4 corners
-
-
-        // Helper function to add points to the array
-        var index = 0
-
-        // Upper left corner
-        for (i in 0..cornerPoints) {
-            val angle = Math.PI / 2 * (i / cornerPoints.toDouble())
-            points[index++] = x + radius - (radius * cos(angle)).toFloat()
-            points[index++] = y + height - radius + (radius * sin(angle)).toFloat()
-        }
-
-        // Upper right corner
-        for (i in 0..cornerPoints) {
-            val angle = Math.PI / 2 * (i / cornerPoints.toDouble())
-            points[index++] = x + width - radius + (radius * cos(angle)).toFloat()
-            points[index++] = y + height - radius + (radius * sin(angle)).toFloat()
-        }
-
-        // Lower right corner
-        for (i in 0..cornerPoints) {
-            val angle = Math.PI / 2 * (i / cornerPoints.toDouble())
-            points[index++] = x + width - radius + (radius * cos(angle)).toFloat()
-            points[index++] = y + radius - (radius * sin(angle)).toFloat()
-        }
-
-        // Lower left corner
-        for (i in 0..cornerPoints) {
-            val angle = Math.PI / 2 * (i / cornerPoints.toDouble())
-            points[index++] = x + radius - (radius * cos(angle)).toFloat()
-            points[index++] = y + radius - (radius * sin(angle)).toFloat()
-        }
-
-
-        // Draw the polyline
-        shapeRenderer.polyline(points)
+        // Four corner circles
+        shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f)
+        shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f)
+        shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f)
+        shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f)
 
         shapeRenderer.color = srcolor
     }
@@ -231,8 +205,9 @@ class UiElementButton(
         //shapeRenderer2d.rect(position.x,position.y,size.x,size.y,color,color,color,color)
         //shapeRenderer2d.rect(position.x-1,position.y-1,size.x+2,size.y+2,color,color,color,color)
     }
-    override fun drawText(spriteBatch:SpriteBatch, font: BitmapFont){
+    override fun drawText(spriteBatch:SpriteBatch){
         val layout = GlyphLayout()
+        val font = Voxd31Editor.fonts[font]!!
         layout.setText(font, text)
         val sz=size.cpy().sub(layout.width,layout.height).scl(0.5f,0.5f)
         font.draw(spriteBatch,text,position.x+sz.x, position.y+sz.y+layout.height)
