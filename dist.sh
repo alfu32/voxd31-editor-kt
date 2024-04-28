@@ -20,3 +20,6 @@ do
     mv desktop/build/libs/*.jar dist/
     ## git add -f dist/voxd31-editor-desktop-jvm$major_version-$tag.jar
 done
+
+
+cp scripts/voxd31-* ./dist/
