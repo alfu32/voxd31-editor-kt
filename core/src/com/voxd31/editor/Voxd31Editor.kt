@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
@@ -30,6 +31,32 @@ import kotlin.math.floor
 
 
 class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
+    companion object {
+        var fonts: HashMap<String,BitmapFont> = hashMapOf()
+
+        private fun initializeFonts():HashMap<String,BitmapFont> {
+            val fonts: HashMap<String,BitmapFont> = hashMapOf()
+            fonts[""]=BitmapFont()
+            fonts["noto-sans-regular 12px"] = generateFont("Noto_Sans/static/NotoSans-Regular.ttf", 12)
+            fonts["noto-sans-regular 16px"] = generateFont("Noto_Sans/static/NotoSans-Regular.ttf", 16)
+            fonts["noto-sans-regular 21px"] = generateFont("Noto_Sans/static/NotoSans-Regular.ttf", 21)
+            fonts["noto-mono-sans-regular 12px"] = generateFont("Noto_Sans_Mono/static/NotoSansMono-Regular.ttf", 12)
+            fonts["noto-mono-sans-regular 16px"] = generateFont("Noto_Sans_Mono/static/NotoSansMono-Regular.ttf", 16)
+            fonts["noto-mono-sans-regular 21px"] = generateFont("Noto_Sans_Mono/static/NotoSansMono-Regular.ttf", 21)
+            fonts["default"]=fonts["noto-sans-regular 16px"]!!
+            return fonts
+        }
+
+        private fun generateFont(filePath: String, size: Int): BitmapFont {
+            val generator = FreeTypeFontGenerator(Gdx.files.internal(filePath))
+            val parameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+                this.size = size
+            }
+            val font = generator.generateFont(parameter)
+            generator.dispose()  // Don't forget to dispose to avoid memory leaks
+            return font
+        }
+    }
     private val GNDSZ=100f
     private lateinit var camera3D: PerspectiveCamera
     private lateinit var camera2D: OrthographicCamera
@@ -49,10 +76,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var inputProcessors: CompositeInputProcessor
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var shapeRenderer2d: ShapeRenderer
-    private lateinit var font: BitmapFont
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Event
-    private var uiElements = UiElementsCollection()
+    private var uiElements:UiElementsCollection= UiElementsCollection()
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -72,11 +98,13 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
+        if( fonts.isEmpty() ) {
+            fonts= initializeFonts()
+        }
 
         // Fetch initial window dimensions
         val initialWidth = Gdx.graphics.width.toFloat()
         val initialHeight = Gdx.graphics.height.toFloat()
-        font = BitmapFont() // This will use libGDX's default Arial font.
         spriteBatch = SpriteBatch()
 
         camera3D = PerspectiveCamera(45f, initialWidth, initialHeight).apply {
@@ -440,7 +468,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     size = Vector2(30f, 25f),
                     background = bg,
                     hover = color,
-                    text = "${(hue * 24)}".padStart(3, 48.toChar())
+                    text = "${(hue * 24)}".padStart(3, 48.toChar()),
+                    font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Event ->
                     target.background = if (scene.currentColor == color) color else bg
                     target.color = if (scene.currentColor == color) Color.WHITE else Color.DARK_GRAY
@@ -461,7 +490,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     size = Vector2(30f, 25f),
                     background = bg1,
                     hover = color1,
-                    text = "${(hue * 24)}".padStart(3, 48.toChar())
+                    text = "${(hue * 24)}".padStart(3, 48.toChar()),
+                    font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Event ->
                     target.background = if (scene.currentColor == color1) color1 else bg1
                     target.color = if (scene.currentColor == color1) Color.WHITE else Color.DARK_GRAY
@@ -485,7 +515,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     size = Vector2(30f, 25f),
                     background = color,
                     hover = hover,
-                    text = "$gs%"
+                    text = "$gs%",
+                    font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Event ->
                     target.background = if (scene.currentColor == color) color else dimmed
                     target.color = if (scene.currentColor == color) Color.WHITE else Color.DARK_GRAY
@@ -536,15 +567,17 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
         )
+
         uiElements.addAll( listOf(
             UiElementButton(
-                position = Vector2(10f, 30f + y + 30f),
-                size = Vector2(30f, 25f),
+                position = Vector2(10f, y + 130f),
+                size = Vector2(40f, 16f),
                 background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
+                hover = Color.DARK_GRAY,
                 color = Color.DARK_GRAY,
-                radius = 3f,
-                text = "ctrl"
+                radius = 8f,
+                text = "ctrl",
+                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Event ->
                 val kd= (ev.channel == "keyDown" && ev.keyCode == Input.Keys.CONTROL_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.CONTROL_LEFT)
@@ -552,13 +585,14 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
             },
             UiElementButton(
-                position = Vector2(45f, 30f + y + 30f),
-                size = Vector2(30f, 25f),
+                position = Vector2(55f, y + 130f),
+                size = Vector2(40f, 16f),
                 background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
+                hover = Color.DARK_GRAY,
                 color = Color.DARK_GRAY,
-                radius = 3f,
-                text = "shift"
+                radius = 8f,
+                text = "shift",
+                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Event ->
                 val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.SHIFT_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.SHIFT_LEFT)
@@ -566,33 +600,36 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
             },
             UiElementButton(
-                position = Vector2(80f, 30f + y + 30f),
-                size = Vector2(20f, 25f),
+                position = Vector2(95f, y + 130f),
+                size = Vector2(40f, 16f),
                 background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
+                hover = Color.DARK_GRAY,
                 color = Color.DARK_GRAY,
-                radius = 3f,
-                text = "alt"
+                radius = 8f,
+                text = "alt",
+                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Event ->
                 val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.ALT_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.ALT_LEFT)
                 target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
                 target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
+                //target.hover = if (kd) Color.DARK_GRAY else if (ku) Color.WHITE else target.color
             },
             UiElementButton(
-                position = Vector2(105f, 30f + y + 30f),
-                size = Vector2(50f, 25f),
+                position = Vector2(140f, y + 130f),
+                size = Vector2(60f, 16f),
                 background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
+                hover = Color.DARK_GRAY,
                 color = Color.DARK_GRAY,
-                radius = 3f,
-                text = "mouse"
+                radius = 8f,
+                text = "mouse",
+                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Event ->
                 val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
                 val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
                 target.background = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
                 target.color = if (kd) Color.WHITE else if (ku) Color.DARK_GRAY else target.color
-            }
+            },
         ))
     }
 
@@ -694,25 +731,26 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
 
         shapeRenderer2d.projectionMatrix = camera2D.combined
+        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Line)
+        uiElements.drawLines(shapeRenderer2d)
+        shapeRenderer2d.end()
         shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
         uiElements.draw(shapeRenderer2d)
         shapeRenderer2d.end()
-        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Line)
-        uiElements.drawLines(shapeRenderer2d)
 
         spriteBatch.projectionMatrix = camera2D.combined
         spriteBatch.begin()
 
-        uiElements.drawText(spriteBatch,font)
+        uiElements.drawText(spriteBatch)
         if(currentEvent.screen != null) {
-            font.draw(
+            fonts["default"]!!.draw(
                 spriteBatch,
                 """
                     cubes:${scene.cubes.size} xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
                 """.trimIndent(),
                 10f,25f,
             ) // Draws text at the specified position.
-            font.draw(
+            fonts["default"]!!.draw(
                 spriteBatch,
                 """${activeTool!!.name} ${currentEvent.modelVoxel}""".trimIndent(),
                 currentEvent.screen!!.x, currentEvent.screen!!.y+15f,

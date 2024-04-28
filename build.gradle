@@ -58,6 +58,7 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
     }
 }
 
@@ -70,6 +71,7 @@ project(":core") {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
         // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
+        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
 
     }
