@@ -567,6 +567,25 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
         )
+        uiElements.add(
+            UiElementOptgroup<String>(
+                position = Vector2(230f, y + 130f),
+                size = Vector2(300f, 20f),
+                background = Color.DARK_GRAY,
+                hover = Color.LIGHT_GRAY,
+                color = Color.DARK_GRAY,
+                label = "cube add modes : ",
+                font="noto-sans-regular 12px",
+                options = listOf(
+                    "addWithoutReplace",
+                    "addOrReplace",
+                    "replaceCube",
+                )
+            ) { target: UiElement, ev: Event,old:String,new:String ->
+                println("changed add mode from $old to $new ")
+                // scene.addMode = new
+            }
+        )
 
         uiElements.addAll( listOf(
             UiElementButton(
