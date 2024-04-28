@@ -37,12 +37,12 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         private fun initializeFonts():HashMap<String,BitmapFont> {
             val fonts: HashMap<String,BitmapFont> = hashMapOf()
             fonts[""]=BitmapFont()
-            fonts["noto-sans-regular 12px"] = generateFont("Noto_Sans/static/NotoSans-Regular.ttf", 12)
-            fonts["noto-sans-regular 16px"] = generateFont("Noto_Sans/static/NotoSans-Regular.ttf", 16)
-            fonts["noto-sans-regular 21px"] = generateFont("Noto_Sans/static/NotoSans-Regular.ttf", 21)
-            fonts["noto-mono-sans-regular 12px"] = generateFont("Noto_Sans_Mono/static/NotoSansMono-Regular.ttf", 12)
-            fonts["noto-mono-sans-regular 16px"] = generateFont("Noto_Sans_Mono/static/NotoSansMono-Regular.ttf", 16)
-            fonts["noto-mono-sans-regular 21px"] = generateFont("Noto_Sans_Mono/static/NotoSansMono-Regular.ttf", 21)
+            fonts["noto-sans-regular 12px"] = generateFont("NotoSans-Regular.ttf", 12)
+            fonts["noto-sans-regular 16px"] = generateFont("NotoSans-Regular.ttf", 16)
+            fonts["noto-sans-regular 21px"] = generateFont("NotoSans-Regular.ttf", 21)
+            fonts["noto-mono-sans-regular 12px"] = generateFont("NotoSansMono-Regular.ttf", 12)
+            fonts["noto-mono-sans-regular 16px"] = generateFont("NotoSansMono-Regular.ttf", 16)
+            fonts["noto-mono-sans-regular 21px"] = generateFont("NotoSansMono-Regular.ttf", 21)
             fonts["default"]=fonts["noto-sans-regular 16px"]!!
             return fonts
         }
