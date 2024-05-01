@@ -1,0 +1,29 @@
+////////////////////// plugins {
+//////////////////////     id 'org.jetbrains.kotlin.jvm' version '1.9.21'
+////////////////////// }
+
+////////////////////// group = 'gdxui'
+////////////////////// version = '1.0'
+
+////////////////////// repositories {
+//////////////////////     mavenCentral()
+////////////////////// }
+
+////////////////////// dependencies {
+//////////////////////     testImplementation 'org.jetbrains.kotlin:kotlin-test'
+////////////////////// }
+
+////////////////////// test {
+//////////////////////     useJUnitPlatform()
+////////////////////// }
+////////////////////// kotlin {
+//////////////////////     jvmToolchain(8)
+////////////////////// }
+
+// sourceCompatibility = 17
+sourceCompatibility = project.hasProperty('javaCompatVersion') ? project.property('javaCompatVersion') : '17'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = [ "src/main/kotlin" ]
+
+eclipse.project.name = appName + "-core-ui"

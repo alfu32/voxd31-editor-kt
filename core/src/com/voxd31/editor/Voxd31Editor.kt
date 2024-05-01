@@ -16,11 +16,9 @@ import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.viewport.ExtendViewport
-import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.voxd31.editor.*
@@ -198,13 +196,13 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         tools.add(EditorTool.makeTwoInputEditor("Move", onFeedback = { s:Vector3,e:Vector3 ->
             feedback.clear()
             val cc=Color()
-            cc.fromHsv(120f,0.5f,0.8f)
+            cc.fromHsv(120f,0.5f,1f)
 
             voxelRangeSegment(s,e){ p->
-                feedback.addCube(p,cc)
+                feedback.addOrReplaceCube(p,Color.GOLD)
             }
-            feedback.addCube(s,Color.RED)
-            feedback.addCube(e,Color.GREEN)
+            feedback.addOrReplaceCube(s,Color.RED)
+            feedback.addOrReplaceCube(e,Color.GREEN)
             val delta = Vector3(floor(e.x)-floor(s.x), floor(e.y)-floor(s.y), floor(e.z)-floor(s.z))
 
             selected.cubes.forEach{ i,c->
@@ -245,10 +243,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             cc.fromHsv(120f,0.5f,0.8f)
 
             voxelRangeSegment(s,m){ p->
-                feedback.addCube(p,cc)
+                feedback.addCube(p,Color.GOLD)
             }
             voxelRangeSegment(s,e){ p->
-                feedback.addCube(p,cc)
+                feedback.addCube(p,Color.ORANGE)
             }
             feedback.addCube(s,Color.RED)
             feedback.addCube(m,Color.GREEN)
@@ -309,6 +307,36 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 list.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
             }
             list
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Sphere",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeSphere(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf(
+                "# Circle ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
+            )
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Cloud",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeCloudSphere(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf(
+                "# Circle ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
+            )
+        })
+        tools.add(EditorTool.makeTwoInputEditor("Ball",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeHollowSphere(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf(
+                "# Circle ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
+            )
         })
         tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeShell(s,e,op)
@@ -479,11 +507,11 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             )
             val bg1 = Color()
-            bg1.fromHsv(hue * 24.0f, 0.4f, 0.5f)
-            bg1.a = 0.3f
+            bg1.fromHsv(hue * 24.0f, 0.4f, 0.6f)
+            bg1.a = 0.5f
             val color1 = Color()
             color1.fromHsv(hue * 24.0f, 0.4f, 0.9f)
-            color1.a = 0.4f
+            color1.a = 0.6f
             uiElements.add(
                 UiElementButton(
                     position = Vector2(50f, y),
@@ -567,6 +595,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
         )
+
+        y-=90f
         uiElements.add(
             UiElementOptgroup<String>(
                 position = Vector2(230f, y + 130f),
