@@ -49,12 +49,26 @@ allprojects {
     }
 }
 
+project(":ui-renderer") {
+    apply plugin: "kotlin"
+
+
+    dependencies {
+        api "com.badlogicgames.gdx:gdx:$gdxVersion"
+        api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
+        // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
+        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        implementation 'org.simpleframework:simple-xml:2.7.1'
+    }
+}
 project(":desktop") {
     apply plugin: "kotlin"
 
 
     dependencies {
         implementation project(":core")
+        implementation project(":ui-renderer")
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"

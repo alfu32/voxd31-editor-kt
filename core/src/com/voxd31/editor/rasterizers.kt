@@ -2,6 +2,7 @@ package com.voxd31.editor
 
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -35,6 +36,41 @@ fun voxelRangeSegment(a: Vector3,b:Vector3,callback: (p:Vector3)->Unit){
         a.z + t * ab.z,
         )
         if( p0.dst2(p) < ( 0.630*0.630 ) ) {
+            callback(p)
+        }
+    }
+}
+fun voxelRangeSphere(a: Vector3, b:Vector3, callback: (p:Vector3)->Unit){
+    val r=b.cpy().sub(a).len()
+    val r2=b.cpy().sub(a).len2()
+    val s=a.cpy().sub(r,r,r)
+    val e=a.cpy().add(r,r,r)
+    voxelRangeVolume(s,e){p ->
+        if( p.dst2(a) <= r2 ) {
+            callback(p)
+        }
+    }
+}
+fun voxelRangeCloudSphere(a: Vector3, b:Vector3, callback: (p:Vector3)->Unit){
+    val epsilon = 0.630*0.630
+    val r=b.cpy().sub(a).len()
+    val r2=b.cpy().sub(a).len2()
+    val s=a.cpy().sub(r,r,r)
+    val e=a.cpy().add(r,r,r)
+    voxelRangeVolume(s,e){p ->
+        if( abs(p.dst2(a) - r2) < 1 ) {
+            callback(p)
+        }
+    }
+}
+fun voxelRangeHollowSphere(a: Vector3, b:Vector3, callback: (p:Vector3)->Unit){
+    val epsilon = 0.630*0.630
+    val r=b.cpy().sub(a).len()
+    val r2=b.cpy().sub(a).len2()
+    val s=a.cpy().sub(r,r,r)
+    val e=a.cpy().add(r,r,r)
+    voxelRangeVolume(s,e){p ->
+        if( abs(p.dst(a) - r) < 1 ) {
             callback(p)
         }
     }
