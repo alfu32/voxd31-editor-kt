@@ -3,6 +3,7 @@ package com.voxd31.editor
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector3
+import kotlin.math.atan2
 
 open class EditorTool(
     var name: String,
@@ -282,6 +283,97 @@ open class EditorTool(
                             voxelRangePlane(points[0],points[1],event.modelNextVoxel!!){
                                 feedback.addCube(it, scene.currentColor)
                             }
+                        }
+                    }
+                    //currentEvent = event
+                    return true
+                }
+            ){
+                override fun reset() {
+                    state=0
+                }
+            }
+        }
+        fun ArcEditor(scene: SceneController, feedback: SceneController):EditorTool{
+            var voxelGen:( (p1: Vector3, p2: Vector3, p3: Vector3, callback: (p: Vector3) -> Unit) -> Unit)? = null
+            val a = Color(1f,1f,0f,0.5f)
+            val b = Color(1f,0.5f,0f,0.5f)
+            val points= mutableListOf(Vector3(),Vector3(),Vector3())
+            var state=0
+            return object:EditorTool(
+                name = "Arc",
+                onClick = fun(self: EditorTool, event: Event): Boolean {
+                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                        when(state){
+                            0 -> {
+                                points[0]=event.modelNextVoxel!!.cpy()
+                                state=1
+                            }
+                            1 -> {
+                                points[1]=event.modelNextVoxel!!.cpy()
+                                state=2
+                            }
+                            2 -> {
+                                points[2]=event.modelNextVoxel!!.cpy()
+                                if (event.keyDown == Input.Keys.ALT_LEFT) {
+                                    voxelGen!!(points[0],points[1],points[2]){
+                                        scene.removeCube(it)
+                                    }
+                                } else {
+                                    val a=Vector3i.fromFloats(points[0].x,points[0].y,points[0].z)
+                                    val b=Vector3i.fromFloats(points[1].x,points[1].y,points[1].z)
+                                    val c=Vector3i.fromFloats(points[2].x,points[2].y,points[2].z)
+                                    self.commands = mutableListOf(
+                                        "# Plane ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${c.x} ${c.y} ${c.z}  ${scene.currentColor}",
+                                    )
+                                    voxelGen!!(points[0],points[1],points[2]){ p ->
+                                        scene.addCube(p)
+                                        val a=Vector3i.fromFloats(p.x,p.y,p.z)
+                                        self.commands.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
+                                    }
+                                }
+                                voxelGen=null
+                                state=0
+                            }
+                        }
+                    }
+                    //currentEvent = event
+                    return true
+                },
+                onMove = fun(self: EditorTool, event: Event): Boolean {
+                    feedback.clear()
+                    when(state){
+                        0 ->{
+                            feedback.addCube(event.modelVoxel!!, a)
+                            feedback.addCube(event.modelNextVoxel!!, scene.currentColor)
+                        }
+                        1->{
+                            if(voxelGen == null) {
+                                val dir = atan2(points[0].z.toDouble(),points[0].x.toDouble())
+                                voxelGen = voxelRangeArcGenerator(if(dir<0)-1 else 1)
+                            }
+                            voxelRangeSegment(points[0],event.modelNextVoxel!!){
+                                feedback.addCube(it, Color.YELLOW)
+                            }
+                            voxelRangeSegment(points[0],event.modelNextVoxel!!){
+                                feedback.addCube(it, Color.YELLOW)
+                            }
+                            feedback.addCube(points[0], Color.BLUE)
+                            feedback.addCube(event.modelNextVoxel!!, Color.RED)
+                        }
+                        2->{
+                            voxelGen!!(points[0],points[1],event.modelNextVoxel!!){
+                                feedback.addCube(it, scene.currentColor)
+                            }
+                            voxelRangeSegment(points[0],points[1]){
+                                feedback.addCube(it, Color.YELLOW)
+                            }
+                            voxelRangeSegment(points[0],event.modelNextVoxel!!){
+                                feedback.addCube(it, Color.YELLOW)
+                            }
+                            feedback.addCube(points[0], Color.BLUE)
+                            feedback.addCube(points[1], Color.RED)
+                            feedback.addCube(event.modelNextVoxel!!, Color.GREEN)
                         }
                     }
                     //currentEvent = event
