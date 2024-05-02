@@ -369,6 +369,16 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             )
         })
         tools.add(EditorTool.PlaneEditor(scene,feedback))
+        tools.add(EditorTool.makeTwoInputEditor("Circle",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeCircle(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            val r = s.cpy().sub(e).len()
+            listOf(
+                "# Circle ${a.x} ${a.y} ${a.z} ${r} ${scene.currentColor}",
+            )
+        })
+        tools.add(EditorTool.ArcEditor(scene,feedback))
 
         println(tools.map{t -> t.name})
 
@@ -556,7 +566,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
             y += 30f
         }
-        y = 30f + 15f * 31f
+        y = 20f + 15f * 31f
         tools.forEachIndexed { i, t ->
             uiElements.add(
                 UiElementButton(
@@ -596,7 +606,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             }
         )
 
-        y-=90f
+        y-=130f
         uiElements.add(
             UiElementOptgroup<String>(
                 position = Vector2(230f, y + 130f),
