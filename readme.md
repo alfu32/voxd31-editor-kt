@@ -17,4 +17,4 @@ if the buffer and the file are not specified the program will default to 1280x80
 
 ### operation
 
-![video](https://raw.githubusercontent.com/alfu32/voxd31-editor-kt/main/readme/rel-0.15.1-2.webm)
+![video](https://media.githubusercontent.com/media/alfu32/voxd31-editor-kt/main/readme/rel-0.15.1-1.webm)
