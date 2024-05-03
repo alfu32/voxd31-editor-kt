@@ -61,6 +61,55 @@ open class EditorTool(
                 }
             ){}
         }
+        fun SelectEditor(scene: SceneController, feedback: SceneController, selected: SceneController):EditorTool{
+            val a = Color(1f,1f,0f,0.5f)
+            val b = Color(1f,0.5f,0f,0.5f)
+            fun crawl(){}
+            return object:EditorTool(
+                name = "Select2",
+                onClick = fun(self: EditorTool, event: Event): Boolean {
+                    if(event.target != null ) {
+                        val targetCube=event.target!!//selected.cubes.values.first()
+                        if(scene.cubes[targetCube.getId()] != null) {
+                            selected.addCube(targetCube.position, targetCube.color)
+                            val selectedCubesNeighbors=SceneController(targetCube.modelBuilder)
+                            var oldLen=selected.cubes.size
+                            while(true){
+                                selected.cubes.values
+                                    .flatMap { c ->
+                                        c.getNeigbourCubes()
+                                    }
+                                    .filter { nc ->
+                                        val snc = scene.cubesInt[nc.getIntId()]
+                                        snc != null && snc.color == targetCube.color
+                                    }
+                                    .forEach {
+                                        selectedCubesNeighbors.addCube(it.position, it.color)
+                                    }
+                                selectedCubesNeighbors.cubes.forEach { (k, v) -> selected.addCube(v.position, v.color) }
+                                selectedCubesNeighbors.clear()
+                                if(oldLen==selected.cubes.size){
+                                    break
+                                }
+                                oldLen=selected.cubes.size
+                            }
+                        } else {
+                            selected.clear()
+                        }
+                    } else {
+                        selected.clear()
+                    }
+                    return true
+                },
+                onMove = fun(self: EditorTool, event: Event): Boolean {
+                    feedback.clear()
+                    feedback.addCube(event.modelVoxel!!, a)
+                    feedback.addCube(event.modelNextVoxel!!,  b)
+                    //currentEvent = event
+                    return true
+                }
+            ){}
+        }
         fun makeTwoInputEditor(
             name:String,
             onFeedback: (a:Vector3,b:Vector3)->Unit,

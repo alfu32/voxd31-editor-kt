@@ -169,7 +169,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         cameraController = EditorCameraController(camera3D)
 
-        tools.add(EditorTool.VoidEditor(scene,feedback))
+        tools.add(EditorTool.SelectEditor(scene,feedback,selected))
         tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
             val cc=Color()
