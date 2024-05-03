@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.viewport.Viewport
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
+import com.voxd31.gdxui.*
 import java.io.File
 import kotlin.math.floor
 
@@ -75,8 +76,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var shapeRenderer2d: ShapeRenderer
     private lateinit var spriteBatch: SpriteBatch
-    private lateinit var currentEvent: Event
-    private var uiElements:UiElementsCollection= UiElementsCollection()
+    private lateinit var currentEvent: Vox3Event
+    private var uiElements: UiElementsCollection = UiElementsCollection()
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -482,7 +483,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         inputEventDispatcher.on("keyUp"){event ->
             uiElements.dispatch(event)
         }
-        currentEvent= Event()
+        currentEvent= Vox3Event()
 
 
         initUi(uiElements)
@@ -508,7 +509,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     hover = color,
                     text = "${(hue * 24)}".padStart(3, 48.toChar()),
                     font="noto-sans-regular 12px",
-                ) { target: UiElement, ev: Event ->
+                ) { target: UiElement, ev: Vox3Event ->
                     target.border = if (scene.currentColor == color) color else bg
                     target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
@@ -530,7 +531,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     hover = color1,
                     text = "${(hue * 24)}".padStart(3, 48.toChar()),
                     font="noto-sans-regular 12px",
-                ) { target: UiElement, ev: Event ->
+                ) { target: UiElement, ev: Vox3Event ->
                     target.border = if (scene.currentColor == color1) color1 else bg1
                     target.color = if (scene.currentColor == color1) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
@@ -555,7 +556,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     hover = hover,
                     text = "$gs%",
                     font="noto-sans-regular 12px",
-                ) { target: UiElement, ev: Event ->
+                ) { target: UiElement, ev: Vox3Event ->
                     target.border = if (scene.currentColor == color) color else dimmed
                     target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
@@ -576,7 +577,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     hover = Color.LIGHT_GRAY,
                     text = t.name,
                     radius = 3f
-                ) { target: UiElement, ev: Event ->
+                ) { target: UiElement, ev: Vox3Event ->
                     target.border = if (activeToolIndex == i) Color.GOLD else Color.DARK_GRAY
                     target.color = if (activeToolIndex == i) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
@@ -598,7 +599,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 hover = Color.LIGHT_GRAY,
                 color = Color.DARK_GRAY,
                 text = "+"
-            ) { target: UiElement, ev: Event ->
+            ) { target: UiElement, ev: Vox3Event ->
                 if (target.isClicked && ev.channel == "touchDown") {
                     toolsCopy = !toolsCopy
                     target.border = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
@@ -622,10 +623,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     "addOrReplace",
                     "replaceCube",
                 )
-            ) { target: UiElement, ev: Event,old:String,new:String ->
+            ) { target: UiElement, ev: Vox3Event, old:String, new:String ->
                 println("changed add mode from $old to $new ")
                 scene.addMode = new
-            }
+            }.init(fonts)
         )
 
         uiElements.addAll( listOf(
@@ -638,7 +639,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 radius = 8f,
                 text = "ctrl",
                 font="noto-sans-regular 12px",
-            ) { target: UiElement, ev: Event ->
+            ) { target: UiElement, ev: Vox3Event ->
                 val kd= (ev.channel == "keyDown" && ev.keyCode == Input.Keys.CONTROL_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.CONTROL_LEFT)
                 target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
@@ -653,7 +654,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 radius = 8f,
                 text = "shift",
                 font="noto-sans-regular 12px",
-            ) { target: UiElement, ev: Event ->
+            ) { target: UiElement, ev: Vox3Event ->
                 val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.SHIFT_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.SHIFT_LEFT)
                 target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
@@ -668,7 +669,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 radius = 8f,
                 text = "alt",
                 font="noto-sans-regular 12px",
-            ) { target: UiElement, ev: Event ->
+            ) { target: UiElement, ev: Vox3Event ->
                 val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.ALT_LEFT)
                 val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.ALT_LEFT)
                 target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
@@ -684,7 +685,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 radius = 8f,
                 text = "mouse",
                 font="noto-sans-regular 12px",
-            ) { target: UiElement, ev: Event ->
+            ) { target: UiElement, ev: Vox3Event ->
                 val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
                 val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
                 target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
@@ -801,7 +802,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         spriteBatch.projectionMatrix = camera2D.combined
         spriteBatch.begin()
 
-        uiElements.drawText(spriteBatch)
+        uiElements.drawText(spriteBatch, fonts)
         if(currentEvent.screen != null) {
             fonts["default"]!!.draw(
                 spriteBatch,

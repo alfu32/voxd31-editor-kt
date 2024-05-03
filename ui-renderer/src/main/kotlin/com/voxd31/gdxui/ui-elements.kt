@@ -1,4 +1,4 @@
-package com.voxd31.editor
+package com.voxd31.gdxui
 
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
@@ -8,9 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
-import com.xovd3i.editor.Voxd31Editor
-import kotlin.math.cos
-import kotlin.math.sin
 
 private fun measureText(layout:GlyphLayout,font:BitmapFont,text:String):Vector2{
     layout.setText(font, text)
@@ -75,7 +72,11 @@ private fun drawRoundedRectangleLines(
 
     shapeRenderer.color = srcolor
 }
-class UIStyle()
+class UIStyle(
+    var textColor:Color,
+    var backgroundCOlor:Color,
+    var borderColor: Color,
+)
 abstract class UiElement(
     open var position:Vector2=Vector2(0f, 0f),
     open var size: Vector2=Vector2(20f,20f),
@@ -84,15 +85,15 @@ abstract class UiElement(
     open var color: Color=Color.BLACK,
     open var border: Color=Color.GRAY,
     open var text:String="",
-    open var clicked:(target:UiElement,event:Event)->Unit={ t,e -> }
+    open var clicked:(target: UiElement, event: Vox3Event)->Unit={ t, e -> }
 ){
     var isHovered = false
     var isClicked = false
     abstract fun draw(shapeRenderer2d:ShapeRenderer)
     abstract fun drawLines(shapeRenderer2d:ShapeRenderer)
-    abstract fun drawText(spriteBatch:SpriteBatch)
+    abstract fun drawText(spriteBatch:SpriteBatch,fonts:Map<String, BitmapFont>)
 
-    open fun dispatch(e:Event){
+    open fun dispatch(e:Vox3Event){
         isClicked=false
         isHovered=false
         val p = position.cpy()
@@ -139,7 +140,7 @@ open class UiElementsCollection(
     override var color: Color=Color.BLACK,
     override var border: Color=Color.GRAY,
     open var elements: MutableList<UiElement> = mutableListOf()
-):UiElement(position, size, background, hover, color, border,){
+): UiElement(position, size, background, hover, color, border,){
     override fun draw(shapeRenderer2d:ShapeRenderer){
         for (e in elements) {
             e.draw(shapeRenderer2d)
@@ -150,16 +151,16 @@ open class UiElementsCollection(
             e.drawLines(shapeRenderer2d)
         }
     }
-    override fun drawText(spriteBatch:SpriteBatch){
+    override fun drawText(spriteBatch:SpriteBatch,fonts:Map<String, BitmapFont>){
         for (e in elements) {
             val cl = spriteBatch.color
             spriteBatch.color = color
-            e.drawText(spriteBatch)
+            e.drawText(spriteBatch,fonts)
             spriteBatch.color = cl
         }
     }
 
-    override fun dispatch(e:Event){
+    override fun dispatch(e:Vox3Event){
         isClicked=false
         isHovered=false
         for (el in elements) {
@@ -172,11 +173,11 @@ open class UiElementsCollection(
             }
         }
     }
-    fun add(element: UiElement):UiElementsCollection {
+    fun add(element: UiElement): UiElementsCollection {
         elements.add(element)
         return this
     }
-    fun addAll(els: Collection<UiElement>):UiElementsCollection {
+    fun addAll(els: Collection<UiElement>): UiElementsCollection {
         elements.addAll(els)
         return this
     }
@@ -200,9 +201,9 @@ class UiElementLabel(
     }
     override fun drawLines(shapeRenderer2d:ShapeRenderer){
     }
-    override fun drawText(spriteBatch:SpriteBatch){
+    override fun drawText(spriteBatch:SpriteBatch,fonts:Map<String, BitmapFont>){
         val layout = GlyphLayout()
-        val font = Voxd31Editor.fonts[font]!!
+        val font = fonts[font]!!
         layout.setText(font, text)
         val sz=size.cpy().sub(layout.width,layout.height).scl(0.5f,0.5f)
         val cl = spriteBatch.color
@@ -222,8 +223,8 @@ class UiElementButton(
     override var text:String="",
     var font: String="default",
     var radius:Float=0f,
-    override var clicked:(target:UiElement,event:Event)->Unit={ t,e -> }
-):UiElement(position, size, background, hover, color, border, text, clicked){
+    override var clicked:(target: UiElement, event:Vox3Event)->Unit={ t, e -> }
+): UiElement(position, size, background, hover, color, border, text, clicked){
     override fun draw(shapeRenderer2d:ShapeRenderer){
         drawRoundedRectangle(shapeRenderer2d,position.x, position.y,size.x,size.y,radius,background)
         val cl = shapeRenderer2d.color
@@ -244,9 +245,9 @@ class UiElementButton(
         //shapeRenderer2d.rect(position.x,position.y,size.x,size.y,color,color,color,color)
         //shapeRenderer2d.rect(position.x-1,position.y-1,size.x+2,size.y+2,color,color,color,color)
     }
-    override fun drawText(spriteBatch:SpriteBatch){
+    override fun drawText(spriteBatch:SpriteBatch,fonts:Map<String, BitmapFont>){
         val layout = GlyphLayout()
-        val font = Voxd31Editor.fonts[font]!!
+        val font = fonts[font]!!
         layout.setText(font, text)
         val sz=size.cpy().sub(layout.width,layout.height).scl(0.5f,0.5f)
         val cl = spriteBatch.color
@@ -265,26 +266,28 @@ class UiElementOptgroup<T>(
     override var border: Color=Color.GRAY,
     var font: String="default",
     var label:String="",
-    var changed:(target:UiElement,ev:Event,oldValue:T,newValue:T)->Unit={ t,e,o,n -> }
-):UiElementsCollection(position, size, background, hover, color, border,mutableListOf()) {
+    var changed:(target: UiElement, ev:Vox3Event, oldValue:T, newValue:T)->Unit={ t, e, o, n -> }
+): UiElementsCollection(position, size, background, hover, color, border,mutableListOf()) {
     val layout = GlyphLayout()
     var selectedIndex = 0
-    init{
-        val fnt = Voxd31Editor.fonts[font]!!
+    fun init(fonts:Map<String, BitmapFont>): UiElementOptgroup<T> {
+        val fnt = fonts[font]!!
         layout.setText(fnt, "__${label}_:_${options.joinToString ("__")}")
         size.set(layout.width.coerceAtLeast(size.x),
             layout.height.coerceAtLeast(size.y))
         elements = mutableListOf()
         layout.setText(fnt, "_${label}_:_")
         val prev=Rectangle(position.x,position.y,layout.width,layout.height)
-        elements.add(UiElementLabel(
+        elements.add(
+            UiElementLabel(
             position=Vector2(position.x,position.y),
             size=Vector2(layout.width,size.y),
             background=background,
             color=color,
             font=font,
             text=label,
-        ))
+        )
+        )
         options.forEachIndexed(){ i,opt ->
             layout.setText(fnt, "__$opt")
             val current=Rectangle(prev.x+prev.width,position.y,layout.width,layout.height)
@@ -310,6 +313,7 @@ class UiElementOptgroup<T>(
             )
             prev.set(current)
         }
+        return this
     }
 }
 
