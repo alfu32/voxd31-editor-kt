@@ -18,3 +18,4 @@ if the buffer and the file are not specified the program will default to 1280x80
 ### operation
 
 ![Video](https://github.com/alfu32/voxd31-editor-kt/assets/13664856/3225229a-989c-4fd2-98ca-0021e1d4c107)
+![Video](https://github.com/alfu32/voxd31-editor-kt/raw/main/readme/rel-0.15.1.webm)
