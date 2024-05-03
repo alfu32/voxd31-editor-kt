@@ -225,8 +225,16 @@ class UiElementButton(
     override var clicked:(target:UiElement,event:Event)->Unit={ t,e -> }
 ):UiElement(position, size, background, hover, color, border, text, clicked){
     override fun draw(shapeRenderer2d:ShapeRenderer){
-        val useColor = if(isHovered){ hover } else { background }
-        drawRoundedRectangle(shapeRenderer2d,position.x, position.y,size.x,size.y,radius,useColor)
+        drawRoundedRectangle(shapeRenderer2d,position.x, position.y,size.x,size.y,radius,background)
+        val cl = shapeRenderer2d.color
+        shapeRenderer2d.color=border
+        val r = radius // Math.max(radius,5f)
+        shapeRenderer2d.circle(position.x+r-1,position.y+r,r)
+        shapeRenderer2d.rect(position.x-1,position.y+r,2*r,size.y-2*r)
+        shapeRenderer2d.circle(position.x+r-1,position.y+size.y-r,r)
+        shapeRenderer2d.color=background
+        shapeRenderer2d.rect(position.x+r,position.y,r,size.y)
+        shapeRenderer2d.color=cl
         //shapeRenderer2d.rect(position.x, position.y,size.x,size.y,hover,hover,hover,useColor)
     }
     override fun drawLines(shapeRenderer2d:ShapeRenderer){
