@@ -4,43 +4,14 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.Ray
+import com.voxd31.gdxui.Cube
+import com.voxd31.gdxui.ModelIntersection
 import kotlin.math.floor
 
-class ModelIntersection(
-    var hit : Boolean,
-    var point: Vector3 = Vector3(0f,0f,0f),
-    var normal: Vector3 = Vector3(0f,0f,0f),
-    var target: Cube,// = Cube(modelBuilder = ModelBuilder(),position = Vector3(0f,0f,0f), color = Color.CYAN),
-    var type: String = "undefined"
-) {
-    operator fun component1(): Boolean {
-        return hit
-    }
-    operator fun component2(): Vector3 {
-        return point
-    }
-    operator fun component3(): Vector3 {
-        return normal
-    }
-    operator fun component4(): Cube {
-        return target
-    }
-    operator fun component5(): String {
-        return type
-    }
-
-    fun copy(): ModelIntersection  = ModelIntersection(
-        hit = hit,
-        point = point.cpy(),
-        normal = normal.cpy(),
-        target = target.copy(),
-        type=type,
-    )
-}
 
 
 class SceneController(val modelBuilder: ModelBuilder) {
-    var cubes: HashMap<String,Cube> = hashMapOf()
+    var cubes: HashMap<String, Cube> = hashMapOf()
     var cubesInt: HashMap<String,Cube> = hashMapOf()
     var currentColor: Color = Color.RED
 

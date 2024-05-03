@@ -2,7 +2,7 @@ package com.voxd31.editor.exporters
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector3
-import com.voxd31.editor.Cube
+import com.voxd31.gdxui.Cube
 import java.io.File
 
 

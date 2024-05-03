@@ -3,12 +3,13 @@ package com.voxd31.editor
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector3
+import com.voxd31.gdxui.Vox3Event
 import kotlin.math.atan2
 
 open class EditorTool(
     var name: String,
-    var onClick: (self: EditorTool,event: Event) -> Boolean,
-    var onMove: (self: EditorTool,event: Event) -> Boolean,
+    var onClick: (self: EditorTool,event: Vox3Event) -> Boolean,
+    var onMove: (self: EditorTool,event: Vox3Event) -> Boolean,
 ) {
     public var commands= mutableListOf<String>()
     companion object {
@@ -17,7 +18,7 @@ open class EditorTool(
             val b = Color(1f,0.5f,0f,0.5f)
             return object:EditorTool(
                 name = "voxel",
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
                         val a=Vector3i.fromFloats(event.target!!.position.x,event.target!!.position.y,event.target!!.position.z)
                         if (event.keyDown == Input.Keys.ALT_LEFT) {
@@ -35,7 +36,7 @@ open class EditorTool(
                     //currentEvent = event
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     feedback.clear()
                     feedback.addCube(event.modelVoxel!!, a)
                     feedback.addCube(event.modelNextVoxel!!,  scene.currentColor)
@@ -49,10 +50,10 @@ open class EditorTool(
             val b = Color(1f,0.5f,0f,0.5f)
             return object:EditorTool(
                 name = "nothing",
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     feedback.clear()
                     feedback.addCube(event.modelVoxel!!, a)
                     feedback.addCube(event.modelNextVoxel!!,  b)
@@ -67,7 +68,7 @@ open class EditorTool(
             fun crawl(){}
             return object:EditorTool(
                 name = "Select2",
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     if(event.target != null ) {
                         val targetCube=event.target!!//selected.cubes.values.first()
                         if(scene.cubes[targetCube.getId()] != null) {
@@ -101,7 +102,7 @@ open class EditorTool(
                     }
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     feedback.clear()
                     feedback.addCube(event.modelVoxel!!, a)
                     feedback.addCube(event.modelNextVoxel!!,  b)
@@ -121,7 +122,7 @@ open class EditorTool(
             var state=0
             return object:EditorTool(
                 name = name,
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
                         when(state){
                             0 -> {
@@ -138,7 +139,7 @@ open class EditorTool(
                     //currentEvent = event
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     when(state){
                         0 ->{
                             onFeedback(event.modelNextVoxel!!,event.modelNextVoxel!!)
@@ -169,7 +170,7 @@ open class EditorTool(
             var state=0
             return object:EditorTool(
                 name = name,
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
                         when(state){
                             0 -> {
@@ -195,7 +196,7 @@ open class EditorTool(
                     //currentEvent = event
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     feedback.clear()
                     when(state){
                         0 ->{
@@ -227,7 +228,7 @@ open class EditorTool(
             var state=0
             return object:EditorTool(
                 name = name,
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
                         when(state){
                             0 -> {
@@ -250,7 +251,7 @@ open class EditorTool(
                     //currentEvent = event
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     when(state){
                         0 ->{
                             onFeedback(event.modelNextVoxel!!,event.modelNextVoxel!!,event.modelNextVoxel!!)
@@ -279,7 +280,7 @@ open class EditorTool(
             var state=0
             return object:EditorTool(
                 name = "plane",
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
                         when(state){
                             0 -> {
@@ -316,7 +317,7 @@ open class EditorTool(
                     //currentEvent = event
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     feedback.clear()
                     when(state){
                         0 ->{
@@ -351,7 +352,7 @@ open class EditorTool(
             var state=0
             return object:EditorTool(
                 name = "Arc",
-                onClick = fun(self: EditorTool, event: Event): Boolean {
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
                     if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
                         when(state){
                             0 -> {
@@ -389,7 +390,7 @@ open class EditorTool(
                     //currentEvent = event
                     return true
                 },
-                onMove = fun(self: EditorTool, event: Event): Boolean {
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     feedback.clear()
                     when(state){
                         0 ->{
@@ -436,7 +437,7 @@ open class EditorTool(
         }
     }
     var points:MutableList<Vector3> = mutableListOf()
-    fun handleEvent(event:Event) {
+    fun handleEvent(event:Vox3Event) {
         val newPoints= points + event.modelPoint!!
         val isFinished  = onClick(this, event)
         if(isFinished) {

@@ -1,4 +1,4 @@
-package com.voxd31.editor
+package com.voxd31.gdxui
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
@@ -12,7 +12,6 @@ import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
 import com.badlogic.gdx.math.collision.Ray
-import kotlin.math.abs
 
 
 class RayIntersection(

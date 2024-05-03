@@ -9,30 +9,13 @@ import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
+import com.voxd31.gdxui.Cube
+import com.voxd31.gdxui.EventListener
+import com.voxd31.gdxui.ModelIntersection
+import com.voxd31.gdxui.Vox3Event
 import kotlin.math.floor
 
 
-class Event(
-    var keyCode: Int? = null,
-    var keyDown: Int? = null,
-    var screen:Vector2? = null,
-    var scroll:Vector2? = null,
-    var modelPoint: Vector3? = null,
-    var modelVoxel: Vector3? = null,
-    var modelNextPoint: Vector3? = null,
-    var modelNextVoxel: Vector3? = null,
-    var target:Cube? = null,
-    var normal:Vector3? = null,
-    var pointer:Int? = null,
-    var button:Int? = null,
-    var channel:String = "none"
-) {
-    override fun toString(): String {
-        return "keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()}"
-    }
-}
-
-typealias EventListener = (e:Event)->Unit
 class InputEventDispatcher(
     val scene:SceneController,
     val camera2D: Camera,
@@ -40,7 +23,7 @@ class InputEventDispatcher(
     val guides:SceneController,
 ):InputProcessor {
     val listeners:MutableMap<String,MutableList<EventListener>> = mutableMapOf()
-    var currentEvent = Event()
+    var currentEvent = Vox3Event()
 
     fun on(channel:String, listener:EventListener) {
         if(! listeners.containsKey((channel))) {
