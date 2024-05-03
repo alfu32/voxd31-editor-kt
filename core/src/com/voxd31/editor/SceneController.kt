@@ -41,6 +41,7 @@ class ModelIntersection(
 
 class SceneController(val modelBuilder: ModelBuilder) {
     var cubes: HashMap<String,Cube> = hashMapOf()
+    var cubesInt: HashMap<String,Cube> = hashMapOf()
     var currentColor: Color = Color.RED
 
     /**
@@ -102,17 +103,20 @@ class SceneController(val modelBuilder: ModelBuilder) {
     fun addOrReplaceCube(position: Vector3,color:Color? = null) {
         val cube = createCubeAt(position,color)
         cubes[cube.getId()]=cube
+        cubesInt[cube.getIntId()]=cube
         /// println("cubes : ${cubes.size}")
     }
     fun replaceCube(position: Vector3,color:Color? = null) {
         val cube = createCubeAt(position,color)
         if(cubes[cube.getId()] != null ) {
             cubes[cube.getId()] = cube
+            cubesInt[cube.getIntId()]=cube
         }
         /// println("cubes : ${cubes.size}")
     }
     fun removeCube(c: Cube) {
         cubes.remove(c.getId())
+        cubesInt.remove(c.getIntId())
     }
     fun createCubeAt(p:Vector3,color:Color? = null): Cube {
         // Implementation to create a cube ModelInstance at the specified coordinates

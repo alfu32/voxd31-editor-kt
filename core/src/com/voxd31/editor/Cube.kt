@@ -55,6 +55,21 @@ class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color)
     fun getId() : String {
         return "{${position.x},${position.y},${position.z}}"
     }
+    fun getIntId() : String {
+        return "{${position.x.toInt()},${position.y.toInt()},${position.z.toInt()}}"
+    }
+    fun getNeigbourCubes(): List<Cube> {
+        val p = position.cpy()
+        val l = mutableListOf<Cube>()
+        for (addx in -1..1){
+            for (addy in -1..1){
+                for (addz in -1..1){
+                    l.add(Cube(modelBuilder,p.cpy().add(addx.toFloat(),addy.toFloat(),addz.toFloat()),this.color.cpy()))
+                }
+            }
+        }
+        return l
+    }
     fun getFaceTriangles (): HashMap<String,List<Vector3>> {
         val p = position.cpy()
         val A0 = p.cpy().add(-DL,-DL,-DL) // left bottom back
