@@ -457,6 +457,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
             uiElements.dispatch(event)
+            // currentEvent.keyCode = event.keyCode
+            // currentEvent.keyDown = null
         }
         inputEventDispatcher.on("mouseMoved"){event ->
 
@@ -465,6 +467,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 activeTool?.onMove?.let { it(activeTool!!, event) }
                 currentEvent = event
             }
+            // currentEvent = event
         }
         inputEventDispatcher.on("touchUp"){event ->
             if(!uiElements.isClicked) {
@@ -473,15 +476,21 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 currentEvent = event
             }
             uiElements.dispatch(event)
+            // currentEvent.button = event.button
         }
         inputEventDispatcher.on("touchDown"){event ->
             uiElements.dispatch(event)
+            // currentEvent.button = event.button
         }
         inputEventDispatcher.on("keyDown"){event ->
             uiElements.dispatch(event)
+            // currentEvent.keyCode = event.keyCode
+            // currentEvent.keyDown = event.keyDown
         }
         inputEventDispatcher.on("keyUp"){event ->
             uiElements.dispatch(event)
+            // currentEvent.keyCode = event.keyCode
+            // currentEvent.keyDown = null
         }
         currentEvent= Vox3Event()
 
@@ -640,10 +649,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 text = "ctrl",
                 font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                val kd= (ev.channel == "keyDown" && ev.keyCode == Input.Keys.CONTROL_LEFT)
-                val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.CONTROL_LEFT)
-                target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
+                target.border = if (ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null) Color.GOLD else target.background
+                target.color = if (ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
             },
             UiElementButton(
                 position = Vector2(55f, y + 130f),
@@ -655,10 +662,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 text = "shift",
                 font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.SHIFT_LEFT)
-                val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.SHIFT_LEFT)
-                target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
+                target.border = if (ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null) Color.GOLD else target.background
+                target.color = if (ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
             },
             UiElementButton(
                 position = Vector2(95f, y + 130f),
@@ -670,10 +675,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 text = "alt",
                 font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                val kd=  (ev.channel == "keyDown" && ev.keyCode == Input.Keys.ALT_LEFT)
-                val ku= (ev.channel == "keyUp" && ev.keyCode == Input.Keys.ALT_LEFT)
-                target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
+                target.border = if (ev.keypressedMap[Input.Keys.ALT_LEFT] != null) Color.GOLD else target.background
+                target.color = if (ev.keypressedMap[Input.Keys.ALT_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
                 //target.hover = if (kd) Color.DARK_GRAY else if (ku) Color.WHITE else target.color
             },
             UiElementButton(
@@ -688,8 +691,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             ) { target: UiElement, ev: Vox3Event ->
                 val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
                 val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
-                target.border = if (kd) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (kd) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
+                target.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
+                target.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },
         ))
     }
@@ -797,6 +800,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         shapeRenderer2d.end()
         shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
         uiElements.draw(shapeRenderer2d)
+        if(uiElements.isHovered && currentEvent.screen?.x != null && currentEvent.screen?.x != null) {
+            val sc = currentEvent.screen!!
+            val cl = shapeRenderer2d.color
+            val clRED=Color(1f,0f,0f,0.5f)
+            val clGREEN=Color(0f,1f,0f,0.5f)
+            shapeRenderer2d.color = if(uiElements.isPressed) clRED else clGREEN
+            shapeRenderer2d.circle(sc.x, sc.y, 15f)
+            shapeRenderer2d.color = cl
+        }
         shapeRenderer2d.end()
 
         spriteBatch.projectionMatrix = camera2D.combined

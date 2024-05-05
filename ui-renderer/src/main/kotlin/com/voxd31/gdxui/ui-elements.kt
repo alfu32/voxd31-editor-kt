@@ -89,6 +89,7 @@ abstract class UiElement(
 ){
     var isHovered = false
     var isClicked = false
+    var isPressed = false
     abstract fun draw(shapeRenderer2d:ShapeRenderer)
     abstract fun drawLines(shapeRenderer2d:ShapeRenderer)
     abstract fun drawText(spriteBatch:SpriteBatch,fonts:Map<String, BitmapFont>)
@@ -96,6 +97,7 @@ abstract class UiElement(
     open fun dispatch(e:Vox3Event){
         isClicked=false
         isHovered=false
+        isPressed = false
         val p = position.cpy()
         // p.y= Gdx.graphics.height - position.y - 40
         // p.x = p.x + 20f
@@ -105,17 +107,16 @@ abstract class UiElement(
             e.screen!!.y > p.y && e.screen!!.y < p.y + size.y
         ){
             isHovered = true
-            if(
-                e.button != null && e.button == Input.Buttons.LEFT
-            ) {
-                isClicked=true
-            } else {
-                isClicked=false
-            }
+            isPressed = e.button != null && (e.button == Input.Buttons.LEFT || e.button == Input.Buttons.MIDDLE || e.button == Input.Buttons.RIGHT)
+            isClicked = e.button != null && (e.button == Input.Buttons.LEFT || e.button == Input.Buttons.MIDDLE || e.button == Input.Buttons.RIGHT)
         } else {
             isHovered=false
+            isClicked=false
+            isPressed = false
         }
-        clicked(this,e)
+        // if(isClicked) {
+            clicked(this, e)
+        // }
     }
 
     override fun toString(): String {
@@ -161,15 +162,20 @@ open class UiElementsCollection(
     }
 
     override fun dispatch(e:Vox3Event){
-        isClicked=false
-        isHovered=false
+        this.isClicked=false
+        this.isHovered=false
         for (el in elements) {
             el.dispatch(e)
             if(el.isHovered){
-                isHovered=true
+                this.isHovered=true
+                if(el.isClicked){
+                    this.isClicked=true
+                }
+                break
             }
             if(el.isClicked){
-                isClicked=true
+                this.isClicked=true
+                break
             }
         }
     }

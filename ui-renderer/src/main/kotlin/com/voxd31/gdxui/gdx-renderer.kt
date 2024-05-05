@@ -29,6 +29,10 @@ class Vox3Event(
     var button:Int? = null,
     var channel:String = "none"
 ) {
+    public val keypressedMap = hashMapOf<Int,Int>()
+    var alt:Boolean = false
+    var ctrl:Boolean = false
+    var shift:Boolean = false
     override fun toString(): String {
         return "keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()}"
     }

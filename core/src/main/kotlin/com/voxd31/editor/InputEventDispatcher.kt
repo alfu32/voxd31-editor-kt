@@ -1,6 +1,7 @@
 package com.voxd31.editor
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.Color
@@ -13,6 +14,7 @@ import com.voxd31.gdxui.Cube
 import com.voxd31.gdxui.EventListener
 import com.voxd31.gdxui.ModelIntersection
 import com.voxd31.gdxui.Vox3Event
+import java.awt.event.InputEvent
 import kotlin.math.floor
 
 
@@ -43,6 +45,54 @@ class InputEventDispatcher(
         currentEvent.keyCode=keycode
         currentEvent.keyDown=keycode
         currentEvent.channel="keyDown"
+        currentEvent.keypressedMap[keycode]=keycode
+        when(keycode) {
+            Input.Keys.CONTROL_LEFT, Input.Keys.CONTROL_RIGHT -> {
+                currentEvent.ctrl=true
+            }
+            Input.Keys.ALT_LEFT, Input.Keys.ALT_RIGHT -> {
+                currentEvent.alt=true
+            }
+            Input.Keys.SHIFT_LEFT, Input.Keys.SHIFT_RIGHT -> {
+                currentEvent.shift=true
+            }
+            Input.Keys.F1 -> {
+
+            }
+            Input.Keys.F2 -> {
+
+            }
+            Input.Keys.F3 -> {
+
+            }
+            Input.Keys.F4 -> {
+
+            }
+            Input.Keys.F5 -> {
+
+            }
+            Input.Keys.F6 -> {
+
+            }
+            Input.Keys.F7 -> {
+
+            }
+            Input.Keys.F8 -> {
+
+            }
+            Input.Keys.F9 -> {
+
+            }
+            Input.Keys.F10 -> {
+
+            }
+            Input.Keys.F11 -> {
+
+            }
+            Input.Keys.F12 -> {
+
+            }
+        }
         dispatchEvents("keyDown")
         return true;
     }
@@ -51,6 +101,54 @@ class InputEventDispatcher(
         currentEvent.keyCode=keycode
         currentEvent.keyDown=0
         currentEvent.channel="keyUp"
+        currentEvent.keypressedMap.remove(keycode)
+        when(keycode) {
+            Input.Keys.CONTROL_LEFT, Input.Keys.CONTROL_RIGHT -> {
+                currentEvent.ctrl=false
+            }
+            Input.Keys.ALT_LEFT, Input.Keys.ALT_RIGHT -> {
+                currentEvent.alt=false
+            }
+            Input.Keys.SHIFT_LEFT, Input.Keys.SHIFT_RIGHT -> {
+                currentEvent.shift=false
+            }
+            Input.Keys.F1 -> {
+
+            }
+            Input.Keys.F2 -> {
+
+            }
+            Input.Keys.F3 -> {
+
+            }
+            Input.Keys.F4 -> {
+
+            }
+            Input.Keys.F5 -> {
+
+            }
+            Input.Keys.F6 -> {
+
+            }
+            Input.Keys.F7 -> {
+
+            }
+            Input.Keys.F8 -> {
+
+            }
+            Input.Keys.F9 -> {
+
+            }
+            Input.Keys.F10 -> {
+
+            }
+            Input.Keys.F11 -> {
+
+            }
+            Input.Keys.F12 -> {
+
+            }
+        }
         dispatchEvents("keyUp")
         return true;
     }
@@ -66,6 +164,7 @@ class InputEventDispatcher(
         currentEvent.pointer=pointer
         currentEvent.button=button
         currentEvent.channel="touchDown"
+        currentEvent.keypressedMap[button]=button
         dispatchEvents("touchDown")
         return true;
     }
@@ -75,6 +174,7 @@ class InputEventDispatcher(
         currentEvent.pointer=pointer
         currentEvent.button=button
         currentEvent.channel="touchUp"
+        currentEvent.keypressedMap.remove(button)
         dispatchEvents("touchUp")
         return true;
     }
@@ -84,6 +184,7 @@ class InputEventDispatcher(
         currentEvent.pointer=pointer
         currentEvent.button=button
         currentEvent.channel="touchCancelled"
+        currentEvent.keypressedMap.remove(button)
         dispatchEvents("touchCancelled")
         return false
     }
