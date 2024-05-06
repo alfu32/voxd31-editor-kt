@@ -393,6 +393,17 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         Gdx.input.inputProcessor = inputProcessors
         inputEventDispatcher.on("keyUp"){event ->
             when(event.keyCode){
+                Input.Keys.DEL,
+                Input.Keys.BACK,
+                Input.Keys.FORWARD_DEL -> {
+                    if(selected.cubes.size > 0) {
+                        selected.cubes.forEach{
+                            cube ->
+                            scene.removeCube(cube.value)
+                        }
+                        selected.clear()
+                    }
+                }
                 Input.Keys.T -> {
                     if(tools.size > 0) {
                         activeToolIndex=(activeToolIndex + 1) % tools.size
