@@ -36,6 +36,7 @@ allprojects {
 
         junitVersion = '4.13.1'
         junitJupiterVersion = '5.8.1'
+        mokitoCoreVersion = '5.11.0'
     }
 
     repositories {
@@ -52,7 +53,7 @@ allprojects {
     }
 }
 
-project(":ui-renderer") {
+project(":core-ui") {
     apply plugin: "kotlin"
 
 
@@ -71,6 +72,7 @@ project(":ui-renderer") {
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
     }
 
     test {
@@ -90,6 +92,7 @@ project(":desktop") {
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
     }
 
     test {
@@ -102,7 +105,7 @@ project(":core") {
 
 
     dependencies {
-        implementation project(':ui-renderer')
+        implementation project(':core-ui')
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
@@ -111,9 +114,54 @@ project(":core") {
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
     }
 
     test {
         useJUnitPlatform()
+    }
+}
+
+project(":core-testing") {
+    apply plugin: "kotlin"
+
+    sourceSets.test.java.srcDirs = ["src/test/kotin"]
+
+    dependencies {
+
+        /**
+         * If you do have some classes to test in os specific code you may want to uncomment
+         * some of these lines.
+         *
+         * BUT: I recommend to create seperate test sub projects for each platform. Trust me :)
+         *
+         */
+
+//        compile project(":android")
+//        compile project(":html")
+//        compile project(":desktop")
+
+
+//        if(System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0) {
+//        	compile project(":ios")
+//        }
+
+        implementation project(":core")
+        implementation project(":core-ui")
+
+        implementation  "junit:junit:$junitVersion"
+        implementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        implementation "org.mockito:mockito-core:$mokitoCoreVersion"
+
+        implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+
+        testImplementation "junit:junit:$junitVersion"
+        testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
+
+        testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
 }
