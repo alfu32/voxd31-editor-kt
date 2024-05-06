@@ -118,4 +118,6 @@ Thumbs.db
 /ios/xcode/native/
 /ios/IOSLauncher.app
 /ios/IOSLauncher.app.dSYM
-/ui-renderer/build/*
+/core-ui/build/*
+/core-testing/build/*
+Voxd31EditorVersion.kt

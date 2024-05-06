@@ -36,6 +36,7 @@ allprojects {
 
         junitVersion = '4.13.1'
         junitJupiterVersion = '5.8.1'
+        mokitoCoreVersion = '5.11.0'
     }
 
     repositories {
@@ -52,7 +53,7 @@ allprojects {
     }
 }
 
-project(":ui-renderer") {
+project(":core-ui") {
     apply plugin: "kotlin"
 
 
@@ -61,16 +62,17 @@ project(":ui-renderer") {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
         // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
-        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        implementation 'org.simpleframework:simple-xml:2.7.1'
+        api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        api 'org.simpleframework:simple-xml:2.7.1'
         // Kotlin scripting dependencies
-        implementation "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion"
-        implementation "org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion"
-        implementation "org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion"
-        implementation "org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
     }
 
     test {
@@ -86,10 +88,11 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
     }
 
     test {
@@ -102,18 +105,63 @@ project(":core") {
 
 
     dependencies {
-        implementation project(':ui-renderer')
+        implementation project(':core-ui')
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
         // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
-        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
     }
 
     test {
         useJUnitPlatform()
+    }
+}
+
+project(":core-testing") {
+    apply plugin: "kotlin"
+
+    sourceSets.test.java.srcDirs = ["src/test/kotin"]
+
+    dependencies {
+
+        /**
+         * If you do have some classes to test in os specific code you may want to uncomment
+         * some of these lines.
+         *
+         * BUT: I recommend to create seperate test sub projects for each platform. Trust me :)
+         *
+         */
+
+//        compile project(":android")
+//        compile project(":html")
+//        compile project(":desktop")
+
+
+//        if(System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0) {
+//        	compile project(":ios")
+//        }
+
+        implementation project(":core")
+        implementation project(":core-ui")
+
+        implementation  "junit:junit:$junitVersion"
+        implementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        implementation "org.mockito:mockito-core:$mokitoCoreVersion"
+
+        implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+
+        testImplementation "junit:junit:$junitVersion"
+        testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
+        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
+
+        testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+        testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
 }
