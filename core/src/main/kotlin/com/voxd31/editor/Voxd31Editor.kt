@@ -495,12 +495,19 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         currentEvent= Vox3Event()
 
 
-        initUi(uiElements)
         // println(uiElements)
+        //initUi(uiElements)
 
     }
 
-    private fun initUi(uiElements: UiElementsCollection) {
+    private var uiIsInitialized=0
+    private fun initUi() {
+        if (uiIsInitialized > 20){
+            return
+        }
+        uiIsInitialized++
+        uiElements = UiElementsCollection()
+
         var x = 10f
         var y = 30f
         for (hue in 0..14) {
@@ -616,16 +623,17 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 }
             }
         )
-
-        y-=130f
+        viewport2D.worldHeight
+        // y=viewport2D.worldHeight - 140f
+        y=viewport2D.worldHeight-22f
         uiElements.add(
             UiElementOptgroup<String>(
-                position = Vector2(230f, y + 130f),
+                position = Vector2(230f, y),
                 size = Vector2(300f, 20f),
                 background = Color.DARK_GRAY,
                 hover = Color.LIGHT_GRAY,
                 color = Color.DARK_GRAY,
-                label = "cube add modes : ",
+                label = "cube add modes : $y ${viewport2D.worldHeight} ${viewport2D.worldHeight-25}",
                 font="noto-sans-regular 12px",
                 options = listOf(
                     "addWithoutReplace",
@@ -640,7 +648,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         uiElements.addAll( listOf(
             UiElementButton(
-                position = Vector2(10f, y + 130f),
+                position = Vector2(10f, y),
                 size = Vector2(40f, 16f),
                 background = Color.DARK_GRAY,
                 hover = Color.DARK_GRAY,
@@ -653,7 +661,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 target.color = if (ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
             },
             UiElementButton(
-                position = Vector2(55f, y + 130f),
+                position = Vector2(55f, y),
                 size = Vector2(40f, 16f),
                 background = Color.DARK_GRAY,
                 hover = Color.DARK_GRAY,
@@ -666,7 +674,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 target.color = if (ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
             },
             UiElementButton(
-                position = Vector2(95f, y + 130f),
+                position = Vector2(95f, y),
                 size = Vector2(40f, 16f),
                 background = Color.DARK_GRAY,
                 hover = Color.DARK_GRAY,
@@ -680,7 +688,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 //target.hover = if (kd) Color.DARK_GRAY else if (ku) Color.WHITE else target.color
             },
             UiElementButton(
-                position = Vector2(140f, y + 130f),
+                position = Vector2(140f, y),
                 size = Vector2(60f, 16f),
                 background = Color.DARK_GRAY,
                 hover = Color.DARK_GRAY,
@@ -703,6 +711,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+
+        initUi()
 
 
         // Process input and update the camera
@@ -809,6 +819,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             shapeRenderer2d.circle(sc.x, sc.y, 15f)
             shapeRenderer2d.color = cl
         }
+        val dg=Color.DARK_GRAY
+        shapeRenderer2d.rect(0f,0f,viewport2D.worldWidth,25f,dg,dg,dg,dg)
         shapeRenderer2d.end()
 
         spriteBatch.projectionMatrix = camera2D.combined
@@ -819,9 +831,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             fonts["default"]!!.draw(
                 spriteBatch,
                 """
-                    cubes:${scene.cubes.size} xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
+                    ui:${viewport2D.worldWidth}x${viewport2D.worldHeight} cubes:${scene.cubes.size} xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
                 """.trimIndent(),
-                10f,25f,
+                10f,20f,
             ) // Draws text at the specified position.
             fonts["default"]!!.draw(
                 spriteBatch,

@@ -61,13 +61,13 @@ project(":ui-renderer") {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
         // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
-        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        implementation 'org.simpleframework:simple-xml:2.7.1'
+        api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        api 'org.simpleframework:simple-xml:2.7.1'
         // Kotlin scripting dependencies
-        implementation "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion"
-        implementation "org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion"
-        implementation "org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion"
-        implementation "org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion"
+        api "org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
@@ -86,7 +86,7 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
@@ -107,7 +107,7 @@ project(":core") {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
         // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
-        implementation "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
