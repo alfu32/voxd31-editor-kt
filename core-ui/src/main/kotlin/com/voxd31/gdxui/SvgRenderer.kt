@@ -13,6 +13,7 @@ class SvgRenderer: ShapeRenderer() {
     var currentColor: Color?=Color.WHITE
     var projectionMatrix: Matrix4=Matrix4().set( MxIdentity)
     var transfomationMatrix: Matrix4=Matrix4().set(MxIdentity)
+    var shapeType = ShapeType.Line
 
     var svg=mutableListOf<String>()
 
@@ -40,70 +41,61 @@ class SvgRenderer: ShapeRenderer() {
 
     override fun setProjectionMatrix(matrix: Matrix4?) {
         projectionMatrix.set(matrix)
-        super.setProjectionMatrix(matrix)
     }
 
     override fun getProjectionMatrix(): Matrix4 {
         return projectionMatrix
-        //return super.getProjectionMatrix()
     }
 
     override fun setTransformMatrix(matrix: Matrix4?) {
         transfomationMatrix.set(matrix)
-        super.setTransformMatrix(matrix)
     }
 
     override fun getTransformMatrix(): Matrix4 {
         return transfomationMatrix
-        return super.getTransformMatrix()
     }
 
     override fun identity() {
-
         super.identity()
     }
 
     override fun translate(x: Float, y: Float, z: Float) {
         transfomationMatrix.translate(x, y, z)
-        super.translate(x, y, z)
     }
 
     override fun rotate(axisX: Float, axisY: Float, axisZ: Float, degrees: Float) {
         transfomationMatrix.rotate(axisX, axisY, axisZ, degrees)
-        super.rotate(axisX, axisY, axisZ, degrees)
     }
 
     override fun scale(scaleX: Float, scaleY: Float, scaleZ: Float) {
         transfomationMatrix.scale(scaleX, scaleY, scaleZ)
-        super.scale(scaleX, scaleY, scaleZ)
     }
 
     override fun setAutoShapeType(autoShapeType: Boolean) {
         this.autoShapeType = autoShapeType
-        super.setAutoShapeType(autoShapeType)
     }
 
     override fun begin() {
         svg= mutableListOf()
-        super.begin()
+        svg.add("""<g>""")
     }
 
     override fun begin(type: ShapeType?) {
         svg= mutableListOf()
-        super.begin(type)
+        svg.add("""<g>""")
+        this.shapeType= type ?: this.shapeType
     }
 
     override fun set(type: ShapeType?) {
-        super.set(type)
+        this.shapeType= type ?: this.shapeType
     }
 
     override fun point(x: Float, y: Float, z: Float) {
-        super.point(x, y, z)
+        //super.point(x, y, z)
     }
 
     override fun line(x: Float, y: Float, z: Float, x2: Float, y2: Float, z2: Float, c1: Color?, c2: Color?) {
         svg.add("""<line x0="$x" y0="$z" x1="$x2" y1="$z2" line-color="${c1}"/>""")
-        super.line(x, y, z, x2, y2, z2, c1, c2)
     }
 
     override fun curve(
@@ -117,11 +109,11 @@ class SvgRenderer: ShapeRenderer() {
         y2: Float,
         segments: Int
     ) {
-        super.curve(x1, y1, cx1, cy1, cx2, cy2, x2, y2, segments)
+        svg.add("""<curve/>""")
     }
 
     override fun triangle(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float) {
-        super.triangle(x1, y1, x2, y2, x3, y3)
+        svg.add("""<triangle/>""")
     }
 
     override fun triangle(
@@ -135,11 +127,11 @@ class SvgRenderer: ShapeRenderer() {
         col2: Color?,
         col3: Color?
     ) {
-        super.triangle(x1, y1, x2, y2, x3, y3, col1, col2, col3)
+        svg.add("""<triangle/>""")
     }
 
     override fun rect(x: Float, y: Float, width: Float, height: Float) {
-        super.rect(x, y, width, height)
+        svg.add("""<rect/>""")
     }
 
     override fun rect(
@@ -152,7 +144,7 @@ class SvgRenderer: ShapeRenderer() {
         col3: Color?,
         col4: Color?
     ) {
-        super.rect(x, y, width, height, col1, col2, col3, col4)
+        svg.add("""<rect/>""")
     }
 
     override fun rect(
@@ -166,7 +158,7 @@ class SvgRenderer: ShapeRenderer() {
         scaleY: Float,
         degrees: Float
     ) {
-        super.rect(x, y, originX, originY, width, height, scaleX, scaleY, degrees)
+        svg.add("""<rect/>""")
     }
 
     override fun rect(
@@ -184,106 +176,153 @@ class SvgRenderer: ShapeRenderer() {
         col3: Color?,
         col4: Color?
     ) {
-        super.rect(x, y, originX, originY, width, height, scaleX, scaleY, degrees, col1, col2, col3, col4)
+        svg.add("""<rect/>""")
     }
 
     override fun rectLine(x1: Float, y1: Float, x2: Float, y2: Float, width: Float) {
-        super.rectLine(x1, y1, x2, y2, width)
+        svg.add("""<rect/>""")
     }
 
     override fun rectLine(x1: Float, y1: Float, x2: Float, y2: Float, width: Float, c1: Color?, c2: Color?) {
-        super.rectLine(x1, y1, x2, y2, width, c1, c2)
+        svg.add("""<rect/>""")
     }
 
     override fun rectLine(p1: Vector2?, p2: Vector2?, width: Float) {
-        super.rectLine(p1, p2, width)
+        svg.add("""<rect/>""")
     }
 
     override fun box(x: Float, y: Float, z: Float, width: Float, height: Float, depth: Float) {
-        super.box(x, y, z, width, height, depth)
+        svg.add("""<rect/>""")
     }
 
     override fun x(x: Float, y: Float, size: Float) {
-        super.x(x, y, size)
+        svg.add("""<x/>""")
     }
 
     override fun x(p: Vector2?, size: Float) {
-        super.x(p, size)
+        svg.add("""<x/>""")
     }
 
     override fun arc(x: Float, y: Float, radius: Float, start: Float, degrees: Float) {
-        super.arc(x, y, radius, start, degrees)
+        svg.add("""<arc/>""")
     }
 
     override fun arc(x: Float, y: Float, radius: Float, start: Float, degrees: Float, segments: Int) {
-        super.arc(x, y, radius, start, degrees, segments)
+        svg.add("""<arc/>""")
     }
 
     override fun circle(x: Float, y: Float, radius: Float) {
-        super.circle(x, y, radius)
+        svg.add("""<circle/>""")
     }
 
     override fun circle(x: Float, y: Float, radius: Float, segments: Int) {
-        super.circle(x, y, radius, segments)
+        svg.add("""<circle/>""")
     }
 
     override fun ellipse(x: Float, y: Float, width: Float, height: Float) {
-        super.ellipse(x, y, width, height)
+        svg.add("""<ellipse/>""")
     }
 
     override fun ellipse(x: Float, y: Float, width: Float, height: Float, segments: Int) {
-        super.ellipse(x, y, width, height, segments)
+        svg.add("""<ellipse/>""")
     }
 
     override fun ellipse(x: Float, y: Float, width: Float, height: Float, rotation: Float) {
-        super.ellipse(x, y, width, height, rotation)
+        svg.add("""<ellipse/>""")
     }
 
     override fun ellipse(x: Float, y: Float, width: Float, height: Float, rotation: Float, segments: Int) {
-        super.ellipse(x, y, width, height, rotation, segments)
+        svg.add("""<ellipse/>""")
     }
 
     override fun cone(x: Float, y: Float, z: Float, radius: Float, height: Float) {
-        super.cone(x, y, z, radius, height)
+        svg.add("""<cone/>""")
     }
 
     override fun cone(x: Float, y: Float, z: Float, radius: Float, height: Float, segments: Int) {
-        super.cone(x, y, z, radius, height, segments)
+        svg.add("""<cone/>""")
     }
 
     override fun polygon(vertices: FloatArray?, offset: Int, count: Int) {
-        super.polygon(vertices, offset, count)
+        svg.add("""<poly/>""")
     }
 
     override fun polygon(vertices: FloatArray?) {
-        super.polygon(vertices)
+        svg.add("""<poly/>""")
     }
 
     override fun polyline(vertices: FloatArray?, offset: Int, count: Int) {
-        super.polyline(vertices, offset, count)
+        svg.add("""<poly/>""")
     }
 
     override fun polyline(vertices: FloatArray?) {
-        super.polyline(vertices)
+        svg.add("""<poly/>""")
     }
 
     override fun end() {
-        super.end()
+        svg.add("""</g>""")
     }
 
     override fun flush() {
-        super.flush()
+        //super.flush()
     }
 
-    override fun getCurrentType(): ShapeType {
-        return super.getCurrentType()
-    }
 
     override fun getRenderer(): ImmediateModeRenderer {
-        return super.getRenderer()
+        return SvgImmediateModeRenderer()
     }
 
     override fun isDrawing(): Boolean {
-        return super.isDrawing()
+        return true
+    }
+}
+
+class SvgImmediateModeRenderer: ImmediateModeRenderer{
+    override fun begin(p0: Matrix4?, p1: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun flush() {
+        TODO("Not yet implemented")
+    }
+
+    override fun color(p0: Color?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun color(p0: Float, p1: Float, p2: Float, p3: Float) {
+        TODO("Not yet implemented")
+    }
+
+    override fun color(p0: Float) {
+        TODO("Not yet implemented")
+    }
+
+    override fun texCoord(p0: Float, p1: Float) {
+        TODO("Not yet implemented")
+    }
+
+    override fun normal(p0: Float, p1: Float, p2: Float) {
+        TODO("Not yet implemented")
+    }
+
+    override fun vertex(p0: Float, p1: Float, p2: Float) {
+        TODO("Not yet implemented")
+    }
+
+    override fun end() {
+        TODO("Not yet implemented")
+    }
+
+    override fun getNumVertices(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun getMaxVertices(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun dispose() {
+        TODO("Not yet implemented")
     }
 }
