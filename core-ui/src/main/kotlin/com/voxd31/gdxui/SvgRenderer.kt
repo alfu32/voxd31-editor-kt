@@ -9,13 +9,13 @@ import com.badlogic.gdx.math.Vector2
 val MxIdentity=floatArrayOf(1f,0f,0f,0f  , 0f,1f,0f,0f  , 0f,0f,1f,0f  ,  0f,0f,0f,1f)
 
 class SvgRenderer: ShapeRenderer() {
-    var autoShapeType: Boolean = false
-    var currentColor: Color?=Color.WHITE
-    var projectionMatrix: Matrix4=Matrix4().set( MxIdentity)
-    var transfomationMatrix: Matrix4=Matrix4().set(MxIdentity)
-    var shapeType = ShapeType.Line
+    private var autoShapeType: Boolean = false
+    private var currentColor: Color?=Color.WHITE
+    private var projectionMatrix: Matrix4=Matrix4().set( MxIdentity)
+    private var transfomationMatrix: Matrix4=Matrix4().set(MxIdentity)
+    private var shapeType = ShapeType.Line
 
-    var svg=mutableListOf<String>()
+    private var svg=mutableListOf<String>()
 
     override fun dispose() {
         super.dispose()
