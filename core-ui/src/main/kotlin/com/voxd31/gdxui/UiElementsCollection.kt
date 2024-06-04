@@ -17,16 +17,15 @@ val LayoutRuleFlow:LayoutRule={ c,i,a ->
 open class UiElementsCollection(
     override var position: Vector2 = Vector2(0f, 0f),
     override var size: Vector2 = Vector2(20f,20f),
-    override var background: Color = Color.WHITE,
-    override var hover: Color = Color.WHITE,
-    override var color: Color = Color.BLACK,
-    override var border: Color = Color.GRAY,
+    override var normalStyle:UiStyle=UiStyle.defaultNormal(),
+    override var hoverStyle:UiStyle=UiStyle.defaultHover(),
+    override var focusStyle:UiStyle=UiStyle.defaultNormal(),
     open var elements: MutableList<UiElement> = mutableListOf(),
     /**
      * default layout rule is absolute positioning based on each element position vector
      */
     open var layout_rule: LayoutRule =LayoutRuleAbsolute
-): UiElement(position, size, background, hover, color, border,){
+): UiElement(position, size, normalStyle, hoverStyle){
     override fun draw(shapeRenderer2d: ShapeRenderer){
         for (e in elements) {
             e.draw(shapeRenderer2d)
@@ -39,10 +38,7 @@ open class UiElementsCollection(
     }
     override fun drawText(spriteBatch: SpriteBatch, fonts:Map<String, BitmapFont>){
         for (e in elements) {
-            val cl = spriteBatch.color
-            spriteBatch.color = color
             e.drawText(spriteBatch,fonts)
-            spriteBatch.color = cl
         }
     }
 

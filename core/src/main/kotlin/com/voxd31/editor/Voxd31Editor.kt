@@ -36,20 +36,44 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         private fun initializeFonts():HashMap<String,BitmapFont> {
             val fonts: HashMap<String,BitmapFont> = hashMapOf()
             fonts[""]=BitmapFont()
-            fonts["noto-sans-regular 12px"] = generateFont("NotoSans-Regular.ttf", 12)
-            fonts["noto-sans-regular 16px"] = generateFont("NotoSans-Regular.ttf", 16)
-            fonts["noto-sans-regular 21px"] = generateFont("NotoSans-Regular.ttf", 21)
-            fonts["noto-mono-sans-regular 12px"] = generateFont("NotoSansMono-Regular.ttf", 12)
-            fonts["noto-mono-sans-regular 16px"] = generateFont("NotoSansMono-Regular.ttf", 16)
-            fonts["noto-mono-sans-regular 21px"] = generateFont("NotoSansMono-Regular.ttf", 21)
-            fonts["default"]=fonts["noto-sans-regular 16px"]!!
+
+            fonts["noto-sans-regular 12px black"] = generateFont("NotoSans-Regular.ttf", 12,Color(0x090809ff))
+            fonts["noto-sans-regular 16px black"] = generateFont("NotoSans-Regular.ttf", 16,Color(0x090809ff))
+            fonts["noto-sans-regular 21px black"] = generateFont("NotoSans-Regular.ttf", 21,Color(0x090809ff))
+            fonts["noto-mono-sans-regular 12px black"] = generateFont("NotoSansMono-Regular.ttf", 12,Color(0x090809ff))
+            fonts["noto-mono-sans-regular 16px black"] = generateFont("NotoSansMono-Regular.ttf", 16,Color(0x090809ff))
+            fonts["noto-mono-sans-regular 21px black"] = generateFont("NotoSansMono-Regular.ttf", 21,Color(0x090809ff))
+
+
+            fonts["noto-sans-regular 12px dark"] = generateFont("NotoSans-Regular.ttf", 12,Color.DARK_GRAY)
+            fonts["noto-sans-regular 16px dark"] = generateFont("NotoSans-Regular.ttf", 16,Color.DARK_GRAY)
+            fonts["noto-sans-regular 21px dark"] = generateFont("NotoSans-Regular.ttf", 21,Color.DARK_GRAY)
+            fonts["noto-mono-sans-regular 12px dark"] = generateFont("NotoSansMono-Regular.ttf", 12,Color.DARK_GRAY)
+            fonts["noto-mono-sans-regular 16px dark"] = generateFont("NotoSansMono-Regular.ttf", 16,Color.DARK_GRAY)
+            fonts["noto-mono-sans-regular 21px dark"] = generateFont("NotoSansMono-Regular.ttf", 21,Color.DARK_GRAY)
+
+            fonts["noto-sans-regular 12px light"] = generateFont("NotoSans-Regular.ttf", 12,Color.LIGHT_GRAY)
+            fonts["noto-sans-regular 16px light"] = generateFont("NotoSans-Regular.ttf", 16,Color.LIGHT_GRAY)
+            fonts["noto-sans-regular 21px light"] = generateFont("NotoSans-Regular.ttf", 21,Color.LIGHT_GRAY)
+            fonts["noto-mono-sans-regular 12px light"] = generateFont("NotoSansMono-Regular.ttf", 12,Color.LIGHT_GRAY)
+            fonts["noto-mono-sans-regular 16px light"] = generateFont("NotoSansMono-Regular.ttf", 16,Color.LIGHT_GRAY)
+            fonts["noto-mono-sans-regular 21px light"] = generateFont("NotoSansMono-Regular.ttf", 21,Color.LIGHT_GRAY)
+
+            fonts["noto-sans-regular 12px highlight"] = generateFont("NotoSans-Regular.ttf", 12,Color.GOLD)
+            fonts["noto-sans-regular 16px highlight"] = generateFont("NotoSans-Regular.ttf", 16,Color.GOLD)
+            fonts["noto-sans-regular 21px highlight"] = generateFont("NotoSans-Regular.ttf", 21,Color.GOLD)
+            fonts["noto-mono-sans-regular 12px highlight"] = generateFont("NotoSansMono-Regular.ttf", 12,Color.GOLD)
+            fonts["noto-mono-sans-regular 16px highlight"] = generateFont("NotoSansMono-Regular.ttf", 16,Color.GOLD)
+            fonts["noto-mono-sans-regular 21px highlight"] = generateFont("NotoSansMono-Regular.ttf", 21,Color.GOLD)
+            fonts["default"]=fonts["noto-sans-regular 16px dark"]!!
             return fonts
         }
 
-        private fun generateFont(filePath: String, size: Int): BitmapFont {
+        private fun generateFont(filePath: String, size: Int,color:Color = Color.DARK_GRAY): BitmapFont {
             val generator = FreeTypeFontGenerator(Gdx.files.internal(filePath))
             val parameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
                 this.size = size
+                this.color = color
             }
             val font = generator.generateFont(parameter)
             generator.dispose()  // Don't forget to dispose to avoid memory leaks
@@ -532,16 +556,27 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 UiElementButton(
                     position = Vector2(10f, y),
                     size = Vector2(30f, 25f),
-                    background = bg,
-                    hover = color,
+                    normalStyle = UiStyle(
+                        background = bg,
+                        color=Color.DARK_GRAY,
+                        border=bg,
+                    ),
+                    hoverStyle = UiStyle(
+                        background = color,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.CYAN,
+                    ),
+                    focusStyle = UiStyle(
+                        background = bg,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.GOLD,
+                    ),
                     text = "${(hue * 24)}".padStart(3, 48.toChar()),
-                    font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (scene.currentColor == color) color else bg
-                    target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color
                     }
+                    target.hasFocus = (scene.currentColor == color)
                 }
             )
             val bg1 = Color()
@@ -554,16 +589,27 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 UiElementButton(
                     position = Vector2(50f, y),
                     size = Vector2(30f, 25f),
-                    background = bg1,
-                    hover = color1,
+                    normalStyle = UiStyle(
+                        background = bg1,
+                        color=Color.DARK_GRAY,
+                        border=bg1,
+                    ),
+                    hoverStyle = UiStyle(
+                        background = color1,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.CYAN,
+                    ),
+                    focusStyle = UiStyle(
+                        background = bg1,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.GOLD,
+                    ),
                     text = "${(hue * 24)}".padStart(3, 48.toChar()),
-                    font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (scene.currentColor == color1) color1 else bg1
-                    target.color = if (scene.currentColor == color1) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color1
                     }
+                    target.hasFocus = scene.currentColor == color1
                 }
             )
             y += 30f
@@ -572,23 +618,38 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         for (gs in 0 until 101 step 10) {
             val hh = gs / 100f
             val hover = Color(0.5f, 0.5f, 0.8f, 1f)
-            val color = Color(hh, hh, hh, 1f)
+            val tint = Color(hh, hh, hh, 1f)
             val dimmed = Color(hh, hh, hh, 1f)
             dimmed.a = 0.8f
+            val font_id = if(gs < 30) "noto-sans-regular 16px light" else "noto-sans-regular 16px black"
             uiElements.add(
                 UiElementButton(
                     position = Vector2(90f, y),
                     size = Vector2(30f, 25f),
-                    background = color,
-                    hover = hover,
+                    normalStyle = UiStyle(
+                        background = dimmed,
+                        color=Color.DARK_GRAY,
+                        border=dimmed,
+                        font_id = font_id,
+                    ),
+                    hoverStyle = UiStyle(
+                        background = tint,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.CYAN,
+                        font_id = font_id,
+                    ),
+                    focusStyle = UiStyle(
+                        background = dimmed,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.GOLD,
+                        font_id = font_id,
+                    ),
                     text = "$gs%",
-                    font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (scene.currentColor == color) color else dimmed
-                    target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
-                        scene.currentColor = color
+                        scene.currentColor = tint
                     }
+                    target.hasFocus = scene.currentColor == tint
                 }
             )
 
@@ -600,18 +661,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 UiElementButton(
                     position = Vector2(10f, y),
                     size = Vector2(85f, 25f),
-                    background = Color.DARK_GRAY,
-                    hover = Color.LIGHT_GRAY,
                     text = t.name,
                     radius = 3f
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (activeToolIndex == i) Color.GOLD else Color.DARK_GRAY
-                    target.color = if (activeToolIndex == i) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         activeToolIndex = i
                         activeTool = tools[activeToolIndex]
                         activeTool!!.reset()
                     }
+                    target.hasFocus = activeToolIndex == i
                 }
             )
             y += 30f
@@ -622,16 +680,14 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             UiElementButton(
                 position = Vector2(100f, 30f + 16f * 31f + 30f),
                 size = Vector2(20f, 58f),
-                background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
-                color = Color.DARK_GRAY,
                 text = "+"
             ) { target: UiElement, ev: Vox3Event ->
                 if (target.isClicked && ev.channel == "touchDown") {
                     toolsCopy = !toolsCopy
-                    target.border = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
-                    target.color = if (toolsCopy) Color.LIGHT_GRAY else Color.DARK_GRAY
+                    target.normalStyle.border = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
+                    target.normalStyle.color = if (toolsCopy) Color.LIGHT_GRAY else Color.DARK_GRAY
                 }
+                target.hasFocus = toolsCopy
             }
         )
         viewport2D.worldHeight
@@ -641,11 +697,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             UiElementOptgroup<String>(
                 position = Vector2(230f, y),
                 size = Vector2(300f, 20f),
-                background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
-                color = Color.DARK_GRAY,
                 label = "cube add modes : $y ${viewport2D.worldHeight} ${viewport2D.worldHeight-25}",
-                font="noto-sans-regular 12px",
                 options = listOf(
                     "addWithoutReplace",
                     "addOrReplace",
@@ -661,57 +713,38 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             UiElementButton(
                 position = Vector2(10f, y),
                 size = Vector2(40f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "ctrl",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                target.border = if (ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null) Color.GOLD else target.background
-                target.color = if (ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
+                target.hasFocus=ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null
             },
             UiElementButton(
                 position = Vector2(55f, y),
                 size = Vector2(40f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "shift",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                target.border = if (ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null) Color.GOLD else target.background
-                target.color = if (ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
+                target.hasFocus=ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null
             },
             UiElementButton(
                 position = Vector2(95f, y),
                 size = Vector2(40f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "alt",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                target.border = if (ev.keypressedMap[Input.Keys.ALT_LEFT] != null) Color.GOLD else target.background
-                target.color = if (ev.keypressedMap[Input.Keys.ALT_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
+                target.hasFocus=ev.keypressedMap[Input.Keys.ALT_LEFT] != null
                 //target.hover = if (kd) Color.DARK_GRAY else if (ku) Color.WHITE else target.color
             },
             UiElementButton(
                 position = Vector2(140f, y),
                 size = Vector2(60f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "mouse",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
                 val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
                 val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
-                target.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
+                target.normalStyle.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.normalStyle.background
+                target.normalStyle.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },
         ))
     }

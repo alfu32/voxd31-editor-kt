@@ -12,20 +12,27 @@ import com.badlogic.gdx.math.collision.BoundingBox
 abstract class UiElement(
     open var position: Vector2 = Vector2(0f, 0f),
     open var size: Vector2 = Vector2(20f,20f),
-    open var background: Color = Color.WHITE,
-    open var hover: Color = Color.WHITE,
-    open var color: Color = Color.BLACK,
-    open var border: Color = Color.GRAY,
+    open var normalStyle:UiStyle=UiStyle.defaultNormal(),
+    open var hoverStyle:UiStyle=UiStyle.defaultHover(),
+    open var focusStyle:UiStyle=UiStyle.defaultNormal(),
     open var text:String="",
     open var clicked:(target: UiElement, event: Vox3Event)->Unit={ t, e -> }
 ){
     var isHovered = false
     var isClicked = false
     var isPressed = false
+    var hasFocus = false
     abstract fun draw(shapeRenderer2d: ShapeRenderer)
     abstract fun drawLines(shapeRenderer2d: ShapeRenderer)
     abstract fun drawText(spriteBatch: SpriteBatch, fonts:Map<String, BitmapFont>)
 
+    open fun currentStyle():UiStyle = if(isHovered){
+        hoverStyle
+    } else if (isPressed || hasFocus) {
+        focusStyle
+    }else {
+        normalStyle
+    }
     open fun dispatch(e:Vox3Event){
         isClicked=false
         isHovered=false
@@ -56,10 +63,8 @@ abstract class UiElement(
             {
                 position: ${position},
                 size: ${size},
-                background: ${background},
-                hover: ${hover},
-                color: ${color},
-                border: ${border},
+                style: ${normalStyle},
+                hover: ${hoverStyle},
                 text: ${text}, 
             }
         """.trimIndent()
