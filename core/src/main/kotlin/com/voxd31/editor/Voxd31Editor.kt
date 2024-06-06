@@ -509,6 +509,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         background = bg,
                         color=Color.DARK_GRAY,
                         border=bg,
+                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf("EEEEEEFF"))
                     ),
                     hoverStyle = UiStyle(
                         background = color,
@@ -520,7 +521,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
                     ),
-                    text = "${(hue * 24)}".padStart(3, 48.toChar()),
+                    text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
                 ) { target: UiElement, ev: Vox3Event ->
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color
@@ -542,6 +543,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         background = bg1,
                         color=Color.DARK_GRAY,
                         border=bg1,
+                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf("111111ff"))
                     ),
                     hoverStyle = UiStyle(
                         background = color1,
@@ -553,7 +555,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
                     ),
-                    text = "${(hue * 24)}".padStart(3, 48.toChar()),
+                    text = (((bg1.r*16).toInt()*256 ) + ((bg1.g*16).toInt()*16) + ((bg1.b*16).toInt())).toString(16).padStart(3, '0'),
                 ) { target: UiElement, ev: Vox3Event ->
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color1
@@ -570,7 +572,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val tint = Color(hh, hh, hh, 1f)
             val dimmed = Color(hh, hh, hh, 1f)
             dimmed.a = 0.8f
-            val font_id = if(gs < 30) "NotoSans-Regular 16px EEEEEEFF" else "NotoSans-Regular 16px 0A0A0AFF"
+            val font_id = if(gs < 30) "NotoSans-Regular 12px EEEEEEFF" else "NotoSans-Regular 12px 0A0A0AFF"
             uiElements.add(
                 UiElementButton(
                     position = Vector2(90f, y),
@@ -627,7 +629,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         uiElements.add(
             UiElementButton(
-                position = Vector2(100f, 30f + 16f * 31f + 30f),
+                position = Vector2(100f, 35f + 16f * 31f + 30f),
                 size = Vector2(20f, 58f),
                 text = "+"
             ) { target: UiElement, ev: Vox3Event ->

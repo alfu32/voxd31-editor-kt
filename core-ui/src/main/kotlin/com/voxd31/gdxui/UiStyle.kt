@@ -59,22 +59,22 @@ class UiStyle(
     companion object{
 
         fun defaultNormal() = UiStyle(
-            color=Color.BLACK,
+            color=Color.valueOf("222222ff"),
             background = Color(0x090809ff),
             border = Color(0x090809ff),
             font = UIFont.of("NotoSans-Regular 16px EEEEEEFF"),
         )
         fun defaultHover() = UiStyle(
-            color=Color.LIGHT_GRAY,
+            color=Color.valueOf("eeffffff"),
             background = Color(0x0f0e0fff),
             border = Color.CYAN,
-            font = UIFont.of("NotoSans-Regular 16px FFFFFFFF"),
+            font = UIFont("NotoSans-Regular.ttf",16,Color.CYAN),
         )
         fun defaultFocus() = UiStyle(
-            color=Color.BLACK,
+            color=Color.valueOf("333333ff"),
             background = Color(0x090809ff),
             border = Color.GOLD,
-            font = UIFont.of("NotoSans-Regular 16px EEEEEEFF"),
+            font = UIFont("NotoSans-Regular.ttf",16,Color.GOLD),
         )
     }
     fun cpy() = UiStyle(color,background,border)

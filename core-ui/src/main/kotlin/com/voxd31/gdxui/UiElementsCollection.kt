@@ -54,10 +54,6 @@ open class UiElementsCollection(
                 }
                 break
             }
-            if(el.isClicked){
-                this.isClicked=true
-                break
-            }
         }
     }
     fun add(element: UiElement): UiElementsCollection {

@@ -51,6 +51,7 @@ class UiElementOptgroup<T>(
                         changed(target,ev,options[selectedIndex],options[i])
                         selectedIndex = i
                     }
+                    target.hasFocus = selectedIndex == i
                 }
             )
             prev.set(current)
