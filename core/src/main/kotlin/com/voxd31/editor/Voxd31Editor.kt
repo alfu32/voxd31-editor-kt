@@ -501,6 +501,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val color = Color()
             color.fromHsv(hue * 24.0f, 1f, 1f)
             color.a = 1f
+            val hexColor = if(hue<9) "111111ff" else "eeeeeeff"
             uiElements.add(
                 UiElementButton(
                     position = Vector2(10f, y),
@@ -509,7 +510,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         background = bg,
                         color=Color.DARK_GRAY,
                         border=bg,
-                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf("EEEEEEFF"))
+                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
                     ),
                     hoverStyle = UiStyle(
                         background = color,
@@ -629,7 +630,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         uiElements.add(
             UiElementButton(
-                position = Vector2(100f, 35f + 16f * 31f + 30f),
+                position = Vector2(100f, 45f + 16f * 31f + 30f),
                 size = Vector2(20f, 58f),
                 text = "+"
             ) { target: UiElement, ev: Vox3Event ->
