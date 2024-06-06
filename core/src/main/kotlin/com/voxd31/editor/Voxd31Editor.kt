@@ -521,6 +521,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         background = bg,
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
+                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
                     ),
                     text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
                 ) { target: UiElement, ev: Vox3Event ->
