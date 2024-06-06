@@ -26,8 +26,8 @@ class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color)
     )
 
     companion object{
-        const val DL=0.5f
-        const val DR=0.5f
+        const val DL=0.5f//0.4999999f
+        const val DR=0.5f//0.4999999f
         val models: HashMap<Color,Model> = hashMapOf()
         fun getModel(modelBuilder: ModelBuilder,color: Color):Model {
             if(!models.contains(color)){
@@ -208,4 +208,8 @@ class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color)
         position=position.cpy(),
         color=color.cpy(),
     )
+
+    override fun toString(): String {
+        return this.getId()
+    }
 }

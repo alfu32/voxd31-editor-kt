@@ -20,8 +20,9 @@ data class Voxd31EditorVersion(
 )
 VERSIONCLASS
 
-
-./gradlew dist  "-PjavaCompatVersion=17" -PreleaseNumber="$latest_tag-dev"
-mv desktop/build/libs/*.jar dist/
-cp ./assets/voxd31.icon.png  dist/
-java -jar "./dist/voxd31-editor-desktop-jvm17-$latest_tag-dev.jar" 1900x1000 "test-$latest_tag-dev.vxdi"
+java_ver=17
+mkdir tmp
+./gradlew dist  "-PjavaCompatVersion=$java_ver" -PreleaseNumber="$latest_tag-dev"
+mv desktop/build/libs/*.jar tmp/
+cp ./assets/voxd31.icon.png  tmp/
+java -jar "./tmp/voxd31-editor-desktop-jvm$java_ver-$latest_tag-dev.jar" 1900x1000 "test-$latest_tag-dev.vxdi"
