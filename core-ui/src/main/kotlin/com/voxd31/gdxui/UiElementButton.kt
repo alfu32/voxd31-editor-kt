@@ -36,9 +36,9 @@ class UiElementButton(
         //shapeRenderer2d.rect(position.x,position.y,size.x,size.y,color,color,color,color)
         //shapeRenderer2d.rect(position.x-1,position.y-1,size.x+2,size.y+2,color,color,color,color)
     }
-    override fun drawText(spriteBatch: SpriteBatch, fonts:Map<String, BitmapFont>){
+    override fun drawText(spriteBatch: SpriteBatch){
         val layout = GlyphLayout()
-        val font = fonts[currentStyle().font_id]!!
+        val font = currentStyle().font.bitmapFont()
         layout.setText(font, text)
         val sz=size.cpy().sub(layout.width,layout.height).scl(0.5f,0.5f)
         val cl = spriteBatch.color

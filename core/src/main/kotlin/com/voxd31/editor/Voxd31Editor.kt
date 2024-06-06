@@ -31,54 +31,7 @@ import kotlin.math.floor
 
 class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     companion object {
-        var fonts: HashMap<String,BitmapFont> = hashMapOf()
 
-        private fun initializeFonts():HashMap<String,BitmapFont> {
-            val fonts: HashMap<String,BitmapFont> = hashMapOf()
-            fonts[""]=BitmapFont()
-
-            fonts["noto-sans-regular 12px black"] = generateFont("NotoSans-Regular.ttf", 12,Color(0x090809ff))
-            fonts["noto-sans-regular 16px black"] = generateFont("NotoSans-Regular.ttf", 16,Color(0x090809ff))
-            fonts["noto-sans-regular 21px black"] = generateFont("NotoSans-Regular.ttf", 21,Color(0x090809ff))
-            fonts["noto-mono-sans-regular 12px black"] = generateFont("NotoSansMono-Regular.ttf", 12,Color(0x090809ff))
-            fonts["noto-mono-sans-regular 16px black"] = generateFont("NotoSansMono-Regular.ttf", 16,Color(0x090809ff))
-            fonts["noto-mono-sans-regular 21px black"] = generateFont("NotoSansMono-Regular.ttf", 21,Color(0x090809ff))
-
-
-            fonts["noto-sans-regular 12px dark"] = generateFont("NotoSans-Regular.ttf", 12,Color.DARK_GRAY)
-            fonts["noto-sans-regular 16px dark"] = generateFont("NotoSans-Regular.ttf", 16,Color.DARK_GRAY)
-            fonts["noto-sans-regular 21px dark"] = generateFont("NotoSans-Regular.ttf", 21,Color.DARK_GRAY)
-            fonts["noto-mono-sans-regular 12px dark"] = generateFont("NotoSansMono-Regular.ttf", 12,Color.DARK_GRAY)
-            fonts["noto-mono-sans-regular 16px dark"] = generateFont("NotoSansMono-Regular.ttf", 16,Color.DARK_GRAY)
-            fonts["noto-mono-sans-regular 21px dark"] = generateFont("NotoSansMono-Regular.ttf", 21,Color.DARK_GRAY)
-
-            fonts["noto-sans-regular 12px light"] = generateFont("NotoSans-Regular.ttf", 12,Color.LIGHT_GRAY)
-            fonts["noto-sans-regular 16px light"] = generateFont("NotoSans-Regular.ttf", 16,Color.LIGHT_GRAY)
-            fonts["noto-sans-regular 21px light"] = generateFont("NotoSans-Regular.ttf", 21,Color.LIGHT_GRAY)
-            fonts["noto-mono-sans-regular 12px light"] = generateFont("NotoSansMono-Regular.ttf", 12,Color.LIGHT_GRAY)
-            fonts["noto-mono-sans-regular 16px light"] = generateFont("NotoSansMono-Regular.ttf", 16,Color.LIGHT_GRAY)
-            fonts["noto-mono-sans-regular 21px light"] = generateFont("NotoSansMono-Regular.ttf", 21,Color.LIGHT_GRAY)
-
-            fonts["noto-sans-regular 12px highlight"] = generateFont("NotoSans-Regular.ttf", 12,Color.GOLD)
-            fonts["noto-sans-regular 16px highlight"] = generateFont("NotoSans-Regular.ttf", 16,Color.GOLD)
-            fonts["noto-sans-regular 21px highlight"] = generateFont("NotoSans-Regular.ttf", 21,Color.GOLD)
-            fonts["noto-mono-sans-regular 12px highlight"] = generateFont("NotoSansMono-Regular.ttf", 12,Color.GOLD)
-            fonts["noto-mono-sans-regular 16px highlight"] = generateFont("NotoSansMono-Regular.ttf", 16,Color.GOLD)
-            fonts["noto-mono-sans-regular 21px highlight"] = generateFont("NotoSansMono-Regular.ttf", 21,Color.GOLD)
-            fonts["default"]=fonts["noto-sans-regular 16px dark"]!!
-            return fonts
-        }
-
-        private fun generateFont(filePath: String, size: Int,color:Color = Color.DARK_GRAY): BitmapFont {
-            val generator = FreeTypeFontGenerator(Gdx.files.internal(filePath))
-            val parameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-                this.size = size
-                this.color = color
-            }
-            val font = generator.generateFont(parameter)
-            generator.dispose()  // Don't forget to dispose to avoid memory leaks
-            return font
-        }
     }
     private val GNDSZ=100f
     private lateinit var camera3D: PerspectiveCamera
@@ -101,7 +54,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var shapeRenderer2d: ShapeRenderer
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Vox3Event
-    private var uiElements: UiElementsCollection = UiElementsCollection()
+    private lateinit var uiElements: UiElementsCollection
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -121,10 +74,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
-        if( fonts.isEmpty() ) {
-            fonts= initializeFonts()
-        }
-
         // Fetch initial window dimensions
         val initialWidth = Gdx.graphics.width.toFloat()
         val initialHeight = Gdx.graphics.height.toFloat()
@@ -621,7 +570,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val tint = Color(hh, hh, hh, 1f)
             val dimmed = Color(hh, hh, hh, 1f)
             dimmed.a = 0.8f
-            val font_id = if(gs < 30) "noto-sans-regular 16px light" else "noto-sans-regular 16px black"
+            val font_id = if(gs < 30) "NotoSans-Regular 16px EEEEEEFF" else "NotoSans-Regular 16px 0A0A0AFF"
             uiElements.add(
                 UiElementButton(
                     position = Vector2(90f, y),
@@ -630,19 +579,19 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         background = dimmed,
                         color=Color.DARK_GRAY,
                         border=dimmed,
-                        font_id = font_id,
+                        font = UIFont.of(font_id),
                     ),
                     hoverStyle = UiStyle(
                         background = tint,
                         color=Color.LIGHT_GRAY,
                         border=Color.CYAN,
-                        font_id = font_id,
+                        font = UIFont.of(font_id),
                     ),
                     focusStyle = UiStyle(
                         background = dimmed,
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
-                        font_id = font_id,
+                        font = UIFont.of(font_id),
                     ),
                     text = "$gs%",
                 ) { target: UiElement, ev: Vox3Event ->
@@ -706,7 +655,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             ) { target: UiElement, ev: Vox3Event, old:String, new:String ->
                 println("changed add mode from $old to $new ")
                 scene.addMode = new
-            }.init(fonts)
+            }.init()
         )
 
         uiElements.addAll( listOf(
@@ -870,16 +819,16 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         spriteBatch.projectionMatrix = camera2D.combined
         spriteBatch.begin()
 
-        uiElements.drawText(spriteBatch, fonts)
+        uiElements.drawText(spriteBatch)
         if(currentEvent.screen != null) {
-            fonts["default"]!!.draw(
+            UIFont.default().bitmapFont().draw(
                 spriteBatch,
                 """
                     ui:${viewport2D.worldWidth}x${viewport2D.worldHeight} cubes:${scene.cubes.size} xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
                 """.trimIndent(),
                 10f,20f,
             ) // Draws text at the specified position.
-            fonts["default"]!!.draw(
+            UIFont.default().bitmapFont().draw(
                 spriteBatch,
                 """${activeTool!!.name} ${currentEvent.modelVoxel}""".trimIndent(),
                 currentEvent.screen!!.x, currentEvent.screen!!.y+15f,

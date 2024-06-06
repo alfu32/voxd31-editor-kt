@@ -18,13 +18,12 @@ class UiElementOptgroup<T>(
 ): UiElementsCollection(position, size, normalStyle, hoverStyle,focusStyle,mutableListOf()) {
     val layout = GlyphLayout()
     var selectedIndex = 0
-    fun init(fonts:Map<String, BitmapFont>): UiElementOptgroup<T> {
-        val font = fonts[currentStyle().font_id]!!
-        layout.setText(font, "__${label}_:_${options.joinToString ("__")}")
+    fun init(): UiElementOptgroup<T> {
+        layout.setText(currentStyle().font.bitmapFont(), "__${label}_:_${options.joinToString ("__")}")
         size.set(layout.width.coerceAtLeast(size.x),
             layout.height.coerceAtLeast(size.y))
         elements = mutableListOf()
-        layout.setText(font, "_${label}_:_")
+        layout.setText(currentStyle().font.bitmapFont(), "_${label}_:_")
         val prev= Rectangle(position.x,position.y,layout.width,layout.height)
         elements.add(
             UiElementLabel(
@@ -36,7 +35,7 @@ class UiElementOptgroup<T>(
             )
         )
         options.forEachIndexed(){ i,opt ->
-            layout.setText(font, "__$opt")
+            layout.setText(currentStyle().font.bitmapFont(), "__$opt")
             val current= Rectangle(prev.x+prev.width,position.y,layout.width,layout.height)
             elements.add(
                 UiElementButton(

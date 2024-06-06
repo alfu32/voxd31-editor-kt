@@ -24,7 +24,7 @@ abstract class UiElement(
     var hasFocus = false
     abstract fun draw(shapeRenderer2d: ShapeRenderer)
     abstract fun drawLines(shapeRenderer2d: ShapeRenderer)
-    abstract fun drawText(spriteBatch: SpriteBatch, fonts:Map<String, BitmapFont>)
+    abstract fun drawText(spriteBatch: SpriteBatch)
 
     open fun currentStyle():UiStyle = if(isHovered){
         hoverStyle

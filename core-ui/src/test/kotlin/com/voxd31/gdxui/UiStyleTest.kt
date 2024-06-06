@@ -1,5 +1,6 @@
 package com.voxd31.gdxui
 
+import com.badlogic.gdx.graphics.Color
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -17,12 +18,17 @@ class UiStyleTest {
     }
 
     @Test
-    fun getTextColor() {
+    fun getTextColorTest() {
         println("dummy test passed getTextColor")
     }
 
     @Test
-    fun setTextColor() {
+    fun setTextColorTest() {
         println("dummy test passed setTextColor")
+    }
+    @Test
+    fun getFontIdTest() {
+        val key = UIFont("NotoSans-Regular.ttf",12, Color.BLUE).fontId()
+        println(key)
     }
 }

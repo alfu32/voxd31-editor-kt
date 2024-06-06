@@ -21,9 +21,9 @@ class UiElementLabel(
     }
     override fun drawLines(shapeRenderer2d: ShapeRenderer){
     }
-    override fun drawText(spriteBatch: SpriteBatch, fonts:Map<String, BitmapFont>){
+    override fun drawText(spriteBatch: SpriteBatch){
         val layout = GlyphLayout()
-        val font = fonts[currentStyle().font_id]!!
+        val font = currentStyle().font.bitmapFont()
         layout.setText(font, text)
         val sz=size.cpy().sub(layout.width,layout.height).scl(0.5f,0.5f)
         val cl = spriteBatch.color

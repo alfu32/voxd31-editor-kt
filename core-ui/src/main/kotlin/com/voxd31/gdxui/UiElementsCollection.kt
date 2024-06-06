@@ -36,9 +36,9 @@ open class UiElementsCollection(
             e.drawLines(shapeRenderer2d)
         }
     }
-    override fun drawText(spriteBatch: SpriteBatch, fonts:Map<String, BitmapFont>){
+    override fun drawText(spriteBatch: SpriteBatch){
         for (e in elements) {
-            e.drawText(spriteBatch,fonts)
+            e.drawText(spriteBatch)
         }
     }
 
