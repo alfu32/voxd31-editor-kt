@@ -65,7 +65,12 @@ abstract class UiElement(
                 size: ${size},
                 style: ${normalStyle},
                 hover: ${hoverStyle},
-                text: ${text}, 
+                focus: ${focusStyle},
+                text: ${text},
+                isHovered: $isHovered,
+                isClicked: $isClicked,
+                isPressed: $isPressed,
+                hasFocus: $hasFocus,
             }
         """.trimIndent()
     }

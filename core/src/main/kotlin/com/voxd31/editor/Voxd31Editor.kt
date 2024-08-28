@@ -645,7 +645,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         )
         viewport2D.worldHeight
         // y=viewport2D.worldHeight - 140f
-        y=viewport2D.worldHeight-22f
+        y=viewport2D.worldHeight-32f
         uiElements.add(
             UiElementOptgroup<String>(
                 position = Vector2(230f, y),

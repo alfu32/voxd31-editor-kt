@@ -1,0 +1,20 @@
+//select 8 0 1 -9 6 6
+//select 5 5 6 -4 9 2
+# Volume -4 0 8 2 8 2 ff0000ff
+/fill -4 0 8 2 8 2 minecraft:stone
+# Volume -9 5 13 5 4 3 00ccffff
+/fill -9 5 13 5 4 3 minecraft:stone
+# Volume -4 5 14 -4 9 3 00ff65ff
+/fill -4 5 14 -4 9 3 minecraft:stone
+# Volume -4 10 8 3 7 8 ccff00ff
+/fill -4 10 8 3 7 8 minecraft:stone/setblock 5 9 13 minecraft:stone
+/setblock 5 10 13 air replace
+/setblock 5 9 13 air replace
+# Volume 2 9 8 6 0 10 0065ffff
+/fill 2 9 8 6 0 10 minecraft:stone
+# Volume -1 9 7 -1 6 9 ffcc00ff
+/fill -1 9 7 -1 6 9 minecraft:stone
+# Volume -9 6 13 5 9 13 ff6600ff
+/fill -9 6 13 5 9 13 minecraft:stone
+# Volume 5 9 13 -9 0 13 ff6600ff
+/fill 5 9 13 -9 0 13 minecraft:stone

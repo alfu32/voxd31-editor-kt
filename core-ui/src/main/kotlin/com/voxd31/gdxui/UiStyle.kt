@@ -78,6 +78,12 @@ class UiStyle(
         )
     }
     fun cpy() = UiStyle(color,background,border)
+
+    override fun toString(): String{
+        return """
+            color=${color};background=${background};border=${border};font=${font}
+        """.trimIndent()
+    }
 }
 class UiStyleSheet(
     var normal: UiStyle = UiStyle.defaultNormal(),

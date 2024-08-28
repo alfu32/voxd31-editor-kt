@@ -7,14 +7,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 
-class UiElementButton(
+open class UiElementButton(
     override var position: Vector2 = Vector2(0f, 0f),
     override var size: Vector2 = Vector2(20f,20f),
     override var normalStyle:UiStyle=UiStyle.defaultNormal(),
     override var hoverStyle:UiStyle=UiStyle.defaultHover(),
     override var focusStyle:UiStyle=UiStyle.defaultFocus(),
     override var text:String="",
-    var radius:Float=0f,
+    open var radius:Float=0f,
     override var clicked:(target: UiElement, event:Vox3Event)->Unit={ t, e -> }
 ): UiElement(position, size, normalStyle, hoverStyle,focusStyle, text, clicked){
     override fun draw(shapeRenderer2d: ShapeRenderer){
