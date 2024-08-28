@@ -52,6 +52,7 @@ com_crashlytics_export_strings.xml
 ## NetBeans
 
 /nbproject/private/
+/ui-render/nbproject/private/
 /android/nbproject/private/
 /core/nbproject/private/
 /desktop/nbproject/private/
@@ -64,6 +65,7 @@ com_crashlytics_export_strings.xml
 /desktop/build/
 /html/build/
 /ios/build/
+/ui-render/build/
 
 /nbbuild/
 /android/nbbuild/
@@ -71,6 +73,7 @@ com_crashlytics_export_strings.xml
 /desktop/nbbuild/
 /html/nbbuild/
 /ios/nbbuild/
+/ui-render/nbbuild/
 
 /dist/
 /android/dist/
@@ -78,6 +81,7 @@ com_crashlytics_export_strings.xml
 /desktop/dist/
 /html/dist/
 /ios/dist/
+/ui-render/dist/
 
 /nbdist/
 /android/nbdist/
@@ -85,6 +89,7 @@ com_crashlytics_export_strings.xml
 /desktop/nbdist/
 /html/nbdist/
 /ios/nbdist/
+/ui-render/nbdist/
 
 nbactions.xml
 nb-configuration.xml
@@ -100,6 +105,7 @@ gradle-app.setting
 /desktop/build/
 /html/build/
 /ios/build/
+/ui-render/build/
 
 ## OS Specific
 .DS_Store
@@ -112,3 +118,9 @@ Thumbs.db
 /ios/xcode/native/
 /ios/IOSLauncher.app
 /ios/IOSLauncher.app.dSYM
+/core-ui/build/*
+/core-testing/build/*
+Voxd31EditorVersion.kt
+
+
+tmp

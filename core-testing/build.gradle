@@ -1,0 +1,5 @@
+sourceCompatibility = project.hasProperty('javaCompatVersion') ? project.property('javaCompatVersion') : '17'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = [ "src/test/kotlin" ]
+eclipse.project.name = appName + "-core-testing"

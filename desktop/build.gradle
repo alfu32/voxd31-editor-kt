@@ -1,4 +1,6 @@
-sourceCompatibility = 17
+sourceCompatibility = project.hasProperty('javaCompatVersion') ? project.property('javaCompatVersion') : '17'
+def releaseNumber = project.hasProperty('releaseNumber') ? project.property('releaseNumber') : 'latest'
+
 sourceSets.main.java.srcDirs = [ "src/" ]
 sourceSets.main.resources.srcDirs = ["../assets"]
 
@@ -41,6 +43,7 @@ tasks.register('dist', Jar) {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     with jar
+    archiveFileName = appName + "-desktop-jvm" + sourceCompatibility + "-" + releaseNumber + ".jar"
 }
 
 

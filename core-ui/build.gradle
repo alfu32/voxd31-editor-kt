@@ -1,0 +1,7 @@
+
+sourceCompatibility = project.hasProperty('javaCompatVersion') ? project.property('javaCompatVersion') : '17'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = [ "src/main/kotlin" ]
+
+eclipse.project.name = appName + "-core-ui"
