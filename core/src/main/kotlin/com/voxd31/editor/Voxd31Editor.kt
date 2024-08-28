@@ -31,30 +31,7 @@ import kotlin.math.floor
 
 class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     companion object {
-        var fonts: HashMap<String,BitmapFont> = hashMapOf()
 
-        private fun initializeFonts():HashMap<String,BitmapFont> {
-            val fonts: HashMap<String,BitmapFont> = hashMapOf()
-            fonts[""]=BitmapFont()
-            fonts["noto-sans-regular 12px"] = generateFont("NotoSans-Regular.ttf", 12)
-            fonts["noto-sans-regular 16px"] = generateFont("NotoSans-Regular.ttf", 16)
-            fonts["noto-sans-regular 21px"] = generateFont("NotoSans-Regular.ttf", 21)
-            fonts["noto-mono-sans-regular 12px"] = generateFont("NotoSansMono-Regular.ttf", 12)
-            fonts["noto-mono-sans-regular 16px"] = generateFont("NotoSansMono-Regular.ttf", 16)
-            fonts["noto-mono-sans-regular 21px"] = generateFont("NotoSansMono-Regular.ttf", 21)
-            fonts["default"]=fonts["noto-sans-regular 16px"]!!
-            return fonts
-        }
-
-        private fun generateFont(filePath: String, size: Int): BitmapFont {
-            val generator = FreeTypeFontGenerator(Gdx.files.internal(filePath))
-            val parameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-                this.size = size
-            }
-            val font = generator.generateFont(parameter)
-            generator.dispose()  // Don't forget to dispose to avoid memory leaks
-            return font
-        }
     }
     private val GNDSZ=100f
     private lateinit var camera3D: PerspectiveCamera
@@ -77,7 +54,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var shapeRenderer2d: ShapeRenderer
     private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Vox3Event
-    private var uiElements: UiElementsCollection = UiElementsCollection()
+    private lateinit var uiElements: UiElementsCollection
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -97,10 +74,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
-        if( fonts.isEmpty() ) {
-            fonts= initializeFonts()
-        }
-
         // Fetch initial window dimensions
         val initialWidth = Gdx.graphics.width.toFloat()
         val initialHeight = Gdx.graphics.height.toFloat()
@@ -528,20 +501,34 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val color = Color()
             color.fromHsv(hue * 24.0f, 1f, 1f)
             color.a = 1f
+            val hexColor = if(hue<9) "111111ff" else "eeeeeeff"
             uiElements.add(
                 UiElementButton(
                     position = Vector2(10f, y),
                     size = Vector2(30f, 25f),
-                    background = bg,
-                    hover = color,
-                    text = "${(hue * 24)}".padStart(3, 48.toChar()),
-                    font="noto-sans-regular 12px",
+                    normalStyle = UiStyle(
+                        background = bg,
+                        color=Color.DARK_GRAY,
+                        border=bg,
+                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
+                    ),
+                    hoverStyle = UiStyle(
+                        background = color,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.CYAN,
+                    ),
+                    focusStyle = UiStyle(
+                        background = bg,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.GOLD,
+                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
+                    ),
+                    text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (scene.currentColor == color) color else bg
-                    target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color
                     }
+                    target.hasFocus = (scene.currentColor == color)
                 }
             )
             val bg1 = Color()
@@ -554,16 +541,28 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 UiElementButton(
                     position = Vector2(50f, y),
                     size = Vector2(30f, 25f),
-                    background = bg1,
-                    hover = color1,
-                    text = "${(hue * 24)}".padStart(3, 48.toChar()),
-                    font="noto-sans-regular 12px",
+                    normalStyle = UiStyle(
+                        background = bg1,
+                        color=Color.DARK_GRAY,
+                        border=bg1,
+                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf("111111ff"))
+                    ),
+                    hoverStyle = UiStyle(
+                        background = color1,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.CYAN,
+                    ),
+                    focusStyle = UiStyle(
+                        background = bg1,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.GOLD,
+                    ),
+                    text = (((bg1.r*16).toInt()*256 ) + ((bg1.g*16).toInt()*16) + ((bg1.b*16).toInt())).toString(16).padStart(3, '0'),
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (scene.currentColor == color1) color1 else bg1
-                    target.color = if (scene.currentColor == color1) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         scene.currentColor = color1
                     }
+                    target.hasFocus = scene.currentColor == color1
                 }
             )
             y += 30f
@@ -572,23 +571,38 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         for (gs in 0 until 101 step 10) {
             val hh = gs / 100f
             val hover = Color(0.5f, 0.5f, 0.8f, 1f)
-            val color = Color(hh, hh, hh, 1f)
+            val tint = Color(hh, hh, hh, 1f)
             val dimmed = Color(hh, hh, hh, 1f)
             dimmed.a = 0.8f
+            val font_id = if(gs < 30) "NotoSans-Regular 12px EEEEEEFF" else "NotoSans-Regular 12px 0A0A0AFF"
             uiElements.add(
                 UiElementButton(
                     position = Vector2(90f, y),
                     size = Vector2(30f, 25f),
-                    background = color,
-                    hover = hover,
+                    normalStyle = UiStyle(
+                        background = dimmed,
+                        color=Color.DARK_GRAY,
+                        border=dimmed,
+                        font = UIFont.of(font_id),
+                    ),
+                    hoverStyle = UiStyle(
+                        background = tint,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.CYAN,
+                        font = UIFont.of(font_id),
+                    ),
+                    focusStyle = UiStyle(
+                        background = dimmed,
+                        color=Color.LIGHT_GRAY,
+                        border=Color.GOLD,
+                        font = UIFont.of(font_id),
+                    ),
                     text = "$gs%",
-                    font="noto-sans-regular 12px",
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (scene.currentColor == color) color else dimmed
-                    target.color = if (scene.currentColor == color) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
-                        scene.currentColor = color
+                        scene.currentColor = tint
                     }
+                    target.hasFocus = scene.currentColor == tint
                 }
             )
 
@@ -600,18 +614,15 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 UiElementButton(
                     position = Vector2(10f, y),
                     size = Vector2(85f, 25f),
-                    background = Color.DARK_GRAY,
-                    hover = Color.LIGHT_GRAY,
                     text = t.name,
                     radius = 3f
                 ) { target: UiElement, ev: Vox3Event ->
-                    target.border = if (activeToolIndex == i) Color.GOLD else Color.DARK_GRAY
-                    target.color = if (activeToolIndex == i) Color.LIGHT_GRAY else Color.DARK_GRAY
                     if (target.isClicked && ev.channel == "touchDown") {
                         activeToolIndex = i
                         activeTool = tools[activeToolIndex]
                         activeTool!!.reset()
                     }
+                    target.hasFocus = activeToolIndex == i
                 }
             )
             y += 30f
@@ -620,32 +631,26 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         uiElements.add(
             UiElementButton(
-                position = Vector2(100f, 30f + 16f * 31f + 30f),
+                position = Vector2(100f, 45f + 16f * 31f + 30f),
                 size = Vector2(20f, 58f),
-                background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
-                color = Color.DARK_GRAY,
                 text = "+"
             ) { target: UiElement, ev: Vox3Event ->
                 if (target.isClicked && ev.channel == "touchDown") {
                     toolsCopy = !toolsCopy
-                    target.border = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
-                    target.color = if (toolsCopy) Color.LIGHT_GRAY else Color.DARK_GRAY
+                    target.normalStyle.border = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
+                    target.normalStyle.color = if (toolsCopy) Color.LIGHT_GRAY else Color.DARK_GRAY
                 }
+                target.hasFocus = toolsCopy
             }
         )
         viewport2D.worldHeight
         // y=viewport2D.worldHeight - 140f
-        y=viewport2D.worldHeight-22f
+        y=viewport2D.worldHeight-32f
         uiElements.add(
             UiElementOptgroup<String>(
                 position = Vector2(230f, y),
                 size = Vector2(300f, 20f),
-                background = Color.DARK_GRAY,
-                hover = Color.LIGHT_GRAY,
-                color = Color.DARK_GRAY,
                 label = "cube add modes : $y ${viewport2D.worldHeight} ${viewport2D.worldHeight-25}",
-                font="noto-sans-regular 12px",
                 options = listOf(
                     "addWithoutReplace",
                     "addOrReplace",
@@ -654,64 +659,45 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             ) { target: UiElement, ev: Vox3Event, old:String, new:String ->
                 println("changed add mode from $old to $new ")
                 scene.addMode = new
-            }.init(fonts)
+            }.init()
         )
 
         uiElements.addAll( listOf(
             UiElementButton(
                 position = Vector2(10f, y),
                 size = Vector2(40f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "ctrl",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                target.border = if (ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null) Color.GOLD else target.background
-                target.color = if (ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
+                target.hasFocus=ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null
             },
             UiElementButton(
                 position = Vector2(55f, y),
                 size = Vector2(40f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "shift",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                target.border = if (ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null) Color.GOLD else target.background
-                target.color = if (ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
+                target.hasFocus=ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null
             },
             UiElementButton(
                 position = Vector2(95f, y),
                 size = Vector2(40f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "alt",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
-                target.border = if (ev.keypressedMap[Input.Keys.ALT_LEFT] != null) Color.GOLD else target.background
-                target.color = if (ev.keypressedMap[Input.Keys.ALT_LEFT] != null) Color.LIGHT_GRAY else Color.BLACK
+                target.hasFocus=ev.keypressedMap[Input.Keys.ALT_LEFT] != null
                 //target.hover = if (kd) Color.DARK_GRAY else if (ku) Color.WHITE else target.color
             },
             UiElementButton(
                 position = Vector2(140f, y),
                 size = Vector2(60f, 16f),
-                background = Color.DARK_GRAY,
-                hover = Color.DARK_GRAY,
-                color = Color.DARK_GRAY,
                 radius = 8f,
                 text = "mouse",
-                font="noto-sans-regular 12px",
             ) { target: UiElement, ev: Vox3Event ->
                 val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
                 val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
-                target.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.background
-                target.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
+                target.normalStyle.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.normalStyle.background
+                target.normalStyle.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },
         ))
     }
@@ -837,16 +823,16 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         spriteBatch.projectionMatrix = camera2D.combined
         spriteBatch.begin()
 
-        uiElements.drawText(spriteBatch, fonts)
+        uiElements.drawText(spriteBatch)
         if(currentEvent.screen != null) {
-            fonts["default"]!!.draw(
+            UIFont.default().bitmapFont().draw(
                 spriteBatch,
                 """
                     ui:${viewport2D.worldWidth}x${viewport2D.worldHeight} cubes:${scene.cubes.size} xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
                 """.trimIndent(),
                 10f,20f,
             ) // Draws text at the specified position.
-            fonts["default"]!!.draw(
+            UIFont.default().bitmapFont().draw(
                 spriteBatch,
                 """${activeTool!!.name} ${currentEvent.modelVoxel}""".trimIndent(),
                 currentEvent.screen!!.x, currentEvent.screen!!.y+15f,

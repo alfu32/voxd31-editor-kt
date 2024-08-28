@@ -34,7 +34,7 @@ class Vox3Event(
     var ctrl:Boolean = false
     var shift:Boolean = false
     override fun toString(): String {
-        return "keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()}"
+        return "channel:$channel,keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()}"
     }
 }
 

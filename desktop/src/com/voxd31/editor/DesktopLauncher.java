@@ -32,7 +32,7 @@ public class DesktopLauncher {
 			filename=arg[1];
 		}
 		config.setTitle(String.format(
-				" V0XD31   verision : %s   file : [%s]",
+				" V0XD31   version : %s   file : [%s]",
 				version.getBuildVersion(),
 				filename
 		));

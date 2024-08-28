@@ -26,7 +26,11 @@ data class Voxd31EditorVersion(
 VERSIONCLASS
 
 # Define a list of version strings
-versions="8.0.402-tem 11.0.22-tem 17.0.10-tem 21.0.2-tem"
+if [[ "$2" == "" ]];then
+  versions="8.0.402-tem 11.0.22-tem 17.0.10-tem 21.0.2-tem"
+else
+  versions="$2"
+fi
 rm -rf ./dist/*.jar
 # Iterate over the list of versions
 for jdk_release in $versions

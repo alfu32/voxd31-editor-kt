@@ -1,4 +1,4 @@
-package com.voxd31.gdxui
+package com.voxd31.editor
 
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 
-class UIStyleTest {
+class Vector3iTest {
 
     @BeforeEach
     fun setUp() {
@@ -17,12 +17,18 @@ class UIStyleTest {
     }
 
     @Test
-    fun getTextColor() {
-        println("dummy test passed getTextColor")
+    fun cpyTest() {
     }
 
     @Test
-    fun setTextColor() {
-        println("dummy test passed setTextColor")
+    fun addTest() {
+    }
+
+    @Test
+    fun subTest() {
+    }
+
+    @Test
+    fun vec3Test() {
     }
 }
