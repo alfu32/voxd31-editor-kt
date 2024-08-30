@@ -63,10 +63,10 @@ fun drawRoundedRectangleLines(
     shapeRenderer.line(x + width, y + radius, x + width, y+height - radius)
 
     // Four corner circles
-    shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f)
-    shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f)
-    shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f)
-    shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f)
+    try{shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f)}catch(_:Throwable){}
+    try{shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f)}catch(_:Throwable){}
+    try{shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f)}catch(_:Throwable){}
+    try{shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f)}catch(_:Throwable){}
 
     shapeRenderer.color = srcolor
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
@@ -22,6 +23,7 @@ abstract class UiElement(
     var isClicked = false
     var isPressed = false
     var hasFocus = false
+    var isVisible = true
     abstract fun draw(shapeRenderer2d: ShapeRenderer)
     abstract fun drawLines(shapeRenderer2d: ShapeRenderer)
     abstract fun drawText(spriteBatch: SpriteBatch)
@@ -79,5 +81,12 @@ abstract class UiElement(
         val p= Vector3(position.x,1f,position.y)
         val s= Vector3(size.x,1f,size.y)
         return BoundingBox(p,p.cpy().add(s))
+    }
+
+    open fun getRectangle(): Rectangle {
+        return Rectangle(position.x,position.y,size.x,size.y)
+    }
+    open fun init(): UiElement{
+        return this
     }
 }

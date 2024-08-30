@@ -661,7 +661,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 scene.addMode = new
             }.init()
         )
-
+        val SZ1=Vector2(90f, 25f)
+        val SZ2=Vector2(360f, 120f)
         uiElements.addAll( listOf(
             UiElementButton(
                 position = Vector2(10f, y),
@@ -699,6 +700,31 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 target.normalStyle.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.normalStyle.background
                 target.normalStyle.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },
+            UiElementTabPanel(
+                position = Vector2(880f,viewport2D.worldHeight-220f),
+            ){ tp,ev,a,b ->
+                println("tab panel changed from $a to $b")
+            }.apply {
+                    tabs.addAll(
+                        listOf(
+                            UiElementButton(text="one",size=SZ1.cpy()) to UiElementLabel(text="content one",size=SZ2.cpy()),
+                            UiElementButton(text="two",size=SZ1.cpy()) to UiElementLabel(text="content two",size=SZ2.cpy()),
+                            UiElementButton(text="three",size=SZ1.cpy()) to UiElementLabel(text="content three",size=SZ2.cpy()),
+                            UiElementButton(text="grid",size=SZ1.cpy())
+                                    to UiElementGrid(
+                                        elementSize= Vector2(35f,25f),
+                                        data = listOf(
+                                            "0,1,2,3".split(",").map{UiGridCell(text=it)},
+                                            "4,5,6,7".split(",").map{UiGridCell(text=it)},
+                                            "8,9,a,b".split(",").map{UiGridCell(text=it)},
+                                            "c,d,e,f".split(",").map{UiGridCell(text=it)},
+                                        ),
+                                    ){ tp,ev,a,b ->
+                                        println("grid element changed from $a to $b")
+                                    },
+                        )
+                    )
+            }.init(),
         ))
     }
 
