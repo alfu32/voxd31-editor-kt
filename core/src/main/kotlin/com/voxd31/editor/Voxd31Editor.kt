@@ -491,7 +491,35 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         uiIsInitialized++
         uiElements = UiElementsCollection()
-
+        val hues = range(0,14).map {hue ->
+            val bg = Color()
+            bg.fromHsv(hue * 24.0f, 1f, 0.7f)
+            bg.a = 1f
+            val color = Color()
+            color.fromHsv(hue * 24.0f, 1f, 1f)
+            color.a = 1f
+            val hexColor = if(hue<9) "111111ff" else "eeeeeeff"
+            UiStyleSheet(
+                text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
+                normal = UiStyle(
+                    background = bg,
+                    color=Color.DARK_GRAY,
+                    border=bg,
+                    font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
+                ),
+                hover = UiStyle(
+                    background = color,
+                    color=Color.LIGHT_GRAY,
+                    border=Color.CYAN,
+                ),
+                focus = UiStyle(
+                    background = bg,
+                    color=Color.LIGHT_GRAY,
+                    border=Color.GOLD,
+                    font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
+                ),
+            )
+        }
         var x = 10f
         var y = 30f
         for (hue in 0..14) {

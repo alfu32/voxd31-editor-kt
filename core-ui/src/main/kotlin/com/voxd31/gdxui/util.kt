@@ -70,3 +70,20 @@ fun drawRoundedRectangleLines(
 
     shapeRenderer.color = srcolor
 }
+
+fun <T : Number> range(start: T, end: T, step: T = 1 as T): List<T> {
+    val result = mutableListOf<T>()
+
+    var current = start.toDouble()
+    val endValue = end.toDouble()
+    val stepValue = step.toDouble()
+
+    if (stepValue == 0.0) throw IllegalArgumentException("Step value must be non-zero")
+
+    while ((stepValue > 0 && current <= endValue) || (stepValue < 0 && current >= endValue)) {
+        result.add(current as T)
+        current += stepValue
+    }
+
+    return result
+}

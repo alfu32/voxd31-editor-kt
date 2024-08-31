@@ -86,9 +86,10 @@ class UiStyle(
     }
 }
 class UiStyleSheet(
+    var text:String="",
     var normal: UiStyle = UiStyle.defaultNormal(),
     var hover: UiStyle = UiStyle.defaultHover(),
     var focus: UiStyle = UiStyle.defaultFocus(),
 ) {
-    fun cpy() = UiStyleSheet(normal,hover,focus)
+    fun cpy() = UiStyleSheet(text,normal,hover,focus)
 }
