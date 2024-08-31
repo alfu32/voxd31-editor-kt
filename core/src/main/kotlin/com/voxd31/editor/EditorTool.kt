@@ -72,6 +72,7 @@ open class EditorTool(
                     if(event.target != null ) {
                         val targetCube=event.target!!//selected.cubes.values.first()
                         if(scene.cubes[targetCube.getId()] != null) {
+                            val alreadySelected = selected.cubes.containsKey(targetCube.getId())
                             selected.addCube(targetCube.position, targetCube.color)
                             val selectedCubesNeighbors=SceneController(targetCube.modelBuilder)
                             var oldLen=selected.cubes.size
@@ -87,7 +88,21 @@ open class EditorTool(
                                     .forEach {
                                         selectedCubesNeighbors.addCube(it.position, it.color)
                                     }
-                                selectedCubesNeighbors.cubes.forEach { (k, v) -> selected.addCube(v.position, v.color) }
+                                if(alreadySelected){
+                                    println("removing connected from selection")
+                                    selectedCubesNeighbors.cubes.forEach { (k, v) ->
+                                        selected.removeCube(v)
+                                    }
+
+                                } else {
+                                    println("adding connected from selection")
+                                    selectedCubesNeighbors.cubes.forEach { (k, v) ->
+                                        selected.addCube(
+                                            v.position,
+                                            v.color
+                                        )
+                                    }
+                                }
                                 selectedCubesNeighbors.clear()
                                 if(oldLen==selected.cubes.size){
                                     break
