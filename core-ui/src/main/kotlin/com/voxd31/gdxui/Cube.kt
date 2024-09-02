@@ -57,7 +57,7 @@ class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color)
     fun getIntId() : String {
         return "{${position.x.toInt()},${position.y.toInt()},${position.z.toInt()}}"
     }
-    fun getNeigbourCubes(): List<Cube> {
+    fun getNeighbouringPositions(): List<Cube> {
         val p = position.cpy()
         val l = mutableListOf<Cube>()
         for (addx in -1..1){

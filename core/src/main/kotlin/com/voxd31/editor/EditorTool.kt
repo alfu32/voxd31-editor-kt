@@ -72,23 +72,38 @@ open class EditorTool(
                     if(event.target != null ) {
                         val targetCube=event.target!!//selected.cubes.values.first()
                         if(scene.cubes[targetCube.getId()] != null) {
+                            val alreadySelected = selected.cubes.containsKey(targetCube.getId())
                             selected.addCube(targetCube.position, targetCube.color)
                             val selectedCubesNeighbors=SceneController(targetCube.modelBuilder)
                             var oldLen=selected.cubes.size
+                            selectedCubesNeighbors.addCube(targetCube.position, targetCube.color)
                             while(true){
-                                selected.cubes.values
+                                selectedCubesNeighbors.cubes.values
                                     .flatMap { c ->
-                                        c.getNeigbourCubes()
+                                        c.getNeighbouringPositions()
                                     }
-                                    .filter { nc ->
-                                        val snc = scene.cubesInt[nc.getIntId()]
+                                    .filter { neighbouringPosition ->
+                                        val snc = scene.cubesInt[neighbouringPosition.getIntId()]
                                         snc != null && snc.color == targetCube.color
                                     }
                                     .forEach {
                                         selectedCubesNeighbors.addCube(it.position, it.color)
                                     }
-                                selectedCubesNeighbors.cubes.forEach { (k, v) -> selected.addCube(v.position, v.color) }
-                                selectedCubesNeighbors.clear()
+                                if(alreadySelected){
+                                    println("removing connected from selection")
+                                    selectedCubesNeighbors.cubes.forEach { (k, v) ->
+                                        selected.removeCube(v)
+                                    }
+                                } else {
+                                    println("adding connected from selection")
+                                    selectedCubesNeighbors.cubes.forEach { (k, v) ->
+                                        selected.addCube(
+                                            v.position,
+                                            v.color
+                                        )
+                                    }
+                                }
+                                // selectedCubesNeighbors.clear()
                                 if(oldLen==selected.cubes.size){
                                     break
                                 }

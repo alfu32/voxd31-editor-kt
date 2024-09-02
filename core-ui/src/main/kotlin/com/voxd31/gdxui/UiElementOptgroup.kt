@@ -18,7 +18,7 @@ class UiElementOptgroup<T>(
 ): UiElementsCollection(position, size, normalStyle, hoverStyle,focusStyle,mutableListOf()) {
     val layout = GlyphLayout()
     var selectedIndex = 0
-    fun init(): UiElementOptgroup<T> {
+    override fun init(): UiElement {
         layout.setText(currentStyle().font.bitmapFont(), "__${label}_:_${options.joinToString ("__")}")
         size.set(layout.width.coerceAtLeast(size.x+4),
             layout.height.coerceAtLeast(size.y+4))

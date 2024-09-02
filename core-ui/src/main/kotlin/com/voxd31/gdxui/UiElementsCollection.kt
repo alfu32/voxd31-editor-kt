@@ -28,16 +28,19 @@ open class UiElementsCollection(
 ): UiElement(position, size, normalStyle, hoverStyle){
     override fun draw(shapeRenderer2d: ShapeRenderer){
         for (e in elements) {
+            if(!e.isVisible)continue
             e.draw(shapeRenderer2d)
         }
     }
     override fun drawLines(shapeRenderer2d: ShapeRenderer){
         for (e in elements) {
+            if(!e.isVisible)continue
             e.drawLines(shapeRenderer2d)
         }
     }
     override fun drawText(spriteBatch: SpriteBatch){
         for (e in elements) {
+            if(!e.isVisible)continue
             e.drawText(spriteBatch)
         }
     }
@@ -46,6 +49,7 @@ open class UiElementsCollection(
         this.isClicked=false
         this.isHovered=false
         for (el in elements) {
+            if(!el.isVisible)continue
             el.dispatch(e)
             if(el.isHovered){
                 this.isHovered=true

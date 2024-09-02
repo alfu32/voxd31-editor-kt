@@ -37,7 +37,7 @@ class CubeTest {
     fun getNeigbourCubesTest() {
         val cube = Cube(mb, Vector3(1f,1f,1f),Color.RED)
 
-        val neighbors = cube.getNeigbourCubes()
+        val neighbors = cube.getNeighbouringPositions()
 
         neighbors.forEach{ neighbor -> println(neighbor.getIntId()) }
     }

@@ -63,10 +63,27 @@ fun drawRoundedRectangleLines(
     shapeRenderer.line(x + width, y + radius, x + width, y+height - radius)
 
     // Four corner circles
-    shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f)
-    shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f)
-    shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f)
-    shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f)
+    try{shapeRenderer.arc(x + radius, y + radius, radius, 180f, 90f)}catch(_:Throwable){}
+    try{shapeRenderer.arc(x + width - radius, y + radius, radius, 270f, 90f)}catch(_:Throwable){}
+    try{shapeRenderer.arc(x + width - radius, y + height - radius, radius, 0f, 90f)}catch(_:Throwable){}
+    try{shapeRenderer.arc(x + radius, y + height - radius, radius, 90f, 90f)}catch(_:Throwable){}
 
     shapeRenderer.color = srcolor
+}
+
+fun <T : Number> range(start: T, end: T, step: T = 1 as T): List<T> {
+    val result = mutableListOf<T>()
+
+    var current = start.toDouble()
+    val endValue = end.toDouble()
+    val stepValue = step.toDouble()
+
+    if (stepValue == 0.0) throw IllegalArgumentException("Step value must be non-zero")
+
+    while ((stepValue > 0 && current <= endValue) || (stepValue < 0 && current >= endValue)) {
+        result.add(current as T)
+        current += stepValue
+    }
+
+    return result
 }
