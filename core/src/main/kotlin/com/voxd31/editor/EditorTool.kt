@@ -76,13 +76,14 @@ open class EditorTool(
                             selected.addCube(targetCube.position, targetCube.color)
                             val selectedCubesNeighbors=SceneController(targetCube.modelBuilder)
                             var oldLen=selected.cubes.size
+                            selectedCubesNeighbors.addCube(targetCube.position, targetCube.color)
                             while(true){
-                                selected.cubes.values
+                                selectedCubesNeighbors.cubes.values
                                     .flatMap { c ->
-                                        c.getNeigbourCubes()
+                                        c.getNeighbouringPositions()
                                     }
-                                    .filter { nc ->
-                                        val snc = scene.cubesInt[nc.getIntId()]
+                                    .filter { neighbouringPosition ->
+                                        val snc = scene.cubesInt[neighbouringPosition.getIntId()]
                                         snc != null && snc.color == targetCube.color
                                     }
                                     .forEach {
@@ -93,7 +94,6 @@ open class EditorTool(
                                     selectedCubesNeighbors.cubes.forEach { (k, v) ->
                                         selected.removeCube(v)
                                     }
-
                                 } else {
                                     println("adding connected from selection")
                                     selectedCubesNeighbors.cubes.forEach { (k, v) ->
@@ -103,7 +103,7 @@ open class EditorTool(
                                         )
                                     }
                                 }
-                                selectedCubesNeighbors.clear()
+                                // selectedCubesNeighbors.clear()
                                 if(oldLen==selected.cubes.size){
                                     break
                                 }

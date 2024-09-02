@@ -17,4 +17,6 @@
 # Volume -9 6 13 5 9 13 ff6600ff
 /fill -9 6 13 5 9 13 minecraft:stone
 # Volume 5 9 13 -9 0 13 ff6600ff
-/fill 5 9 13 -9 0 13 minecraft:stone
+/fill 5 9 13 -9 0 13 minecraft:stone//select -3 10 13 6 6 13//move 9 0 13 9 0 -6
+//move 9 0 -6 9 0 13
+//move 4 0 16 -11 0 16
