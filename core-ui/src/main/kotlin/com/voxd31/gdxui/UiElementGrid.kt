@@ -9,27 +9,19 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
 import kotlin.math.max
 
-class UiGridCell(
-    val text:String,
-    val background:Color = UiStyle.defaultNormal().background,
-    val foreground:Color = UiStyle.defaultNormal().color,
-){
-    override fun toString(): String {
-        return "{text:$text,background:$background,foreground:$foreground}"
-    }
-}
 class UiElementGrid(
     var elementSize:Vector2= Vector2(20f,20f),
-    var data:List<List<UiGridCell>> = listOf(listOf()),
+    var data:List<List<UiStyleSheet>> = listOf(listOf()),
     override var position: Vector2 = Vector2(0f, 0f),
     override var size: Vector2 = Vector2(20f,20f),
     override var normalStyle:UiStyle=UiStyle.defaultNormal(),
     override var hoverStyle:UiStyle=UiStyle.defaultHover(),
     override var focusStyle:UiStyle=UiStyle.defaultFocus(),
-    var changed:(target: UiElementGrid, ev:Vox3Event, c0: UiGridCell, c1: UiGridCell)->Unit={ t, e, c0, c1 -> }
+    var changed:(target: UiElementGrid, ev:Vox3Event, c0: UiStyleSheet, c1: UiStyleSheet)->Unit={ t, e, c0, c1 -> }
 ): UiElementsCollection(position, size, normalStyle, hoverStyle,focusStyle,mutableListOf()) {
-    var selectedCell = UiGridCell("")
+    var selectedCell = UiStyleSheet("")
     var selectedOrd=0
+    var selectedIndex=0
     var calculatedSize=size.cpy()
     override fun init(): UiElement {
         elements.clear()
@@ -51,6 +43,9 @@ class UiElementGrid(
                         ),
                         size=csz.cpy(),
                         radius = 3f,
+                        normalStyle = cell.normal,
+                        focusStyle = cell.focus,
+                        hoverStyle = cell.hover
                     ){ target:UiElement,ev:Vox3Event ->
                         if (target.isClicked && ev.channel == "touchDown") {
                             println("touchDown")

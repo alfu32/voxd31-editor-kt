@@ -5,9 +5,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
@@ -491,170 +489,149 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         uiIsInitialized++
         uiElements = UiElementsCollection()
-        val hues = range(0,14).map {hue ->
+        val hueNumber=35
+        val hueStep=10.0f
+        val primaryColors = range(0,hueNumber).map { hue ->
             val bg = Color()
-            bg.fromHsv(hue * 24.0f, 1f, 0.7f)
+            bg.fromHsv(hue * hueStep, 1f, 0.7f)
             bg.a = 1f
             val color = Color()
-            color.fromHsv(hue * 24.0f, 1f, 1f)
+            color.fromHsv(hue * hueStep, 1f, 1f)
             color.a = 1f
             val hexColor = if(hue<9) "111111ff" else "eeeeeeff"
-            UiStyleSheet(
-                text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
-                normal = UiStyle(
-                    background = bg,
-                    color=Color.DARK_GRAY,
-                    border=bg,
-                    font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
-                ),
-                hover = UiStyle(
-                    background = color,
-                    color=Color.LIGHT_GRAY,
-                    border=Color.CYAN,
-                ),
-                focus = UiStyle(
-                    background = bg,
-                    color=Color.LIGHT_GRAY,
-                    border=Color.GOLD,
-                    font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
-                ),
-            )
-        }
-        var x = 10f
-        var y = 30f
-        for (hue in 0..14) {
-            val bg = Color()
-            bg.fromHsv(hue * 24.0f, 1f, 0.7f)
-            bg.a = 1f
-            val color = Color()
-            color.fromHsv(hue * 24.0f, 1f, 1f)
-            color.a = 1f
-            val hexColor = if(hue<9) "111111ff" else "eeeeeeff"
-            uiElements.add(
-                UiElementButton(
-                    position = Vector2(10f, y),
-                    size = Vector2(30f, 25f),
-                    normalStyle = UiStyle(
+            mapOf(
+                "style" to UiStyleSheet(
+                    text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
+                    normal = UiStyle(
                         background = bg,
                         color=Color.DARK_GRAY,
                         border=bg,
                         font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
                     ),
-                    hoverStyle = UiStyle(
+                    hover = UiStyle(
                         background = color,
                         color=Color.LIGHT_GRAY,
                         border=Color.CYAN,
                     ),
-                    focusStyle = UiStyle(
+                    focus = UiStyle(
                         background = bg,
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
                         font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
-                    ),
-                    text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
-                ) { target: UiElement, ev: Vox3Event ->
-                    if (target.isClicked && ev.channel == "touchDown") {
-                        scene.currentColor = color
-                    }
-                    target.hasFocus = (scene.currentColor == color)
-                }
+                    )
+                ),
+                "index" to hue
             )
+        }
+        val transparentColors = range(0,hueNumber).map { hue ->
             val bg1 = Color()
             bg1.fromHsv(hue * 24.0f, 0.4f, 0.6f)
             bg1.a = 0.5f
             val color1 = Color()
             color1.fromHsv(hue * 24.0f, 0.4f, 0.9f)
             color1.a = 0.6f
-            uiElements.add(
-                UiElementButton(
-                    position = Vector2(50f, y),
-                    size = Vector2(30f, 25f),
-                    normalStyle = UiStyle(
+            mapOf(
+                "style" to UiStyleSheet(
+                    normal = UiStyle(
                         background = bg1,
                         color=Color.DARK_GRAY,
                         border=bg1,
                         font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf("111111ff"))
                     ),
-                    hoverStyle = UiStyle(
+                    hover = UiStyle(
                         background = color1,
                         color=Color.LIGHT_GRAY,
                         border=Color.CYAN,
                     ),
-                    focusStyle = UiStyle(
+                    focus = UiStyle(
                         background = bg1,
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
                     ),
                     text = (((bg1.r*16).toInt()*256 ) + ((bg1.g*16).toInt()*16) + ((bg1.b*16).toInt())).toString(16).padStart(3, '0'),
-                ) { target: UiElement, ev: Vox3Event ->
-                    if (target.isClicked && ev.channel == "touchDown") {
-                        scene.currentColor = color1
-                    }
-                    target.hasFocus = scene.currentColor == color1
-                }
+                ),
+                "index" to hue
             )
-            y += 30f
         }
-        y = 30f
-        for (gs in 0 until 101 step 10) {
+        val grayTones= range(0,100,10).map{
+                gs ->
+
             val hh = gs / 100f
             val hover = Color(0.5f, 0.5f, 0.8f, 1f)
             val tint = Color(hh, hh, hh, 1f)
             val dimmed = Color(hh, hh, hh, 1f)
             dimmed.a = 0.8f
             val font_id = if(gs < 30) "NotoSans-Regular 12px EEEEEEFF" else "NotoSans-Regular 12px 0A0A0AFF"
-            uiElements.add(
-                UiElementButton(
-                    position = Vector2(90f, y),
-                    size = Vector2(30f, 25f),
-                    normalStyle = UiStyle(
+            mapOf(
+                "style" to UiStyleSheet(
+                    normal = UiStyle(
                         background = dimmed,
                         color=Color.DARK_GRAY,
                         border=dimmed,
                         font = UIFont.of(font_id),
                     ),
-                    hoverStyle = UiStyle(
+                    hover = UiStyle(
                         background = tint,
                         color=Color.LIGHT_GRAY,
                         border=Color.CYAN,
                         font = UIFont.of(font_id),
                     ),
-                    focusStyle = UiStyle(
+                    focus = UiStyle(
                         background = dimmed,
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
                         font = UIFont.of(font_id),
                     ),
                     text = "$gs%",
-                ) { target: UiElement, ev: Vox3Event ->
-                    if (target.isClicked && ev.channel == "touchDown") {
-                        scene.currentColor = tint
-                    }
-                    target.hasFocus = scene.currentColor == tint
-                }
+                ),
+                "index" to gs
             )
-
-            y += 30f
         }
+        val primaryColorsTable = primaryColors.groupBy { m ->
+            val i = m["index"]!! as Int
+            (i/6)
+        }
+        val transparentColorsTable = transparentColors.groupBy { m ->
+            val i = m["index"]!! as Int
+            (i/6)
+        }
+        val grayColorsTable = grayTones.groupBy { m ->
+            val i = m["index"]!! as Int
+            (i/30)
+        }
+        var x = 10f
+        var y = 30f
+        y = 30f
         y = 20f + 15f * 31f
         tools.forEachIndexed { i, t ->
-            uiElements.add(
-                UiElementButton(
-                    position = Vector2(10f, y),
-                    size = Vector2(85f, 25f),
-                    text = t.name,
-                    radius = 3f
-                ) { target: UiElement, ev: Vox3Event ->
-                    if (target.isClicked && ev.channel == "touchDown") {
-                        activeToolIndex = i
-                        activeTool = tools[activeToolIndex]
-                        activeTool!!.reset()
-                    }
-                    target.hasFocus = activeToolIndex == i
-                }
-            )
+            /// uiElements.add(
+            ///     UiElementButton(
+            ///         position = Vector2(10f, y),
+            ///         size = Vector2(85f, 25f),
+            ///         text = t.name,
+            ///         radius = 3f
+            ///     ) { target: UiElement, ev: Vox3Event ->
+            ///         if (target.isClicked && ev.channel == "touchDown") {
+            ///             activeToolIndex = i
+            ///             activeTool = tools[activeToolIndex]
+            ///             activeTool!!.reset()
+            ///         }
+            ///         target.hasFocus = activeToolIndex == i
+            ///     }
+            /// )
             y += 30f
-
+        }
+        val toolsGridData = tools.mapIndexed{
+            i,tool ->
+            mapOf(
+                "style" to UiStyleSheet(text=tool.name),
+                "index" to i,
+                "tool" to tool
+            )
+        }
+        val toolsGridDataTable = toolsGridData.groupBy { m ->
+            val i = m["index"]!! as Int
+            (i/4)
         }
 
         uiElements.add(
@@ -689,7 +666,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 scene.addMode = new
             }.init()
         )
-        val SZ1=Vector2(90f, 25f)
+        val SZ1=Vector2(120f, 25f)
         val SZ2=Vector2(360f, 120f)
         uiElements.addAll( listOf(
             UiElementButton(
@@ -735,20 +712,43 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             }.apply {
                     tabs.addAll(
                         listOf(
-                            UiElementButton(text="one",size=SZ1.cpy()) to UiElementLabel(text="content one",size=SZ2.cpy()),
-                            UiElementButton(text="two",size=SZ1.cpy()) to UiElementLabel(text="content two",size=SZ2.cpy()),
-                            UiElementButton(text="three",size=SZ1.cpy()) to UiElementLabel(text="content three",size=SZ2.cpy()),
-                            UiElementButton(text="grid",size=SZ1.cpy())
+                            UiElementButton(text="tools",size=SZ1.cpy())
                                     to UiElementGrid(
-                                        elementSize= Vector2(35f,25f),
-                                        data = listOf(
-                                            "0,1,2,3".split(",").map{UiGridCell(text=it)},
-                                            "4,5,6,7".split(",").map{UiGridCell(text=it)},
-                                            "8,9,a,b".split(",").map{UiGridCell(text=it)},
-                                            "c,d,e,f".split(",").map{UiGridCell(text=it)},
-                                        ),
+                                        elementSize= Vector2(85f,25f),
+                                        data=toolsGridDataTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
                                     ){ tp,ev,a,b ->
                                         println("grid element changed from $a to $b")
+                                        println("switching tool ${tools[activeToolIndex].name} to ${tools[tp.selectedOrd].name}")
+                                        // scene.currentColor = b.hover.background
+                                        // tools[tp.selectedOrd].onClick(tools[tp.selectedOrd],ev)
+
+                                        activeToolIndex = tp.selectedOrd
+                                        activeTool = tools[activeToolIndex]
+                                        activeTool!!.reset()
+                                    },
+                            UiElementButton(text="primary",size=SZ1.cpy())
+                                    to UiElementGrid(
+                                        elementSize= Vector2(35f,25f),
+                                        data=primaryColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+                                    ){ tp,ev,a,b ->
+                                        println("grid element changed from $a to $b")
+                                        scene.currentColor = b.hover.background
+                                    },
+                            UiElementButton(text="transparent",size=SZ1.cpy())
+                                    to UiElementGrid(
+                                        elementSize= Vector2(35f,25f),
+                                        data=transparentColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+                                    ){ tp,ev,a,b ->
+                                        println("grid element changed from $a to $b")
+                                        scene.currentColor = b.hover.background
+                                    },
+                            UiElementButton(text="grayscale",size=SZ1.cpy())
+                                    to UiElementGrid(
+                                        elementSize= Vector2(35f,25f),
+                                        data=grayColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+                                    ){ tp,ev,a,b ->
+                                        println("grid element changed from $a to $b")
+                                        scene.currentColor = b.hover.background
                                     },
                         )
                     )

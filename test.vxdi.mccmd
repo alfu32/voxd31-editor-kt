@@ -19,4 +19,87 @@
 # Volume 5 9 13 -9 0 13 ff6600ff
 /fill 5 9 13 -9 0 13 minecraft:stone//select -3 10 13 6 6 13//move 9 0 13 9 0 -6
 //move 9 0 -6 9 0 13
-//move 4 0 16 -11 0 16
+//move 4 0 16 -11 0 16/setblock 4 -1 2 minecraft:stone
+/setblock 4 0 2 minecraft:stone
+/setblock 4 0 2 minecraft:stone
+/setblock 4 0 -2 minecraft:stone
+/setblock 4 0 -5 minecraft:stone
+/setblock 4 0 -8 minecraft:stone
+/setblock 4 0 -8 minecraft:stone
+/setblock 4 0 -8 minecraft:stone
+/setblock 4 1 -8 air replace
+/setblock 4 0 -8 air replace
+/setblock 4 0 -7 air replace
+/setblock 4 0 -5 air replace
+/setblock 4 0 -2 air replace
+/setblock 4 1 2 air replace
+/setblock 4 0 2 air replace
+/setblock 4 0 2 air replace
+/setblock 4 -1 2 air replace/setblock 1 0 -1 minecraft:stone
+/setblock 2 0 -1 minecraft:stone
+/setblock 3 0 -1 minecraft:stone
+/setblock 4 0 -1 minecraft:stone
+/setblock 5 0 -1 minecraft:stone
+/setblock 6 0 -1 minecraft:stone
+/setblock 7 0 -1 minecraft:stone
+/setblock 8 0 -1 minecraft:stone
+/setblock 9 0 -1 minecraft:stone
+/setblock 10 0 -1 minecraft:stone
+/setblock 11 0 -1 minecraft:stone
+/setblock 12 0 -1 minecraft:stone
+/setblock 13 0 -1 minecraft:stone
+/setblock 14 0 -1 minecraft:stone
+/setblock 15 0 -1 minecraft:stone
+/setblock 16 0 -1 minecraft:stone
+/setblock 17 0 -1 minecraft:stone
+/setblock 18 0 -1 minecraft:stone
+/setblock 19 0 -1 minecraft:stone
+/setblock 19 0 -2 minecraft:stone
+/setblock 19 0 -3 minecraft:stone
+/setblock 19 0 -4 minecraft:stone
+/setblock 19 0 -5 minecraft:stone
+/setblock 19 0 -5 minecraft:stone
+/setblock 19 0 -6 minecraft:stone
+/setblock 19 0 -8 minecraft:stone
+/setblock 19 0 -8 minecraft:stone
+/setblock 19 0 -9 minecraft:stone
+/setblock 19 0 -10 minecraft:stone
+/setblock 19 0 -11 minecraft:stone
+/setblock 19 0 -13 minecraft:stone
+/setblock 19 0 -14 minecraft:stone
+/setblock 19 0 -14 minecraft:stone
+/setblock 19 0 -15 minecraft:stone
+/setblock 19 0 -17 minecraft:stone
+/setblock 19 0 -17 minecraft:stone/setblock 10 6 -1 minecraft:stone
+/setblock 11 6 -1 minecraft:stone
+/setblock 12 6 -1 minecraft:stone
+/setblock 13 6 -1 minecraft:stone
+/setblock 14 6 -1 minecraft:stone
+/setblock 15 6 -1 minecraft:stone
+/setblock 17 5 -1 minecraft:stone
+//move -21 0 19 -6 0 19
+# Volume 1 1 -1 19 1 -1 e589d399
+/fill 1 1 -1 19 1 -1 minecraft:stone
+# Volume 1 2 -1 19 2 -1 e589ae99
+/fill 1 2 -1 19 2 -1 minecraft:stone
+# Volume 1 3 -1 19 3 -1 e5898999
+/fill 1 3 -1 19 3 -1 minecraft:stone
+# Volume 1 4 -1 19 4 -1 e5ae8999
+/fill 1 4 -1 19 4 -1 minecraft:stone
+# Volume 1 5 -1 19 5 -1 e5d38999
+/fill 1 5 -1 19 5 -1 minecraft:stone
+# Volume 1 6 -1 3 6 -1 e5e5e5ff
+/fill 1 6 -1 3 6 -1 minecraft:stone
+# Volume 4 6 -1 6 6 -1 ffffffff
+/fill 4 6 -1 6 6 -1 minecraft:stone
+# Volume 7 6 -1 9 6 -1 999999ff
+/fill 7 6 -1 9 6 -1 minecraft:stone
+# Volume 10 6 -1 10 6 -1 b2b2b2ff
+/fill 10 6 -1 10 6 -1 minecraft:stone/setblock -4 0 22 minecraft:stone
+//select 1 7 -1 19 1 0
+//select 0 0 -1 19 1 -18
+//move 5 0 18 15 0 -11
+//move 10 0 -4 10 14 -5
+//rotate 5 0 -5 15 0 -5 14 0 4
+# Volume -4 0 20 -1 3 18 ff0000ff
+/fill -4 0 20 -1 3 18 minecraft:stone

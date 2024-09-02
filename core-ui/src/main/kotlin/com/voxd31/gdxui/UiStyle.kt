@@ -92,4 +92,17 @@ class UiStyleSheet(
     var focus: UiStyle = UiStyle.defaultFocus(),
 ) {
     fun cpy() = UiStyleSheet(text,normal,hover,focus)
+    override fun toString(): String {
+        return """
+            .$text:default{
+                ${normal}
+            }
+            .$text:hover{
+                ${hover}
+            }
+            .$text:focus{
+                ${focus}
+            }
+        """.trimIndent()
+    }
 }
