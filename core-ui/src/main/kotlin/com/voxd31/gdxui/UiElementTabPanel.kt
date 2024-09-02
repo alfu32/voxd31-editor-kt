@@ -78,7 +78,7 @@ class UiElementTabPanel(
     override fun draw(shapeRenderer2d: ShapeRenderer) {
         val stl = currentStyle()
         val cl = shapeRenderer2d.color
-        shapeRenderer2d.color=stl.color
+        shapeRenderer2d.color=stl.background
         shapeRenderer2d.rect(position.x,position.y-rect.height,rect.width,rect.height)
         shapeRenderer2d.color=cl
         super.draw(shapeRenderer2d)
