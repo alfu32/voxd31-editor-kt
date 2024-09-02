@@ -102,4 +102,16 @@
 //move 10 0 -4 10 14 -5
 //rotate 5 0 -5 15 0 -5 14 0 4
 # Volume -4 0 20 -1 3 18 ff0000ff
-/fill -4 0 20 -1 3 18 minecraft:stone
+/fill -4 0 20 -1 3 18 minecraft:stone# Frame 6 0 3 17 0 -9 00ff2aff
+/fill 6 0 3 6 0 3 minecraft:stone
+/fill 6 0 3 17 0 3 minecraft:stone
+/fill 17 0 3 17 0 3 minecraft:stone
+/fill 17 0 3 6 0 3 minecraft:stone
+/fill 6 0 3 6 0 -9 minecraft:stone
+/fill 6 0 3 6 0 -9 minecraft:stone
+/fill 17 0 3 17 0 -9 minecraft:stone
+/fill 17 0 3 17 0 -9 minecraft:stone
+/fill 6 0 -9 6 0 -9 minecraft:stone
+/fill 6 0 -9 17 0 -9 minecraft:stone
+/fill 17 0 -9 17 0 -9 minecraft:stone
+/fill 17 0 -9 6 0 -9 minecraft:stone

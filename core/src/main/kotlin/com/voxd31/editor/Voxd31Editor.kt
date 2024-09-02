@@ -142,7 +142,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         cameraController = EditorCameraController(camera3D)
 
         tools.add(EditorTool.SelectEditor(scene,feedback,selected))
-        tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
             val cc=Color()
             cc.fromHsv(120f,0.8f,0.8f)
@@ -198,9 +197,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             selected.clear()
             synchronized(moved){
                 moved.forEach{ (a,m) ->
-                    if(!toolsCopy) {
-                        scene.removeCube(a)
-                    }
+                    scene.removeCube(a)
                     scene.addCube(m.position,m.color)
                     selected.addCube(m.position,m.color)
                 }
@@ -208,6 +205,47 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf("//move ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z}")
+        }))
+        tools.add(EditorTool.makeTwoInputEditor("Copy", onFeedback = { s:Vector3,e:Vector3 ->
+            feedback.clear()
+            val cc=Color()
+            cc.fromHsv(120f,0.5f,1f)
+
+            voxelRangeSegment(s,e){ p->
+                feedback.addOrReplaceCube(p,Color.GOLD)
+            }
+            feedback.addOrReplaceCube(s,Color.RED)
+            feedback.addOrReplaceCube(e,Color.GREEN)
+            val delta = Vector3(floor(e.x)-floor(s.x), floor(e.y)-floor(s.y), floor(e.z)-floor(s.z))
+
+            selected.cubes.forEach{ i,c->
+                val sc = scene.cubes[i]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    feedback.addCube(sc.position.cpy().add(delta),cl)
+                }
+            }
+        },onEnd={  s:Vector3,e:Vector3 ->
+            val delta = Vector3(floor(e.x)-floor(s.x), floor(e.y)-floor(s.y), floor(e.z)-floor(s.z))
+            val moved = selected.cubes.map{ kv->
+                val sc = scene.cubes[kv.key]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().add(delta),cl)
+                } else {
+                    null
+                }
+            }.filterNotNull()
+            selected.clear()
+            synchronized(moved){
+                moved.forEach{ (a,m) ->
+                    scene.addCube(m.position,m.color)
+                    selected.addCube(m.position,m.color)
+                }
+            }
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf("//copy ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z}")
         }))
         tools.add(EditorTool.makeThreeInputEditor("Rotate", onFeedback = { s:Vector3,m:Vector3,e:Vector3 ->
             feedback.clear()
@@ -245,9 +283,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             selected.clear()
             synchronized(moved){
                 moved.forEach{ (a,m) ->
-                    if(!toolsCopy) {
-                        scene.removeCube(a)
-                    }
+                    scene.removeCube(a)
                     scene.addCube(m.position,m.color)
                     selected.addCube(m.position,m.color)
                 }
@@ -257,15 +293,52 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val c=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf("//rotate ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${c.x} ${c.y} ${c.z}")
         }))
-        tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeVolume(s,e,op)
+        tools.add(EditorTool.makeThreeInputEditor("CopyRot", onFeedback = { s:Vector3,m:Vector3,e:Vector3 ->
+            feedback.clear()
+            val cc=Color()
+            cc.fromHsv(120f,0.5f,0.8f)
+
+            voxelRangeSegment(s,m){ p->
+                feedback.addCube(p,Color.GOLD)
+            }
+            voxelRangeSegment(s,e){ p->
+                feedback.addCube(p,Color.ORANGE)
+            }
+            feedback.addCube(s,Color.RED)
+            feedback.addCube(m,Color.GREEN)
+            feedback.addCube(e,Color.BLUE)
+            val rmx = calculateRotationMatrix(s,m,e)
+            selected.cubes.forEach{ i,c->
+                val sc = scene.cubes[i]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    feedback.addCube(sc.position.cpy().mul(rmx),cl)
+                }
+            }
+        },onEnd={  s:Vector3,m:Vector3,e:Vector3 ->
+            val rmx = calculateRotationMatrix(s,m,e)
+            val moved = selected.cubes.map{ kv->
+                val sc = scene.cubes[kv.key]
+                if(sc!=null){
+                    val cl=sc.color.cpy()
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().mul(rmx),cl)
+                } else {
+                    null
+                }
+            }.filterNotNull()
+            selected.clear()
+            synchronized(moved){
+                moved.forEach{ (a,m) ->
+                    scene.addCube(m.position,m.color)
+                    selected.addCube(m.position,m.color)
+                }
+            }
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
-            val b=Vector3i.fromFloats(e.x,e.y,e.z)
-            listOf(
-                "# Volume ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
-            )
-        })
+            val b=Vector3i.fromFloats(m.x,m.y,m.z)
+            val c=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf("//rotate ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${c.x} ${c.y} ${c.z}")
+        }))
+        tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Segment",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
 
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
@@ -280,6 +353,17 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             }
             list
         })
+        tools.add(EditorTool.ArcEditor(scene,feedback))
+        tools.add(EditorTool.makeTwoInputEditor("Circle",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeCircle(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            val r = s.cpy().sub(e).len()
+            listOf(
+                "# Circle ${a.x} ${a.y} ${a.z} ${r} ${scene.currentColor}",
+            )
+        })
+        tools.add(EditorTool.PlaneEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Sphere",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeSphere(s,e,op)
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
@@ -310,16 +394,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
             )
         })
-        tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeShell(s,e,op)
-            val a=Vector3i.fromFloats(s.x,s.y,s.z)
-            val b=Vector3i.fromFloats(e.x,e.y,e.z)
-            listOf(
-                "# Shell ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
-                "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
-            )
-        })
         tools.add(EditorTool.makeTwoInputEditor("Frame",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeFrame(s,e,op)
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
@@ -340,17 +414,25 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 "/fill ${b.x} ${a.y} ${b.z} ${a.x} ${a.y} ${b.z} minecraft:stone",
             )
         })
-        tools.add(EditorTool.PlaneEditor(scene,feedback))
-        tools.add(EditorTool.makeTwoInputEditor("Circle",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
-            voxelRangeCircle(s,e,op)
+        tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeShell(s,e,op)
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
-            val r = s.cpy().sub(e).len()
             listOf(
-                "# Circle ${a.x} ${a.y} ${a.z} ${r} ${scene.currentColor}",
+                "# Shell ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
             )
         })
-        tools.add(EditorTool.ArcEditor(scene,feedback))
+        tools.add(EditorTool.makeTwoInputEditor("Volume",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
+            voxelRangeVolume(s,e,op)
+            val a=Vector3i.fromFloats(s.x,s.y,s.z)
+            val b=Vector3i.fromFloats(e.x,e.y,e.z)
+            listOf(
+                "# Volume ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+            )
+        })
 
         println(tools.map{t -> t.name})
 
@@ -524,36 +606,36 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             )
         }
         val transparentColors = range(0,hueNumber).map { hue ->
-            val bg1 = Color()
-            bg1.fromHsv(hue * 24.0f, 0.4f, 0.6f)
-            bg1.a = 0.5f
-            val color1 = Color()
-            color1.fromHsv(hue * 24.0f, 0.4f, 0.9f)
-            color1.a = 0.6f
+            val bg = Color()
+            bg.fromHsv(hue * hueStep, 1f, 0.7f)
+            bg.a = 0.5f
+            val color = Color()
+            color.fromHsv(hue * hueStep, 1f, 1f)
+            color.a = 0.6f
             mapOf(
                 "style" to UiStyleSheet(
                     normal = UiStyle(
-                        background = bg1,
+                        background = bg,
                         color=Color.DARK_GRAY,
-                        border=bg1,
+                        border=bg,
                         font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf("111111ff"))
                     ),
                     hover = UiStyle(
-                        background = color1,
+                        background = color,
                         color=Color.LIGHT_GRAY,
                         border=Color.CYAN,
                     ),
                     focus = UiStyle(
-                        background = bg1,
+                        background = bg,
                         color=Color.LIGHT_GRAY,
                         border=Color.GOLD,
                     ),
-                    text = (((bg1.r*16).toInt()*256 ) + ((bg1.g*16).toInt()*16) + ((bg1.b*16).toInt())).toString(16).padStart(3, '0'),
+                    text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
                 ),
                 "index" to hue
             )
         }
-        val grayTones= range(0,100,10).map{
+        val grayTones= range(0f,100f,5.05f).map{
                 gs ->
 
             val hh = gs / 100f
@@ -582,9 +664,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         border=Color.GOLD,
                         font = UIFont.of(font_id),
                     ),
-                    text = "$gs%",
+                    text = "${gs.toInt()}%",
                 ),
-                "index" to gs
+                "index" to gs.toInt()
             )
         }
         val primaryColorsTable = primaryColors.groupBy { m ->
@@ -597,30 +679,12 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         val grayColorsTable = grayTones.groupBy { m ->
             val i = m["index"]!! as Int
-            (i/30)
+            (i/25)
         }
         var x = 10f
         var y = 30f
         y = 30f
         y = 20f + 15f * 31f
-        tools.forEachIndexed { i, t ->
-            /// uiElements.add(
-            ///     UiElementButton(
-            ///         position = Vector2(10f, y),
-            ///         size = Vector2(85f, 25f),
-            ///         text = t.name,
-            ///         radius = 3f
-            ///     ) { target: UiElement, ev: Vox3Event ->
-            ///         if (target.isClicked && ev.channel == "touchDown") {
-            ///             activeToolIndex = i
-            ///             activeTool = tools[activeToolIndex]
-            ///             activeTool!!.reset()
-            ///         }
-            ///         target.hasFocus = activeToolIndex == i
-            ///     }
-            /// )
-            y += 30f
-        }
         val toolsGridData = tools.mapIndexed{
             i,tool ->
             mapOf(
@@ -633,23 +697,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             val i = m["index"]!! as Int
             (i/4)
         }
-
-        uiElements.add(
-            UiElementButton(
-                position = Vector2(100f, 45f + 16f * 31f + 30f),
-                size = Vector2(20f, 58f),
-                text = "+"
-            ) { target: UiElement, ev: Vox3Event ->
-                if (target.isClicked && ev.channel == "touchDown") {
-                    toolsCopy = !toolsCopy
-                    target.normalStyle.border = if (toolsCopy) Color.GOLD else Color.DARK_GRAY
-                    target.normalStyle.color = if (toolsCopy) Color.LIGHT_GRAY else Color.DARK_GRAY
-                }
-                target.hasFocus = toolsCopy
-            }
-        )
-        viewport2D.worldHeight
-        // y=viewport2D.worldHeight - 140f
         y=viewport2D.worldHeight-32f
         uiElements.add(
             UiElementOptgroup<String>(
@@ -704,53 +751,54 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
                 target.normalStyle.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.normalStyle.background
                 target.normalStyle.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
-            },
+            },))
+        uiElements.add(
             UiElementTabPanel(
-                position = Vector2(880f,viewport2D.worldHeight-220f),
+                position = Vector2(10f,viewport2D.worldHeight-70f),
             ){ tp,ev,a,b ->
                 println("tab panel changed from $a to $b")
             }.apply {
-                    tabs.addAll(
-                        listOf(
-                            UiElementButton(text="tools",size=SZ1.cpy())
-                                    to UiElementGrid(
-                                        elementSize= Vector2(85f,25f),
-                                        data=toolsGridDataTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                                    ){ tp,ev,a,b ->
-                                        println("grid element changed from $a to $b")
-                                        println("switching tool ${tools[activeToolIndex].name} to ${tools[tp.selectedOrd].name}")
-                                        activeToolIndex = tp.selectedOrd
-                                        activeTool = tools[activeToolIndex]
-                                        activeTool!!.reset()
-                                    },
-                            UiElementButton(text="primary",size=SZ1.cpy())
-                                    to UiElementGrid(
-                                        elementSize= Vector2(35f,25f),
-                                        data=primaryColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                                    ){ tp,ev,a,b ->
-                                        println("grid element changed from $a to $b")
-                                        scene.currentColor = b.hover.background
-                                    },
-                            UiElementButton(text="transparent",size=SZ1.cpy())
-                                    to UiElementGrid(
-                                        elementSize= Vector2(35f,25f),
-                                        data=transparentColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                                    ){ tp,ev,a,b ->
-                                        println("grid element changed from $a to $b")
-                                        scene.currentColor = b.hover.background
-                                    },
-                            UiElementButton(text="grayscale",size=SZ1.cpy())
-                                    to UiElementGrid(
-                                        elementSize= Vector2(35f,25f),
-                                        data=grayColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                                    ){ tp,ev,a,b ->
-                                        println("grid element changed from $a to $b")
-                                        scene.currentColor = b.hover.background
-                                    },
-                        )
+                tabs.addAll(
+                    listOf(
+                    UiElementButton(text="tools",size=SZ1.cpy())
+                        to UiElementGrid(
+                            elementSize= Vector2(85f,25f),
+                            data=toolsGridDataTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+                        ){ tp,ev,a,b ->
+                            println("grid element changed from $a to $b")
+                            println("switching tool ${tools[activeToolIndex].name} to ${tools[tp.selectedOrd].name}")
+                            activeToolIndex = tp.selectedOrd
+                            activeTool = tools[activeToolIndex]
+                            activeTool!!.reset()
+                        },
+                    UiElementButton(text="primary",size=SZ1.cpy())
+                        to UiElementGrid(
+                            elementSize= Vector2(35f,25f),
+                            data=primaryColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+                        ){ tp,ev,a,b ->
+                            println("grid element changed from $a to $b")
+                            scene.currentColor = b.hover.background
+                        },
+                    UiElementButton(text="transparent",size=SZ1.cpy())
+                        to UiElementGrid(
+                            elementSize= Vector2(35f,25f),
+                            data=transparentColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+                        ){ tp,ev,a,b ->
+                            println("grid element changed from $a to $b")
+                            scene.currentColor = b.hover.background
+                        },
+                    UiElementButton(text="grayscale",size=SZ1.cpy())
+                        to UiElementGrid(
+                            elementSize= Vector2(35f,25f),
+                            data=grayColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+                        ){ tp,ev,a,b ->
+                            println("grid element changed from $a to $b")
+                            scene.currentColor = b.hover.background
+                        },
                     )
+                )
             }.init(),
-        ))
+        )
     }
 
     override fun render() {

@@ -39,7 +39,7 @@ class UiElementGrid(
                         text=cell.text,
                         position = Vector2(
                             (csz.x+5)*i+position.x,
-                            (csz.y+5)*j+position.y,
+                            -(csz.y+5)*j+position.y,
                         ),
                         size=csz.cpy(),
                         radius = 3f,
