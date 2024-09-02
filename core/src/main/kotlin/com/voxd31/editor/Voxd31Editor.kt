@@ -719,9 +719,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                                     ){ tp,ev,a,b ->
                                         println("grid element changed from $a to $b")
                                         println("switching tool ${tools[activeToolIndex].name} to ${tools[tp.selectedOrd].name}")
-                                        // scene.currentColor = b.hover.background
-                                        // tools[tp.selectedOrd].onClick(tools[tp.selectedOrd],ev)
-
                                         activeToolIndex = tp.selectedOrd
                                         activeTool = tools[activeToolIndex]
                                         activeTool!!.reset()
