@@ -67,6 +67,13 @@ class UiElementGrid(
     fun setElementFocus(ord:Int,value:Boolean) {
         elements[ord].hasFocus=value
     }
+    fun setSelected(ord:Int){
+        setElementFocus(selectedOrd,false)
+        selectedIndex=ord
+        selectedOrd=ord
+        setElementFocus(selectedOrd,true)
+        selectedCell=data[ord/data.size][ord%data[0].size]
+    }
     override fun getRectangle():Rectangle{
         val calculatedSize=size.cpy()
         val csz=elementSize
