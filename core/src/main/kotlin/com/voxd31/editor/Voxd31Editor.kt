@@ -61,6 +61,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     lateinit var inputEventDispatcher: InputEventDispatcher
     val commands = mutableListOf<String>()
     var toolsCopy=false
+    lateinit var uiTools: UiElementGrid
 
 
     private lateinit var cameraController: CameraInputController
@@ -198,6 +199,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             synchronized(moved){
                 moved.forEach{ (a,m) ->
                     scene.removeCube(a)
+                }
+            }
+            synchronized(moved){
+                moved.forEach{ (a,m) ->
                     scene.addCube(m.position,m.color)
                     selected.addCube(m.position,m.color)
                 }
@@ -514,6 +519,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         activeToolIndex = 0
                         activeTool = tools[activeToolIndex]
                         activeTool!!.reset()
+                        uiTools.setSelected(0)
                     }
                 }
                 else -> {
@@ -752,6 +758,16 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 target.normalStyle.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.normalStyle.background
                 target.normalStyle.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
             },))
+        uiTools = UiElementGrid(
+            elementSize= Vector2(85f,25f),
+            data=toolsGridDataTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
+        ){ tp,ev,a,b ->
+            println("grid element changed from $a to $b")
+            println("switching tool ${tools[activeToolIndex].name} to ${tools[tp.selectedOrd].name}")
+            activeToolIndex = tp.selectedOrd
+            activeTool = tools[activeToolIndex]
+            activeTool!!.reset()
+        }
         uiElements.add(
             UiElementTabPanel(
                 position = Vector2(10f,viewport2D.worldHeight-70f),
@@ -760,17 +776,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             }.apply {
                 tabs.addAll(
                     listOf(
-                    UiElementButton(text="tools",size=SZ1.cpy())
-                        to UiElementGrid(
-                            elementSize= Vector2(85f,25f),
-                            data=toolsGridDataTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                        ){ tp,ev,a,b ->
-                            println("grid element changed from $a to $b")
-                            println("switching tool ${tools[activeToolIndex].name} to ${tools[tp.selectedOrd].name}")
-                            activeToolIndex = tp.selectedOrd
-                            activeTool = tools[activeToolIndex]
-                            activeTool!!.reset()
-                        },
+                    UiElementButton(text="tools",size=SZ1.cpy()) to uiTools,
                     UiElementButton(text="primary",size=SZ1.cpy())
                         to UiElementGrid(
                             elementSize= Vector2(35f,25f),
