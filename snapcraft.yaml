@@ -81,6 +81,18 @@ parts:
       export PATH="$JAVA_HOME/bin:$PATH"
       SNAP_VERSION="${VOXKRAFT_SNAP_VERSION:-$(git describe --tags --abbrev=0 2>/dev/null || echo 0.0.0)}"
 
+      has_complete_wrapper_cache() {
+        [ -d "$1" ] && find "$1" -mindepth 2 -maxdepth 3 \( -name '*.zip.ok' -o -type d -name 'gradle-*' \) | grep -q .
+      }
+
+      if has_complete_wrapper_cache .gradle-user/wrapper/dists; then
+        install -d "$GRADLE_USER_HOME/wrapper"
+        cp -a .gradle-user/wrapper/dists "$GRADLE_USER_HOME/wrapper/"
+      elif has_complete_wrapper_cache .gradle/wrapper/dists; then
+        install -d "$GRADLE_USER_HOME/wrapper"
+        cp -a .gradle/wrapper/dists "$GRADLE_USER_HOME/wrapper/"
+      fi
+
       chmod 755 ./gradlew
       ./gradlew --no-daemon -PreleaseNumber="$SNAP_VERSION" generateAssetList :lwjgl3:jar
 
