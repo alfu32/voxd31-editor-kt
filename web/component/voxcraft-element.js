@@ -16,6 +16,9 @@
     if (state.loadPromise) {
       return state.loadPromise;
     }
+    window.__voxcraftEmbedState = Object.assign({}, window.__voxcraftEmbedState, {
+      baseUrl
+    });
     state.loadPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = runtimeUrl();

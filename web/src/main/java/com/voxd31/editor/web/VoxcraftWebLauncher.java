@@ -13,6 +13,7 @@ public final class VoxcraftWebLauncher {
         config.height = 0;
         config.showDownloadLogs = false;
         config.useGL30 = true;
+        config.baseUrlProvider = new VoxcraftWebBaseUrlProvider();
         config.storagePrefix = "voxcraft";
         config.localStoragePrefix = "voxcraft";
         config.shouldEncodePreference = true;
