@@ -11,12 +11,24 @@ def releaseVersionName = (
 ).toString()
 
 def releaseVersionCode = (
-    (
-        project.findProperty("androidVersionCode")
-            ?: System.getenv("ANDROID_VERSION_CODE")
-            ?: "1"
-    ).toString()
-).toInteger()
+    {
+        def rawValue = (
+            project.findProperty("androidVersionCode")
+                ?: System.getenv("ANDROID_VERSION_CODE")
+                ?: "1"
+        ).toString().trim()
+        if (rawValue.isInteger()) {
+            return rawValue.toInteger()
+        }
+        def digitsOnly = rawValue.replaceAll(/[^0-9]/, "")
+        if (!digitsOnly) {
+            throw new GradleException(
+                "androidVersionCode must contain at least one digit. Received: '${rawValue}'"
+            )
+        }
+        return digitsOnly.toInteger()
+    }
+)()
 
 def releaseStoreFile = (
     project.findProperty("ANDROID_UPLOAD_STORE_FILE")
