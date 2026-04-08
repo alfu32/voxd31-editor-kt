@@ -20,6 +20,7 @@ import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.collision.BoundingBox
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.appendTextFile
 import com.voxd31.editor.exporters.readCubesCsv
@@ -37,8 +38,11 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     }
     private val GNDSZ=100f
     private val groundPlaneY = -0.5f
-    private val gridPlaneY = groundPlaneY + 0.01f
+    private val gridPlaneY = groundPlaneY + 0.03f
     private val cameraTarget = Vector3()
+    private val shadowBounds = BoundingBox()
+    private val shadowBoundsCenter = Vector3()
+    private val shadowDirection = Vector3()
     private var orthoDistance = 18f
     private var activeOrthoView = OrthographicView.TOP
     private lateinit var orbitCamera: PerspectiveCamera
@@ -116,9 +120,9 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         environment = Environment()
         shadowLight = DirectionalShadowLight(
-            4096, 4096,
-            60f, 60f, 1f,
-            300f
+            8192, 8192,
+            96f, 96f, 1f,
+            360f
         ).apply {
             set(0.5f, 0.5f, 0.5f, -0.5f, -1.8f, -1.2f)
             setColor(Color(0f,0f,0f,0.5f))
@@ -857,6 +861,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
 
+        modelBatch.begin(activeCamera)
+        modelBatch.render(ground, environment)
+        modelBatch.end()
+
         shapeRenderer.projectionMatrix = activeCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         renderGrid(
@@ -872,7 +880,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         shapeRenderer.end()
 
         modelBatch.begin(activeCamera)
-        modelBatch.render(ground, environment)
         modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
         modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
         modelBatch.end()
@@ -909,13 +916,36 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     }
 
     private fun renderShadowPass() {
-        shadowLight.begin(Vector3.Zero, activeCamera.direction)
+        shadowLight.begin(resolveShadowCenter(), resolveShadowDirection())
         shadowBatch.begin(shadowLight.camera)
         shadowBatch.render(scene.cubes.filter { it.value.color.a > 0.99f }.map { it.value.getModelInstance() })
         shadowBatch.render(feedback.cubes.filter { it.value.color.a > 0.99f }.map { it.value.getModelInstance() }, environment)
         shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
+    }
+
+    private fun resolveShadowCenter(): Vector3 {
+        val renderCubes = scene.cubes.values + feedback.cubes.values
+        if (renderCubes.isEmpty()) {
+            return shadowBoundsCenter.set(cameraTarget)
+        }
+        shadowBounds.inf()
+        renderCubes.forEach { cube ->
+            shadowBounds.ext(cube.getBoundingBox())
+        }
+        shadowBounds.ext(Vector3(-GNDSZ, groundPlaneY, -GNDSZ))
+        shadowBounds.ext(Vector3(GNDSZ, groundPlaneY, GNDSZ))
+        shadowBounds.getCenter(shadowBoundsCenter)
+        return shadowBoundsCenter
+    }
+
+    private fun resolveShadowDirection(): Vector3 {
+        shadowDirection.set(shadowLight.direction)
+        if (shadowDirection.len2() <= 1e-6f) {
+            shadowDirection.set(-0.5f, -1.8f, -1.2f)
+        }
+        return shadowDirection.nor()
     }
 
     private fun drawCameraTarget() {
