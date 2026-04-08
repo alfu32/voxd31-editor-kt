@@ -1,29 +1,33 @@
 package com.xovd3i.editor
 
 import com.badlogic.gdx.ApplicationAdapter
+import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.InputAdapter
+import com.badlogic.gdx.InputMultiplexer
+import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Intersector
+import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.utils.viewport.ExtendViewport
-import com.badlogic.gdx.utils.viewport.ScreenViewport
-import com.badlogic.gdx.utils.viewport.Viewport
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.appendTextFile
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
-import com.voxd31.gdxui.*
+import com.voxd31.editor.ui.VoxcraftUiOverlay
+import com.voxd31.gdxui.Cube
+import com.voxd31.gdxui.Vox3Event
+import com.kotcrab.vis.ui.VisUI
 import kotlin.math.floor
 
 
@@ -32,10 +36,20 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     }
     private val GNDSZ=100f
-    private lateinit var camera3D: PerspectiveCamera
-    private lateinit var camera2D: OrthographicCamera
-    private lateinit var viewport3D: Viewport
-    private lateinit var viewport2D: Viewport
+    private val groundPlaneY = -0.5f
+    private val gridPlaneY = groundPlaneY + 0.01f
+    private val cameraTarget = Vector3()
+    private var orthoDistance = 18f
+    private var activeOrthoView = OrthographicView.TOP
+    private lateinit var orbitCamera: PerspectiveCamera
+    private lateinit var walkCamera: PerspectiveCamera
+    private lateinit var orthoCamera: OrthographicCamera
+    private lateinit var activeCamera: Camera
+    private lateinit var activeCameraInputProcessor: InputProcessor
+    private lateinit var orbitCameraController: ShiftCameraController
+    private lateinit var walkthroughCameraController: WalkthroughCameraController
+    private lateinit var orthoCameraController: OrthographicCameraController
+    private var activeCameraMode = CameraMode.ORBIT
     private lateinit var modelBatch: ModelBatch
     private lateinit var shadowBatch: ModelBatch
     private lateinit var environment: Environment
@@ -47,12 +61,10 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var modelBuilder: ModelBuilder
     private lateinit var ground: ModelInstance
     private lateinit var sphere: Model
-    private lateinit var inputProcessors: CompositeInputProcessor
+    private lateinit var inputProcessors: InputMultiplexer
     private lateinit var shapeRenderer: ShapeRenderer
-    private lateinit var shapeRenderer2d: ShapeRenderer
-    private lateinit var spriteBatch: SpriteBatch
     private lateinit var currentEvent: Vox3Event
-    private lateinit var uiElements: UiElementsCollection
+    private lateinit var uiOverlay: VoxcraftUiOverlay
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -60,11 +72,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     var activeToolIndex = 0
     lateinit var inputEventDispatcher: InputEventDispatcher
     val commands = mutableListOf<String>()
-    var toolsCopy=false
-    lateinit var uiTools: UiElementGrid
-
-
-    private lateinit var cameraController: CameraInputController
 
 
     fun addTool(tool: EditorTool) {
@@ -73,22 +80,36 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
-        // Fetch initial window dimensions
+        loadVisUi()
         val initialWidth = Gdx.graphics.width.toFloat()
         val initialHeight = Gdx.graphics.height.toFloat()
-        spriteBatch = SpriteBatch()
 
-        camera3D = PerspectiveCamera(45f, initialWidth, initialHeight).apply {
+        orbitCamera = PerspectiveCamera(45f, initialWidth, initialHeight).apply {
             position.set(10f, 10f, 10f)
             lookAt(0f, 0f, 0f)
-            near = 1f
+            near = 0.1f
             far = 300f
             fieldOfView=45f
             update()
         }
-        shapeRenderer = ShapeRenderer()
-        shapeRenderer2d = ShapeRenderer()
+        walkCamera = PerspectiveCamera(45f, initialWidth, initialHeight).apply {
+            position.set(orbitCamera.position)
+            direction.set(orbitCamera.direction)
+            up.set(orbitCamera.up)
+            near = 0.1f
+            far = 300f
+            fieldOfView = 45f
+            update()
+        }
+        orthoCamera = OrthographicCamera().apply {
+            near = -2000f
+            far = 2000f
+            zoom = 1f
+        }
+        configureOrthoViewport(Gdx.graphics.width, Gdx.graphics.height)
+        alignOrthographicView(activeOrthoView)
 
+        shapeRenderer = ShapeRenderer()
 
         modelBatch = ModelBatch()
         shadowBatch = ModelBatch(DepthShaderProvider())
@@ -109,13 +130,6 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         environment.add(DirectionalLight().set(0.1f, 0.1f, 0.1f, 1.2f, 1.8f, 0.5f).setColor(Color(0.1f,0.1f,0.1f,0.2f)))
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f,0.5f,0.5f, 0.7f)) // Reduced ambient light
         environment.set(ColorAttribute(ColorAttribute.Specular, 0.5f,0.5f,0.9f, 0.7f)) // Reduced ambient light
-
-
-        viewport3D = ScreenViewport(camera3D)
-
-        camera2D = OrthographicCamera()
-        viewport2D = ExtendViewport(initialWidth, initialHeight, camera2D)
-        viewport2D.apply(true)
 
         modelBuilder = ModelBuilder()
         scene = SceneController(modelBuilder)
@@ -138,9 +152,19 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         val matBullet = Material(ColorAttribute.createDiffuse(Color.LIME))
         sphere = modelBuilder.createSphere(0.5f,0.5f,0.5f,3,3,matBullet,Usage.Position.toLong() or Usage.Normal.toLong())
 
-        ground = (ModelInstance(groundBox, 0f,-0.5f,0f))
-
-        cameraController = EditorCameraController(camera3D)
+        ground = ModelInstance(groundBox, 0f, groundPlaneY, 0f)
+        orbitCameraController = ShiftCameraController(orbitCamera, this::pickOrbitModelPoint).apply {
+            rotateButton = Input.Buttons.RIGHT
+            translateButton = Input.Buttons.RIGHT
+            target.set(cameraTarget)
+        }
+        walkthroughCameraController = WalkthroughCameraController(
+            walkCamera,
+            this::walkSupportHeightAt,
+            eyeHeight = 3f
+        )
+        orthoCameraController = OrthographicCameraController(orthoCamera, cameraTarget)
+        setCameraMode(CameraMode.ORBIT)
 
         tools.add(EditorTool.SelectEditor(scene,feedback,selected))
         tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
@@ -442,11 +466,56 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         println(tools.map{t -> t.name})
 
         activeTool = tools[activeToolIndex]
+        currentEvent = Vox3Event()
 
-        inputEventDispatcher = InputEventDispatcher(scene,camera2D,camera3D,guides)
-        inputProcessors= CompositeInputProcessor()
-        inputProcessors.addInputProcessor(cameraController)
-        inputProcessors.addInputProcessor(inputEventDispatcher)
+        uiOverlay = VoxcraftUiOverlay(
+            toolNamesProvider = { tools.map { it.name } },
+            activeToolIndexProvider = { activeToolIndex },
+            toolSelected = { index ->
+                activeToolIndex = index
+                activeTool = tools[activeToolIndex]
+                activeTool?.reset()
+            },
+            currentColorProvider = { scene.currentColor },
+            colorSelected = { color -> scene.currentColor = color },
+            addModeProvider = { scene.addMode },
+            addModeChanged = { mode -> scene.addMode = mode },
+            cameraModeProvider = { activeCameraMode },
+            cameraModeChanged = { mode -> setCameraMode(mode) },
+            orthographicViewChanged = { view -> setOrthographicView(view) },
+            saveAction = { saveCurrentModel() },
+            clearSelectionAction = { selected.clear() },
+            clearGuidesAction = { guides.clear() },
+            resetToolAction = { activeTool?.reset() },
+            statusProvider = { uiStatusSnapshot() }
+        )
+
+        inputEventDispatcher = InputEventDispatcher(
+            scene = scene,
+            activeCameraProvider = { activeCamera },
+            guides = guides,
+            screenToUi = { x, y -> uiOverlay.stage.screenToStageCoordinates(Vector2(x.toFloat(), y.toFloat())) }
+        )
+        val activeCameraProcessor = object : InputAdapter() {
+            override fun keyDown(keycode: Int): Boolean = activeCameraInputProcessor.keyDown(keycode)
+            override fun keyUp(keycode: Int): Boolean = activeCameraInputProcessor.keyUp(keycode)
+            override fun keyTyped(character: Char): Boolean = activeCameraInputProcessor.keyTyped(character)
+            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean =
+                activeCameraInputProcessor.touchDown(screenX, screenY, pointer, button)
+
+            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean =
+                activeCameraInputProcessor.touchUp(screenX, screenY, pointer, button)
+
+            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean =
+                activeCameraInputProcessor.touchDragged(screenX, screenY, pointer)
+
+            override fun mouseMoved(screenX: Int, screenY: Int): Boolean =
+                activeCameraInputProcessor.mouseMoved(screenX, screenY)
+
+            override fun scrolled(amountX: Float, amountY: Float): Boolean =
+                activeCameraInputProcessor.scrolled(amountX, amountY)
+        }
+        inputProcessors = InputMultiplexer(uiOverlay.stage, activeCameraProcessor, inputEventDispatcher)
 
         Gdx.input.inputProcessor = inputProcessors
         inputEventDispatcher.on("keyUp"){event ->
@@ -496,10 +565,22 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     }
                 }
                 Input.Keys.S -> {
-                    saveCubesAsCsv(scene.cubes.values.toList(),filename)
+                    saveCurrentModel()
+                }
+                Input.Keys.NUM_1 -> {
+                    setCameraMode(CameraMode.ORBIT)
+                }
+                Input.Keys.NUM_2 -> {
+                    setCameraMode(CameraMode.WALKTHROUGH)
+                }
+                Input.Keys.NUM_3 -> {
+                    setOrthographicView(OrthographicView.TOP)
+                }
+                Input.Keys.NUM_4 -> {
+                    setOrthographicView(OrthographicView.FRONT)
                 }
                 Input.Keys.SPACE -> {
-                    saveCubesAsCsv(scene.cubes.values.toList(),filename)
+                    saveCurrentModel()
                     if(guides.cubes.isNotEmpty()) {
                         guides.clear()
                     } else if(selected.cubes.isNotEmpty()) {
@@ -509,7 +590,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                     }
                 }
                 Input.Keys.ESCAPE -> {
-                    saveCubesAsCsv(scene.cubes.values.toList(),filename)
+                    saveCurrentModel()
                     if(guides.cubes.isNotEmpty()) {
                         guides.clear()
                     } else if(selected.cubes.isNotEmpty()) {
@@ -519,433 +600,339 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                         activeToolIndex = 0
                         activeTool = tools[activeToolIndex]
                         activeTool!!.reset()
-                        uiTools.setSelected(0)
                     }
                 }
                 else -> {
                     println("key up : ${event.keyCode}")
                 }
             }
-            uiElements.dispatch(event)
-            // currentEvent.keyCode = event.keyCode
-            // currentEvent.keyDown = null
+            currentEvent = event
         }
         inputEventDispatcher.on("mouseMoved"){event ->
-
-            uiElements.dispatch(event)
-            if(!uiElements.isHovered) {
-                activeTool?.onMove?.let { it(activeTool!!, event) }
-                currentEvent = event
-            }
-            // currentEvent = event
+            activeTool?.onMove?.let { it(activeTool!!, event) }
+            currentEvent = event
         }
         inputEventDispatcher.on("touchUp"){event ->
-            if(!uiElements.isClicked) {
+            if (event.button == Input.Buttons.LEFT) {
                 activeTool?.handleEvent(event)
-                // activeTool?.onClick?.let { it(activeTool!!,event) }
-                currentEvent = event
             }
-            uiElements.dispatch(event)
-            // currentEvent.button = event.button
+            currentEvent = event
         }
         inputEventDispatcher.on("touchDown"){event ->
-            uiElements.dispatch(event)
-            // currentEvent.button = event.button
+            currentEvent = event
         }
         inputEventDispatcher.on("keyDown"){event ->
-            uiElements.dispatch(event)
-            // currentEvent.keyCode = event.keyCode
-            // currentEvent.keyDown = event.keyDown
+            currentEvent = event
         }
         inputEventDispatcher.on("keyUp"){event ->
-            uiElements.dispatch(event)
-            // currentEvent.keyCode = event.keyCode
-            // currentEvent.keyDown = null
+            currentEvent = event
         }
-        currentEvent= Vox3Event()
-
-
-        // println(uiElements)
-        //initUi(uiElements)
-
     }
 
-    private var uiIsInitialized=0
-    private fun initUi() {
-        if (uiIsInitialized > 20){
+    private fun loadVisUi() {
+        if (VisUI.isLoaded()) {
             return
         }
-        uiIsInitialized++
-        uiElements = UiElementsCollection()
-        val hueNumber=35
-        val hueStep=10.0f
-        val primaryColors = range(0,hueNumber).map { hue ->
-            val bg = Color()
-            bg.fromHsv(hue * hueStep, 1f, 0.7f)
-            bg.a = 1f
-            val color = Color()
-            color.fromHsv(hue * hueStep, 1f, 1f)
-            color.a = 1f
-            val hexColor = if(hue<9) "111111ff" else "eeeeeeff"
-            mapOf(
-                "style" to UiStyleSheet(
-                    text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
-                    normal = UiStyle(
-                        background = bg,
-                        color=Color.DARK_GRAY,
-                        border=bg,
-                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
-                    ),
-                    hover = UiStyle(
-                        background = color,
-                        color=Color.LIGHT_GRAY,
-                        border=Color.CYAN,
-                    ),
-                    focus = UiStyle(
-                        background = bg,
-                        color=Color.LIGHT_GRAY,
-                        border=Color.GOLD,
-                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf(hexColor))
-                    )
-                ),
-                "index" to hue
-            )
+        if (Gdx.app.type == Application.ApplicationType.WebGL) {
+            VisUI.setSkipGdxVersionCheck(true)
+            VisUI.load(Gdx.files.internal("com/kotcrab/vis/ui/skin/x1/uiskin.json"))
+            return
         }
-        val transparentColors = range(0,hueNumber).map { hue ->
-            val bg = Color()
-            bg.fromHsv(hue * hueStep, 1f, 0.7f)
-            bg.a = 0.5f
-            val color = Color()
-            color.fromHsv(hue * hueStep, 1f, 1f)
-            color.a = 0.6f
-            mapOf(
-                "style" to UiStyleSheet(
-                    normal = UiStyle(
-                        background = bg,
-                        color=Color.DARK_GRAY,
-                        border=bg,
-                        font = UIFont("NotoSans-Regular.ttf",12,Color.valueOf("111111ff"))
-                    ),
-                    hover = UiStyle(
-                        background = color,
-                        color=Color.LIGHT_GRAY,
-                        border=Color.CYAN,
-                    ),
-                    focus = UiStyle(
-                        background = bg,
-                        color=Color.LIGHT_GRAY,
-                        border=Color.GOLD,
-                    ),
-                    text = (((bg.r*16).toInt()*256 ) + ((bg.g*16).toInt()*16) + ((bg.b*16).toInt())).toString(16).padStart(3, '0'),
-                ),
-                "index" to hue
-            )
-        }
-        val grayTones= range(0f,100f,5.05f).map{
-                gs ->
+        VisUI.load()
+    }
 
-            val hh = gs / 100f
-            val hover = Color(0.5f, 0.5f, 0.8f, 1f)
-            val tint = Color(hh, hh, hh, 1f)
-            val dimmed = Color(hh, hh, hh, 1f)
-            dimmed.a = 0.8f
-            val font_id = if(gs < 30) "NotoSans-Regular 12px EEEEEEFF" else "NotoSans-Regular 12px 0A0A0AFF"
-            mapOf(
-                "style" to UiStyleSheet(
-                    normal = UiStyle(
-                        background = dimmed,
-                        color=Color.DARK_GRAY,
-                        border=dimmed,
-                        font = UIFont.of(font_id),
-                    ),
-                    hover = UiStyle(
-                        background = tint,
-                        color=Color.LIGHT_GRAY,
-                        border=Color.CYAN,
-                        font = UIFont.of(font_id),
-                    ),
-                    focus = UiStyle(
-                        background = dimmed,
-                        color=Color.LIGHT_GRAY,
-                        border=Color.GOLD,
-                        font = UIFont.of(font_id),
-                    ),
-                    text = "${gs.toInt()}%",
-                ),
-                "index" to gs.toInt()
-            )
+    private fun configureOrthoViewport(width: Int, height: Int) {
+        val safeHeight = height.coerceAtLeast(1)
+        val aspect = width.coerceAtLeast(1).toFloat() / safeHeight.toFloat()
+        val worldHeight = 22f
+        orthoCamera.viewportHeight = worldHeight
+        orthoCamera.viewportWidth = worldHeight * aspect
+        orthoCamera.update()
+    }
+
+    private fun setCameraMode(mode: CameraMode) {
+        if (!::orbitCamera.isInitialized || !::walkCamera.isInitialized || !::orthoCamera.isInitialized) {
+            return
         }
-        val primaryColorsTable = primaryColors.groupBy { m ->
-            val i = m["index"]!! as Int
-            (i/6)
+        if (::activeCamera.isInitialized && activeCameraMode == mode) {
+            return
         }
-        val transparentColorsTable = transparentColors.groupBy { m ->
-            val i = m["index"]!! as Int
-            (i/6)
+        when (mode) {
+            CameraMode.ORBIT -> {
+                copyPoseToPerspective(activeCameraOrNull(), orbitCamera, keepTarget = true)
+                orbitCameraController.target.set(cameraTarget)
+                activeCamera = orbitCamera
+                activeCameraInputProcessor = orbitCameraController
+            }
+
+            CameraMode.WALKTHROUGH -> {
+                copyPoseToPerspective(activeCameraOrNull(), walkCamera, keepTarget = false)
+                walkthroughCameraController.syncFromCamera()
+                activeCamera = walkCamera
+                activeCameraInputProcessor = walkthroughCameraController
+            }
+
+            CameraMode.ORTHOGRAPHIC -> {
+                updateTargetFromPerspective(activeCameraOrNull())
+                activeCamera = orthoCamera
+                activeCameraInputProcessor = orthoCameraController
+                alignOrthographicView(activeOrthoView)
+            }
         }
-        val grayColorsTable = grayTones.groupBy { m ->
-            val i = m["index"]!! as Int
-            (i/25)
+        activeCameraMode = mode
+    }
+
+    private fun setOrthographicView(view: OrthographicView) {
+        activeOrthoView = view
+        setCameraMode(CameraMode.ORTHOGRAPHIC)
+        alignOrthographicView(view)
+    }
+
+    private fun alignOrthographicView(view: OrthographicView) {
+        val direction = Vector3()
+        val up = Vector3()
+        when (view) {
+            OrthographicView.TOP -> {
+                direction.set(0f, -1f, 0f)
+                up.set(0f, 0f, -1f)
+            }
+
+            OrthographicView.BOTTOM -> {
+                direction.set(0f, 1f, 0f)
+                up.set(0f, 0f, 1f)
+            }
+
+            OrthographicView.LEFT -> {
+                direction.set(1f, 0f, 0f)
+                up.set(0f, 1f, 0f)
+            }
+
+            OrthographicView.RIGHT -> {
+                direction.set(-1f, 0f, 0f)
+                up.set(0f, 1f, 0f)
+            }
+
+            OrthographicView.FRONT -> {
+                direction.set(0f, 0f, -1f)
+                up.set(0f, 1f, 0f)
+            }
+
+            OrthographicView.BACK -> {
+                direction.set(0f, 0f, 1f)
+                up.set(0f, 1f, 0f)
+            }
         }
-        var x = 10f
-        var y = 30f
-        y = 30f
-        y = 20f + 15f * 31f
-        val toolsGridData = tools.mapIndexed{
-            i,tool ->
-            mapOf(
-                "style" to UiStyleSheet(text=tool.name),
-                "index" to i,
-                "tool" to tool
-            )
+        orthoCamera.direction.set(direction).nor()
+        orthoCamera.up.set(up).nor()
+        orthoCamera.position.set(cameraTarget).sub(direction.scl(orthoDistance))
+        orthoCamera.update()
+    }
+
+    private fun updateActiveCamera(deltaTime: Float) {
+        when (activeCameraMode) {
+            CameraMode.ORBIT -> {
+                orbitCameraController.update()
+                cameraTarget.set(orbitCameraController.target)
+                orbitCamera.up.set(0f, 1f, 0f)
+                orbitCamera.lookAt(cameraTarget)
+                orbitCamera.update()
+            }
+
+            CameraMode.WALKTHROUGH -> {
+                walkthroughCameraController.update(deltaTime)
+                cameraTarget.set(walkCamera.position).mulAdd(walkCamera.direction, 8f)
+                walkCamera.update()
+            }
+
+            CameraMode.ORTHOGRAPHIC -> {
+                orthoCameraController.update()
+                orthoCamera.update()
+            }
         }
-        val toolsGridDataTable = toolsGridData.groupBy { m ->
-            val i = m["index"]!! as Int
-            (i/4)
+    }
+
+    private fun activeCameraOrNull(): Camera? {
+        return if (::activeCamera.isInitialized) activeCamera else null
+    }
+
+    private fun updateTargetFromPerspective(source: Camera?) {
+        val perspective = source as? PerspectiveCamera ?: return
+        if (perspective === orbitCamera) {
+            return
         }
-        y=viewport2D.worldHeight-32f
-        uiElements.add(
-            UiElementOptgroup<String>(
-                position = Vector2(230f, y),
-                size = Vector2(300f, 20f),
-                label = "cube add modes : $y ${viewport2D.worldHeight} ${viewport2D.worldHeight-25}",
-                options = listOf(
-                    "addWithoutReplace",
-                    "addOrReplace",
-                    "replaceCube",
-                )
-            ) { target: UiElement, ev: Vox3Event, old:String, new:String ->
-                println("changed add mode from $old to $new ")
-                scene.addMode = new
-            }.init()
-        )
-        val SZ1=Vector2(120f, 25f)
-        val SZ2=Vector2(360f, 120f)
-        uiElements.addAll( listOf(
-            UiElementButton(
-                position = Vector2(10f, y),
-                size = Vector2(40f, 16f),
-                radius = 8f,
-                text = "ctrl",
-            ) { target: UiElement, ev: Vox3Event ->
-                target.hasFocus=ev.keypressedMap[Input.Keys.CONTROL_LEFT] != null
-            },
-            UiElementButton(
-                position = Vector2(55f, y),
-                size = Vector2(40f, 16f),
-                radius = 8f,
-                text = "shift",
-            ) { target: UiElement, ev: Vox3Event ->
-                target.hasFocus=ev.keypressedMap[Input.Keys.SHIFT_LEFT] != null
-            },
-            UiElementButton(
-                position = Vector2(95f, y),
-                size = Vector2(40f, 16f),
-                radius = 8f,
-                text = "alt",
-            ) { target: UiElement, ev: Vox3Event ->
-                target.hasFocus=ev.keypressedMap[Input.Keys.ALT_LEFT] != null
-                //target.hover = if (kd) Color.DARK_GRAY else if (ku) Color.WHITE else target.color
-            },
-            UiElementButton(
-                position = Vector2(140f, y),
-                size = Vector2(60f, 16f),
-                radius = 8f,
-                text = "mouse",
-            ) { target: UiElement, ev: Vox3Event ->
-                val kd=  (ev.channel == "touchDown" && ev.button == Input.Buttons.LEFT)
-                val ku= (ev.channel == "touchUp" && ev.button == Input.Buttons.LEFT)
-                target.normalStyle.border = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.GOLD else if (ku) Color.DARK_GRAY else target.normalStyle.background
-                target.normalStyle.color = if (ev.keypressedMap[Input.Buttons.LEFT] != null) Color.LIGHT_GRAY else if (ku) Color.DARK_GRAY else Color.BLACK
-            },))
-        uiTools = UiElementGrid(
-            elementSize= Vector2(85f,25f),
-            data=toolsGridDataTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-        ){ tp,ev,a,b ->
-            println("grid element changed from $a to $b")
-            println("switching tool ${tools[activeToolIndex].name} to ${tools[tp.selectedOrd].name}")
-            activeToolIndex = tp.selectedOrd
-            activeTool = tools[activeToolIndex]
-            activeTool!!.reset()
+        cameraTarget.set(perspective.position).mulAdd(perspective.direction, 8f)
+    }
+
+    private fun copyPoseToPerspective(source: Camera?, target: PerspectiveCamera, keepTarget: Boolean) {
+        when (source) {
+            is PerspectiveCamera -> {
+                target.position.set(source.position)
+                target.direction.set(source.direction).nor()
+                target.up.set(source.up).nor()
+                if (keepTarget) {
+                    cameraTarget.set(source.position).mulAdd(source.direction, 8f)
+                }
+            }
+
+            is OrthographicCamera -> {
+                val dir = Vector3(source.direction).nor()
+                if (dir.len2() <= 1e-8f) {
+                    dir.set(0f, -1f, 0f)
+                }
+                target.position.set(cameraTarget).sub(dir.scl(12f))
+                target.up.set(source.up).nor()
+                target.lookAt(cameraTarget)
+            }
+
+            else -> {
+                target.lookAt(cameraTarget)
+            }
         }
-        uiElements.add(
-            UiElementTabPanel(
-                position = Vector2(10f,viewport2D.worldHeight-70f),
-            ){ tp,ev,a,b ->
-                println("tab panel changed from $a to $b")
-            }.apply {
-                tabs.addAll(
-                    listOf(
-                    UiElementButton(text="tools",size=SZ1.cpy()) to uiTools,
-                    UiElementButton(text="primary",size=SZ1.cpy())
-                        to UiElementGrid(
-                            elementSize= Vector2(35f,25f),
-                            data=primaryColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                        ){ tp,ev,a,b ->
-                            println("grid element changed from $a to $b")
-                            scene.currentColor = b.hover.background
-                        },
-                    UiElementButton(text="transparent",size=SZ1.cpy())
-                        to UiElementGrid(
-                            elementSize= Vector2(35f,25f),
-                            data=transparentColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                        ){ tp,ev,a,b ->
-                            println("grid element changed from $a to $b")
-                            scene.currentColor = b.hover.background
-                        },
-                    UiElementButton(text="grayscale",size=SZ1.cpy())
-                        to UiElementGrid(
-                            elementSize= Vector2(35f,25f),
-                            data=grayColorsTable.values.map { it.map{ c -> c["style"]!! as UiStyleSheet} }
-                        ){ tp,ev,a,b ->
-                            println("grid element changed from $a to $b")
-                            scene.currentColor = b.hover.background
-                        },
-                    )
-                )
-            }.init(),
+        target.update()
+    }
+
+    private fun saveCurrentModel() {
+        saveCubesAsCsv(scene.cubes.values.toList(), filename)
+    }
+
+    private fun pickOrbitModelPoint(screenX: Int, screenY: Int): Vector3? {
+        val ray = orbitCamera.getPickRay(screenX.toFloat(), screenY.toFloat())
+        val candidates = mutableListOf<Vector3>()
+        val sceneHit = scene.sceneIntersectCubesRay(ray)
+        if (sceneHit.hit) {
+            candidates += sceneHit.point.cpy()
+        }
+        val guideHit = guides.sceneIntersectGuidesRay(ray)
+        if (guideHit.hit) {
+            candidates += guideHit.point.cpy()
+        }
+        val groundHit = Vector3()
+        if (Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), groundHit)) {
+            candidates += groundHit
+        }
+        return candidates.minByOrNull { it.dst2(ray.origin) }?.cpy()
+    }
+
+    private fun walkSupportHeightAt(x: Float, z: Float, _currentY: Float): Float {
+        var support = 0f
+        scene.cubes.values.forEach { cube ->
+            val cubeX = floor(cube.position.x)
+            val cubeZ = floor(cube.position.z)
+            if (x >= cubeX && x <= cubeX + 1f && z >= cubeZ && z <= cubeZ + 1f) {
+                support = maxOf(support, cube.position.y + 1f)
+            }
+        }
+        return support
+    }
+
+    private fun uiStatusSnapshot(): VoxcraftUiOverlay.StatusSnapshot {
+        val cursorText = buildString {
+            append("Cursor: ")
+            append(currentEvent.modelVoxel ?: "-")
+            append(" | Next: ")
+            append(currentEvent.modelNextVoxel ?: "-")
+            append(" | Normal: ")
+            append(currentEvent.normal ?: "-")
+            append(" | Screen: ")
+            append(currentEvent.screen ?: "-")
+        }
+        return VoxcraftUiOverlay.StatusSnapshot(
+            fileName = filename,
+            cameraMode = activeCameraMode.displayName,
+            activeTool = activeTool?.name ?: "-",
+            cubeCount = scene.cubes.size,
+            selectionCount = selected.cubes.size,
+            guideCount = guides.cubes.size,
+            addMode = scene.addMode,
+            cursor = cursorText
         )
     }
 
     override fun render() {
-        Gdx.gl.glViewport(0, 0, viewport2D.screenX,viewport2D.screenY)
-        Gdx.gl.glClearColor(0.5F, 0.9F, 0.9F, 1F); // Set a clear color different from your UI elements
+        updateActiveCamera(Gdx.graphics.deltaTime)
+        renderShadowPass()
+
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
+        Gdx.gl.glClearColor(0.6f, 0.75f, 0.9f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST)
 
-        initUi()
-
-
-        // Process input and update the camera
-        cameraController.update()
-        camera3D.update()
-
-        // render shadows
-        shadowLight.begin(Vector3.Zero, camera3D.direction)
-            shadowBatch.begin(shadowLight.camera)
-                shadowBatch.render(scene.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k, v) -> v.getModelInstance()})
-                shadowBatch.render(feedback.cubes.filter{c -> c.value.color.a > 0.99f}.map { (k,v) -> v.getModelInstance() }, environment)
-                shadowBatch.render(ground)
-            shadowBatch.end()
-        shadowLight.end()
-
-        // render ground
-        modelBatch.begin(camera3D)
-        modelBatch.render(ground,environment)
-        modelBatch.end()
-
-
-
-        // render grid
-        shapeRenderer.projectionMatrix = camera3D.combined
+        shapeRenderer.projectionMatrix = activeCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         renderGrid(
             shapeRenderer,
-            camera3D,
+            activeCamera,
             Color.LIGHT_GRAY,
             Color.GRAY,
             50,
             1,
-            Vector3(-0.5f,-0.5f,-0.5f)
+            Vector3(-0.5f, gridPlaneY, -0.5f)
         )
+        drawCameraTarget()
         shapeRenderer.end()
 
-        //render model
-        modelBatch.begin(camera3D)
+        modelBatch.begin(activeCamera)
+        modelBatch.render(ground, environment)
         modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
         modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
-        // modelBatch.render(ModelInstance(sphere, currentEvent.modelPoint),environment)
-        // modelBatch.render(ModelInstance(sphere, currentEvent.modelNextPoint),environment)
         modelBatch.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND);
 
-        // render guides
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        shapeRenderer.projectionMatrix = activeCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        guides.cubes.forEach { (k:String,cub:Cube) ->
+        guides.cubes.forEach { (_:String, cub:Cube) ->
             shapeRenderer.color = cub.color
             val bb=cub.getBoundingBox()
-            // shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
             val pad=0.40f
             shapeRenderer.box(bb.min.x+pad,bb.min.y+pad,bb.max.z-pad,bb.width-2*pad,bb.height-2*pad,bb.depth-2*pad)
-            /// var c=Vector3()
-            /// bb.getCenter(c)
-            /// shapeRenderer.line(c.x-100,c.y,c.z,c.x+100,c.y,c.z,Color.RED,Color.RED)
-            /// shapeRenderer.line(c.x,c.y-100,c.z,c.x,c.y+100,c.z,Color.GREEN,Color.GREEN)
-            /// shapeRenderer.line(c.x,c.y,c.z-100,c.x,c.y,c.z+100,Color.BLUE,Color.BLUE)
         }
-        selected.cubes.forEach { (k:String,cub:Cube) ->
+        selected.cubes.forEach { (_:String, cub:Cube) ->
             shapeRenderer.color = cub.color
             val bb=cub.getBoundingBox()
             shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
-            /// val pad=0.40f
-            /// shapeRenderer.box(bb.min.x+pad,bb.min.y+pad,bb.max.z-pad,bb.width-2*pad,bb.height-2*pad,bb.depth-2*pad)
-            /// /// var c=Vector3()
-            /// /// bb.getCenter(c)
-            /// /// shapeRenderer.line(c.x-100,c.y,c.z,c.x+100,c.y,c.z,Color.RED,Color.RED)
-            /// /// shapeRenderer.line(c.x,c.y-100,c.z,c.x,c.y+100,c.z,Color.GREEN,Color.GREEN)
-            /// /// shapeRenderer.line(c.x,c.y,c.z-100,c.x,c.y,c.z+100,Color.BLUE,Color.BLUE)
         }
 
         if(currentEvent.modelVoxel != null ) {
-            shapeRenderer.color = Color.NAVY // Set the color of the grid lines
+            shapeRenderer.color = Color.NAVY
             shapeRenderer.line(currentEvent.modelNextPoint, currentEvent.modelNextPoint!!.cpy().add(currentEvent.normal))
-            /////////// shapeRenderer.line(currentEvent.modelNextVoxel, currentEvent.modelNextVoxel!!.cpy().add(currentEvent.normal))
-            shapeRenderer.color = Color.MAGENTA // Set the color of the grid lines
+            shapeRenderer.color = Color.MAGENTA
             shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().add(currentEvent.normal))
-            /////////////////// /////////// shapeRenderer.line(currentEvent.modelVoxel, currentEvent.modelVoxel!!.cpy().add(currentEvent.normal))
-            /////////////////// shapeRenderer.color = Color.GREEN // Set the color of the grid lines
-            /////////////////// shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f,-0.5f, currentEvent.modelPoint!!.z))
-            ///////////////////
-            /////////////////// shapeRenderer.color = Color.BLUE // Set the color of the grid lines
-            /////////////////// shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub(-0.5f, currentEvent.modelPoint!!.y,-0.5f))
-            ///////////////////
-            /////////////////// shapeRenderer.color = Color.RED // Set the color of the grid lines
-            /////////////////// shapeRenderer.line(currentEvent.modelPoint, currentEvent.modelPoint!!.cpy().sub( currentEvent.modelPoint!!.x,-0.5f,-0.5f))
         }
         shapeRenderer.end()
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
 
+        uiOverlay.releaseScrollFocusIfPointerOutside(Gdx.input.x, Gdx.input.y)
+        uiOverlay.act(Gdx.graphics.deltaTime)
+        uiOverlay.draw()
+        Gdx.gl.glDisable(GL20.GL_BLEND)
+    }
 
-        shapeRenderer2d.projectionMatrix = camera2D.combined
-        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Line)
-        uiElements.drawLines(shapeRenderer2d)
-        shapeRenderer2d.end()
-        shapeRenderer2d.begin(ShapeRenderer.ShapeType.Filled)
-        uiElements.draw(shapeRenderer2d)
-        if(uiElements.isHovered && currentEvent.screen?.x != null && currentEvent.screen?.x != null) {
-            val sc = currentEvent.screen!!
-            val cl = shapeRenderer2d.color
-            val clRED=Color(1f,0f,0f,0.5f)
-            val clGREEN=Color(0f,1f,0f,0.5f)
-            shapeRenderer2d.color = if(uiElements.isPressed) clRED else clGREEN
-            shapeRenderer2d.circle(sc.x, sc.y, 15f)
-            shapeRenderer2d.color = cl
-        }
-        val dg=Color.DARK_GRAY
-        shapeRenderer2d.rect(0f,0f,viewport2D.worldWidth,25f,dg,dg,dg,dg)
-        shapeRenderer2d.end()
+    private fun renderShadowPass() {
+        shadowLight.begin(Vector3.Zero, activeCamera.direction)
+        shadowBatch.begin(shadowLight.camera)
+        shadowBatch.render(scene.cubes.filter { it.value.color.a > 0.99f }.map { it.value.getModelInstance() })
+        shadowBatch.render(feedback.cubes.filter { it.value.color.a > 0.99f }.map { it.value.getModelInstance() }, environment)
+        shadowBatch.render(ground)
+        shadowBatch.end()
+        shadowLight.end()
+    }
 
-        spriteBatch.projectionMatrix = camera2D.combined
-        spriteBatch.begin()
-
-        uiElements.drawText(spriteBatch)
-        if(currentEvent.screen != null) {
-            UIFont.default().bitmapFont().draw(
-                spriteBatch,
-                """
-                    ui:${viewport2D.worldWidth}x${viewport2D.worldHeight} cubes:${scene.cubes.size} xy:${currentEvent.screen} raw:${currentEvent.modelPoint},next:${currentEvent.modelNextPoint} int:${currentEvent.modelVoxel},next:${currentEvent.modelNextVoxel} n: ${currentEvent.normal}
-                """.trimIndent(),
-                10f,20f,
-            ) // Draws text at the specified position.
-            UIFont.default().bitmapFont().draw(
-                spriteBatch,
-                """${activeTool!!.name} ${currentEvent.modelVoxel}""".trimIndent(),
-                currentEvent.screen!!.x, currentEvent.screen!!.y+15f,
-            ) // Draws text at the specified position.
-        }
-        spriteBatch.end()
-
-        shapeRenderer2d.end()
+    private fun drawCameraTarget() {
+        val targetSize = 0.5f
+        shapeRenderer.color = Color(1f, 0.9f, 0.2f, 0.8f)
+        shapeRenderer.line(
+            cameraTarget.x - targetSize, cameraTarget.y, cameraTarget.z,
+            cameraTarget.x + targetSize, cameraTarget.y, cameraTarget.z
+        )
+        shapeRenderer.line(
+            cameraTarget.x, cameraTarget.y - targetSize, cameraTarget.z,
+            cameraTarget.x, cameraTarget.y + targetSize, cameraTarget.z
+        )
+        shapeRenderer.line(
+            cameraTarget.x, cameraTarget.y, cameraTarget.z - targetSize,
+            cameraTarget.x, cameraTarget.y, cameraTarget.z + targetSize
+        )
     }
 
     private fun renderGrid(
@@ -971,7 +958,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             }
             shapeRenderer.line(
                 anchor.x-gridSize.toFloat(), anchor.y, anchor.z + z.toFloat(),
-                anchor.z+gridSize.toFloat(), anchor.y, anchor.z+z.toFloat(),
+                anchor.x+gridSize.toFloat(), anchor.y, anchor.z+z.toFloat(),
             )
         }
 
@@ -996,33 +983,38 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     }
 
     override fun dispose() {
+        saveCurrentModel()
         modelBatch.dispose()
         shadowBatch.dispose()
+        shapeRenderer.dispose()
+        sphere.dispose()
         scene.dispose()
+        selected.dispose()
         guides.dispose()
         feedback.dispose()
         shadowLight.dispose()
+        uiOverlay.dispose()
 
-        // If you set a different input processor later, you might need to do this
-        if (Gdx.input.inputProcessor == cameraController) {
+        if (Gdx.input.inputProcessor === inputProcessors) {
             Gdx.input.inputProcessor = null
         }
-        saveCubesAsCsv(scene.cubes.values.toList(),filename)
-        // saveSchematicToFile(scene.cubes.values.toList(), "$filename.schematic")
         val text = tools.flatMap { tool -> tool.commands }.joinToString("\n")
         appendTextFile("$filename.mccmd", text)
+        if (VisUI.isLoaded()) {
+            VisUI.dispose()
+        }
     }
 
     override fun resize(width: Int, height: Int) {
-        viewport3D.update(width, height, false);
-        viewport2D.update(width, height, true);
-
-        camera2D.position.set(camera2D.viewportWidth / 2, camera2D.viewportHeight / 2, 0f);
-        camera2D.update();
-        // Update the camera with the new window size
-        camera3D.viewportWidth = width.toFloat()
-        camera3D.viewportHeight = height.toFloat()
-        camera3D.update()
+        orbitCamera.viewportWidth = width.toFloat()
+        orbitCamera.viewportHeight = height.toFloat()
+        orbitCamera.update()
+        walkCamera.viewportWidth = width.toFloat()
+        walkCamera.viewportHeight = height.toFloat()
+        walkCamera.update()
+        configureOrthoViewport(width, height)
+        alignOrthographicView(activeOrthoView)
+        uiOverlay.resize(width, height)
     }
 
 }

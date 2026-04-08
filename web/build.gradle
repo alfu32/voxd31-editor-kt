@@ -14,6 +14,15 @@ def webDistRoot = file("$buildDir/dist")
 def webRuntimeDir = file("$webDistRoot/webapp")
 def webComponentSourceDir = file("$projectDir/component")
 def webComponentBundleDir = file("$buildDir/dist/webcomponent")
+def visUiSkinIncludes = [
+    'com/kotcrab/vis/ui/skin/x1/uiskin.json',
+    'com/kotcrab/vis/ui/skin/x1/uiskin.atlas',
+    'com/kotcrab/vis/ui/skin/x1/uiskin.png',
+    'com/kotcrab/vis/ui/skin/x1/default.fnt',
+    'com/kotcrab/vis/ui/skin/x1/default.png',
+    'com/kotcrab/vis/ui/skin/x1/font-small.fnt',
+    'com/kotcrab/vis/ui/skin/x1/font-small.png'
+]
 
 dependencies {
     implementation project(':core')
@@ -45,6 +54,7 @@ tasks.register('prepareWebDocs') {
 
     inputs.file(rootProject.file('readme.md'))
     inputs.file(rootProject.file('assets/voxd31.icon.png'))
+    inputs.files(configurations.runtimeClasspath)
     outputs.dir(webRuntimeDir)
 
     doLast {
@@ -55,6 +65,17 @@ tasks.register('prepareWebDocs') {
         copy {
             from(rootProject.file('assets/voxd31.icon.png'))
             into(new File(webRuntimeDir, 'assets'))
+        }
+        def visUiJar = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'com.kotcrab.vis' && it.name == 'vis-ui'
+        }?.file
+        if (visUiJar != null) {
+            copy {
+                from(zipTree(visUiJar)) {
+                    include(visUiSkinIncludes)
+                }
+                into(new File(webRuntimeDir, 'assets'))
+            }
         }
     }
 }

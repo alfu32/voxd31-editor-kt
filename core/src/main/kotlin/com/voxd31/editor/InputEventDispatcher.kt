@@ -1,6 +1,5 @@
 package com.voxd31.editor
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.Camera
@@ -14,15 +13,14 @@ import com.voxd31.gdxui.Cube
 import com.voxd31.gdxui.EventListener
 import com.voxd31.gdxui.ModelIntersection
 import com.voxd31.gdxui.Vox3Event
-import java.awt.event.InputEvent
 import kotlin.math.floor
 
 
 class InputEventDispatcher(
     val scene:SceneController,
-    val camera2D: Camera,
-    val camera3D: Camera,
+    val activeCameraProvider: () -> Camera,
     val guides:SceneController,
+    val screenToUi: (x: Int, y: Int) -> Vector2,
 ):InputProcessor {
     val listeners:MutableMap<String,MutableList<EventListener>> = mutableMapOf()
     var currentEvent = Vox3Event()
@@ -203,21 +201,9 @@ class InputEventDispatcher(
         dispatchEvents("mouseMoved")
         return true;
     }
-    private fun Vector3Round(v:Vector3): Vector3 {
-        return Vector3(
-            floor(v.x),
-            floor(v.y),
-            floor(v.z),
-        )
-    }
-
     private fun update3dVectorsFromScreenPoint(x: Int, y: Int) {
-        val touchPos = Vector3(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)
-        camera2D.unproject(touchPos); // Transforms the touch/mouse position to world coordinates
-        val X=touchPos.x
-        val Y=touchPos.y
-
-        currentEvent.screen = Vector2(X, Y)
+        val camera3D = activeCameraProvider()
+        currentEvent.screen = screenToUi(x, y)
 
         // Implement the conversion from screen coordinates to world coordinates
         val ray = camera3D.getPickRay(
