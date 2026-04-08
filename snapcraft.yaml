@@ -109,8 +109,16 @@ parts:
         --ignore-missing-deps \
         --multi-release 21 \
         --print-module-deps \
-        "$APP_JAR"),jdk.crypto.ec,jdk.unsupported"
-      MODULES="$(printf '%s\n' "$MODULES_RAW" | tr ',' '\n' | sed '/^$/d' | sort -u | paste -sd, -)"
+        "$APP_JAR")"
+      MODULES="$(printf '%s\n%s\n' "$MODULES_RAW" 'jdk.crypto.ec,jdk.unsupported' \
+        | tr ',' '\n' \
+        | sed -n 's/^[[:space:]]*//;s/[[:space:]]*$//;/^[a-z][a-z0-9.]*$/p' \
+        | sort -u \
+        | paste -sd, -)"
+      if [ -z "$MODULES" ]; then
+        echo "Unable to determine jlink module list." >&2
+        exit 1
+      fi
 
       install -d "$CRAFT_PART_INSTALL/opt/voxkraft"
       install -d "$CRAFT_PART_INSTALL/bin"
