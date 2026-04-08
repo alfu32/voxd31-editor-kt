@@ -27,7 +27,7 @@ VERSIONCLASS
 
 # Define a list of version strings
 if [[ "$2" == "" ]];then
-  versions="8.0.402-tem 11.0.22-tem 17.0.10-tem 21.0.2-tem"
+  versions="8.0.402-tem 11.0.22-tem 17.0.10-tem 21.0.9-tem"
 else
   versions="$2"
 fi

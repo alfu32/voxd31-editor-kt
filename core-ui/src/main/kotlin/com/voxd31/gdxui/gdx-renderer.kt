@@ -132,7 +132,7 @@ class GdxRenderer(private val scriptSource: String) : ApplicationAdapter() {
     }
 
     private fun parseElement(node: Element): Shape {
-        return when (node.tagName.toLowerCase()) {
+        return when (node.tagName.lowercase()) {
             "circle" -> Circle(
                 x = node.getAttribute("x").toFloat(),
                 y = node.getAttribute("y").toFloat(),

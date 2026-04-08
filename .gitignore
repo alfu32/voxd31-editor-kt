@@ -124,3 +124,7 @@ Voxd31EditorVersion.kt
 
 
 tmp
+
+.gradle-user
+.gradle
+.secrets

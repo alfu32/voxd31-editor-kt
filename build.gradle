@@ -1,70 +1,138 @@
-buildscript {
-    ext.kotlinVersion = '1.9.21'
+def resolveGitTag = {
+    try {
+        def process = new ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
+            .directory(rootDir)
+            .redirectErrorStream(true)
+            .start()
+        def output = process.inputStream.text.trim()
+        def code = process.waitFor()
+        if (code != 0) {
+            return null
+        }
+        return output ? output : null
+    } catch (Exception ignored) {
+        return null
+    }
+}
 
+def bundleVersion = (
+    project.findProperty("releaseNumber")
+        ?: resolveGitTag()
+        ?: project.findProperty("projectVersion")
+        ?: "1.0.0"
+).toString()
+
+ext.bundleVersion = bundleVersion
+ext.projectVersion = bundleVersion
+
+allprojects {
+    version = bundleVersion
+    ext.projectVersion = bundleVersion
+}
+
+tasks.register('generateAssetList') {
+    File assetsFolder = file("${project.rootDir}/assets")
+    File assetsFile = new File(assetsFolder, "assets.txt")
+    inputs.dir(assetsFolder)
+    outputs.file(assetsFile)
+
+    doLast {
+        def entries = fileTree(assetsFolder) {
+            exclude "assets.txt"
+        }.files.collect { asset ->
+            assetsFolder.toPath().relativize(asset.toPath()).toString().replace('\\', '/')
+        }.sort()
+
+        assetsFile.text = entries.isEmpty() ? "" : entries.join("\n") + "\n"
+    }
+}
+
+buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
         gradlePluginPortal()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         google()
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-
+        classpath "com.android.tools.build:gradle:$androidGradlePluginVersion"
     }
 }
 
 allprojects {
     apply plugin: "eclipse"
-
-    plugins.withId('java') {
-        // Set source and target compatibility based on a project property or default to Java 17
-        def javaVersion = project.hasProperty('javaCompatVersion') ? project.property('javaCompatVersion') : '17'
-        sourceCompatibility = JavaVersion.toVersion(javaVersion)
-        targetCompatibility = JavaVersion.toVersion(javaVersion)
-    }
-
-    version = '1.0'
-    ext {
-        appName = "voxd31-editor"
-        gdxVersion = '1.12.1'
-        roboVMVersion = '2.3.20'
-        box2DLightsVersion = '1.5'
-        ashleyVersion = '1.7.4'
-        aiVersion = '1.8.2'
-        gdxControllersVersion = '2.2.1'
-
-        junitVersion = '4.13.1'
-        junitJupiterVersion = '5.8.1'
-        mokitoCoreVersion = '5.11.0'
-    }
+    apply plugin: "idea"
 
     repositories {
         mavenLocal()
         mavenCentral()
         google()
         gradlePluginPortal()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
         maven { url "https://jitpack.io" }
-        maven {
-            url 'https://maven.enginehub.org/repo/'
+        maven { url "https://maven.enginehub.org/repo/" }
+    }
+
+    idea {
+        module {
+            outputDir = file('build/classes/java/main')
+            testOutputDir = file('build/classes/java/test')
         }
     }
 }
 
-project(":core-ui") {
+configure(subprojects.findAll { !['android', 'web'].contains(it.name) }) {
+    apply plugin: "java-library"
     apply plugin: "kotlin"
 
+    def compatVersion = (project.findProperty('javaCompatVersion') ?: '17').toString()
+    java.sourceCompatibility = JavaVersion.toVersion(compatVersion)
+    java.targetCompatibility = JavaVersion.toVersion(compatVersion)
+    tasks.named('processResources').configure {
+        dependsOn rootProject.tasks.named('generateAssetList')
+    }
 
+    tasks.named('compileJava').configure {
+        options.incremental = true
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.release.set(Integer.parseInt(compatVersion))
+        }
+    }
+
+    tasks.named('compileKotlin').configure {
+        compilerOptions.jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(compatVersion)
+        )
+    }
+    tasks.named('compileTestKotlin').configure {
+        compilerOptions.jvmTarget.set(
+            org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(compatVersion)
+        )
+    }
+}
+
+subprojects {
+    version = bundleVersion
+    ext.appName = 'voxcraft'
+    ext.snapAppName = 'voxkraft'
+    ext.userFacingName = 'voxcraft'
+    ext.windowsAlias = 'voxcraft'
+}
+
+ext {
+    junitVersion = '4.13.2'
+    junitJupiterVersion = '5.10.2'
+    mockitoCoreVersion = '5.11.0'
+}
+
+project(":core-ui") {
     dependencies {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
-        // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
         api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
-        api 'org.simpleframework:simple-xml:2.7.1'
-        // Kotlin scripting dependencies
+        api "org.simpleframework:simple-xml:2.7.1"
         api "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion"
         api "org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion"
         api "org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion"
@@ -72,27 +140,25 @@ project(":core-ui") {
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
-        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
+        testImplementation "org.mockito:mockito-core:$mockitoCoreVersion"
     }
 
     test {
         useJUnitPlatform()
     }
 }
-project(":desktop") {
-    apply plugin: "kotlin"
 
-
+project(":lwjgl3") {
     dependencies {
         implementation project(":core")
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
-        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
+        testImplementation "org.mockito:mockito-core:$mockitoCoreVersion"
     }
 
     test {
@@ -101,21 +167,15 @@ project(":desktop") {
 }
 
 project(":core") {
-    apply plugin: "kotlin"
-
-
     dependencies {
         implementation project(':core-ui')
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        // // https://mvnrepository.com/artifact/com.sk89q.worldedit/worldedit-bukkit
-        // api "com.sk89q.worldedit:worldedit-bukkit:7.2.20"
         api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
-        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
-
+        testImplementation "org.mockito:mockito-core:$mockitoCoreVersion"
     }
 
     test {
@@ -124,45 +184,27 @@ project(":core") {
 }
 
 project(":core-testing") {
-    apply plugin: "kotlin"
-
-    sourceSets.test.java.srcDirs = ["src/test/kotin"]
+    sourceSets.test.java.srcDirs = ["src/test/kotlin"]
 
     dependencies {
-
-        /**
-         * If you do have some classes to test in os specific code you may want to uncomment
-         * some of these lines.
-         *
-         * BUT: I recommend to create seperate test sub projects for each platform. Trust me :)
-         *
-         */
-
-//        compile project(":android")
-//        compile project(":html")
-//        compile project(":desktop")
-
-
-//        if(System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0) {
-//        	compile project(":ios")
-//        }
-
         implementation project(":core")
         implementation project(":core-ui")
 
-        implementation  "junit:junit:$junitVersion"
+        implementation "junit:junit:$junitVersion"
         implementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
-        implementation "org.mockito:mockito-core:$mokitoCoreVersion"
+        implementation "org.mockito:mockito-core:$mockitoCoreVersion"
 
         implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
         implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
-        testImplementation "org.mockito:mockito-core:$mokitoCoreVersion"
+        testImplementation "org.mockito:mockito-core:$mockitoCoreVersion"
 
         testImplementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
         testImplementation "com.badlogicgames.gdx:gdx:$gdxVersion"
         testImplementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
 }
+
+eclipse.project.name = 'voxcraft-parent'

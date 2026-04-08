@@ -231,4 +231,71 @@
 # Volume 7 9 9 17 1 9 00ffd499
 /fill 7 9 9 17 1 9 minecraft:stone
 # Volume 18 9 2 18 1 8 ff7f00ff
-/fill 18 9 2 18 1 8 minecraft:stone
+/fill 18 9 2 18 1 8 minecraft:stone//select 20 0 2 6 10 -8
+//select 21 -1 -4 13 0 -14
+//select 6 0 -20 18 11 6
+//select -7 0 -18 18 11 3
+//select -8 0 1 18 11 8
+//select -5 -1 -26 18 10 -7
+//select -6 -1 -25 18 10 -7
+//select -8 0 17 3 11 -17
+//select -5 0 -27 0 13 17
+//select 0 0 -28 5 11 9
+//select -4 0 -28 5 11 9
+//select 6 0 -28 6 11 9
+//select -17 11 -17 -3 6 -11
+//select -2 11 -9 7 6 -17
+//select -17 6 10 -10 0 15
+//select 7 11 -10 12 6 -15
+//select -14 5 10 6 16 -9
+//select -18 5 9 -15 11 -14
+//select 9 16 -9 -2 21 -9
+//move 23 0 4 23 -1 -6
+//move 19 2 2 19 3 2
+//move 5 0 15 -7 0 15
+//move 25 1 -24 7 5 -16
+//move 7 7 -17 7 8 -17
+//copy 20 0 8 20 0 3
+//copy 20 0 -1 20 0 -6
+//copy 5 0 -27 0 0 -27
+//copy 4 0 -28 -3 0 -28
+//copy 7 0 -28 -1 0 -28
+//copy 6 6 -18 6 11 -18
+//copy -12 0 12 25 0 -23
+//copy 7 10 -17 7 5 -17
+//copy 6 5 10 6 10 10
+//copy -2 10 10 -2 15 10
+//rotate 26 0 -24 26 0 -14 36 0 -24
+/setblock -17 10 -10 minecraft:stone
+/setblock -17 11 -10 air replace
+/setblock -17 10 -10 air replace
+/setblock 9 4 -9 air replace
+/setblock 8 14 -9 air replace
+# Volume -3 10 -14 -17 10 -10 cececeff
+/fill -3 10 -14 -17 10 -10 minecraft:stone
+# Volume 6 1 -9 6 11 -9 cececeff
+/fill 6 1 -9 6 11 -9 minecraft:stone
+# Volume -2 1 -19 -2 11 -4 cececeff
+/fill -2 1 -19 -2 11 -4 minecraft:stone
+# Volume 7 1 -9 11 9 -9 cececeff
+/fill 7 1 -9 11 9 -9 minecraft:stone
+# Volume 11 11 -9 7 14 -9 cececeff
+/fill 11 11 -9 7 14 -9 minecraft:stone
+# Volume 8 15 -9 11 15 -9 cececeff
+/fill 8 15 -9 11 15 -9 minecraft:stone
+# Volume 7 15 -17 -17 15 10 262626ff
+/fill 7 15 -17 -17 15 10 minecraft:stone
+# Volume 7 15 -6 12 15 -9 262626ff
+/fill 7 15 -6 12 15 -9 minecraft:stone
+# Volume -9 0 15 -17 6 10 737373ff
+/fill -9 0 15 -17 6 10 minecraft:stone
+# Volume 14 0 -20 7 11 -10 f4f4f4ff
+/fill 14 0 -20 7 11 -10 minecraft:stone
+# Volume -9 0 16 -17 6 10 f4f4f4ff
+/fill -9 0 16 -17 6 10 minecraft:stone
+# Volume -17 15 10 6 16 -17 f4f4f4ff
+/fill -17 15 10 6 16 -17 minecraft:stone
+# Volume 11 15 -8 7 15 -11 f4f4f4ff
+/fill 11 15 -8 7 15 -11 minecraft:stone
+# Volume -24 0 14 21 0 -26 f4f4f4ff
+/fill -24 0 14 21 0 -26 minecraft:stone

@@ -6,11 +6,28 @@ import com.xovd3i.editor.Voxd31Editor;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
+	private static boolean isResolutionArgument(String value) {
+		if (value == null || !value.contains("x")) {
+			return false;
+		}
+		String[] parts = value.toLowerCase().split("x", 2);
+		if (parts.length != 2) {
+			return false;
+		}
+		try {
+			Integer.parseInt(parts[0]);
+			Integer.parseInt(parts[1]);
+			return true;
+		} catch (NumberFormatException ignored) {
+			return false;
+		}
+	}
+
 	public static void main (String[] arg) {
 		Voxd31EditorVersion version = new Voxd31EditorVersion();
 
 		System.out.println(String.format("version %s %s",version.getBuildDate(),version.getBuildVersion()));
-		System.out.println(String.format("usage : v0x3d1 <resolution>[1280x1024] <filename>",arg.length));
+		System.out.println("usage : voxcraft [filename] | [resolution filename]");
 		System.out.println(String.format("arguments %d",arg.length));
 		System.out.println(String.join(",",arg));
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
@@ -19,7 +36,7 @@ public class DesktopLauncher {
 		config.setDecorated(true);
 
 		int width=1280,height=1024;
-		if(arg.length > 0) {
+		if(arg.length > 0 && isResolutionArgument(arg[0])) {
 			String[] resolution = arg[0].split("x");
 			try{ width= Integer.parseInt(resolution[0]);} catch (NumberFormatException e) {}
 			try{ height= Integer.parseInt(resolution[1]);} catch (NumberFormatException e) {}
@@ -28,11 +45,13 @@ public class DesktopLauncher {
 
 		String filename="default.vxdi";
 
-		if(arg.length > 1) {
+		if(arg.length > 1 && isResolutionArgument(arg[0])) {
 			filename=arg[1];
+		} else if (arg.length > 0 && !isResolutionArgument(arg[0])) {
+			filename = arg[0];
 		}
 		config.setTitle(String.format(
-				" V0XD31   version : %s   file : [%s]",
+				"voxcraft   version : %s   file : [%s]",
 				version.getBuildVersion(),
 				filename
 		));

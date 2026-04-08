@@ -1,7 +1,77 @@
-sourceCompatibility = project.hasProperty('javaCompatVersion') ? project.property('javaCompatVersion') : '17'
-
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-sourceSets.main.java.srcDirs = [ "src/main/kotlin" ]
+sourceSets.main.java.srcDirs = ["src/main/kotlin"]
 
 eclipse.project.name = appName + "-core"
+
+def resolveGitValue = { List<String> args ->
+    try {
+        def process = new ProcessBuilder(args)
+            .directory(rootProject.rootDir)
+            .redirectErrorStream(true)
+            .start()
+        def output = process.inputStream.text.trim()
+        def code = process.waitFor()
+        return code == 0 ? output : ""
+    } catch (Exception ignored) {
+        return ""
+    }
+}
+
+def resolveLatestGitTag = {
+    def latestTaggedCommit = resolveGitValue(["git", "rev-list", "--tags", "--max-count=1"])
+    if (!latestTaggedCommit) {
+        return ""
+    }
+    return resolveGitValue(["git", "describe", "--tags", latestTaggedCommit])
+}
+
+tasks.register('generateVoxd31EditorVersion') {
+    def outFile = file("src/main/kotlin/com/voxd31/editor/Voxd31EditorVersion.kt")
+    outputs.file(outFile)
+    outputs.upToDateWhen { false }
+
+    doLast {
+        def latestTag = resolveLatestGitTag()
+        def commit = resolveGitValue(["git", "rev-parse", "HEAD"])
+        def branch = resolveGitValue(["git", "branch", "--show-current"])
+        def tag = latestTag
+        def buildDate = new Date().format("yyyy-MM-dd HH:mm:ss")
+        def buildVersion = (
+            project.findProperty("releaseNumber")
+                ?: (latestTag ? "${latestTag}-dev" : "${project.version}-dev")
+        ).toString()
+        outFile.parentFile.mkdirs()
+        outFile.text = """package com.voxd31.editor
+
+data class Voxd31EditorVersion(
+  val buildGitCommit:String = "${commit}",
+  val buildDate:String = "${buildDate}",
+  val buildGitBranch:String = "${branch}",
+  val buildGitTag:String = "${tag}",
+  val buildVersion:String = "${buildVersion}"
+)
+"""
+    }
+}
+
+tasks.named('compileKotlin').configure {
+    dependsOn 'generateVoxd31EditorVersion'
+    compilerOptions.jvmTarget.set(
+        org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(
+            (project.findProperty('javaCompatVersion') ?: '17').toString()
+        )
+    )
+}
+
+tasks.named('compileJava').configure {
+    dependsOn 'generateVoxd31EditorVersion'
+}
+
+tasks.named('compileTestKotlin').configure {
+    compilerOptions.jvmTarget.set(
+        org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(
+            (project.findProperty('javaCompatVersion') ?: '17').toString()
+        )
+    )
+}

@@ -1,0 +1,117 @@
+plugins {
+    id 'java-library'
+}
+
+java.sourceCompatibility = 17
+java.targetCompatibility = 17
+if (JavaVersion.current().isJava9Compatible()) {
+    compileJava.options.release.set(17)
+}
+
+def bundleVersion = (project.findProperty("releaseNumber") ?: project.version).toString()
+def webOutputName = "voxcraft-${bundleVersion}".replaceAll(/[^A-Za-z0-9._-]/, "-")
+def webDistRoot = file("$buildDir/dist")
+def webRuntimeDir = file("$webDistRoot/webapp")
+def webComponentSourceDir = file("$projectDir/component")
+def webComponentBundleDir = file("$buildDir/dist/webcomponent")
+
+dependencies {
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+    implementation "com.github.xpenatan.gdx-teavm:backend-web:$gdxTeaVMVersion"
+}
+
+tasks.register('buildWebRuntime', JavaExec) {
+    group = 'distribution'
+    description = 'Compiles the TeaVM/WebGL runtime shell.'
+    dependsOn(tasks.named('classes'))
+    doFirst {
+        delete(webDistRoot)
+    }
+    mainClass.set('com.voxd31.editor.web.BuildWebApp')
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty('voxcraft.web.output', webDistRoot.absolutePath)
+    systemProperty('voxcraft.web.folder', 'webapp')
+    systemProperty('voxcraft.web.assets', rootProject.file('assets').absolutePath)
+    systemProperty('voxcraft.web.title', "voxcraft ${bundleVersion}")
+    systemProperty('voxcraft.web.outputName', webOutputName)
+    systemProperty('voxcraft.web.serve', 'false')
+}
+
+tasks.register('prepareWebDocs') {
+    group = 'distribution'
+    description = 'Copies docs into the web runtime bundle.'
+    dependsOn(tasks.named('buildWebRuntime'))
+
+    inputs.file(rootProject.file('readme.md'))
+    inputs.file(rootProject.file('assets/voxd31.icon.png'))
+    outputs.dir(webRuntimeDir)
+
+    doLast {
+        copy {
+            from(rootProject.file('readme.md'))
+            into(webRuntimeDir)
+        }
+        copy {
+            from(rootProject.file('assets/voxd31.icon.png'))
+            into(new File(webRuntimeDir, 'assets'))
+        }
+    }
+}
+
+tasks.register('bundleWebZip', Zip) {
+    group = 'distribution'
+    description = 'Builds the web runtime bundle zip in dist/.'
+    dependsOn(tasks.named('prepareWebDocs'))
+    from(webRuntimeDir)
+    destinationDirectory = rootProject.file('dist')
+    archiveFileName = "voxcraft-${bundleVersion}-webapp.zip"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('prepareWebComponentBundle') {
+    group = 'distribution'
+    description = 'Builds the embeddable voxcraft web component bundle.'
+    dependsOn(tasks.named('prepareWebDocs'))
+
+    inputs.dir(webComponentSourceDir)
+    outputs.dir(webComponentBundleDir)
+
+    doLast {
+        delete(webComponentBundleDir)
+        webComponentBundleDir.mkdirs()
+
+        copy {
+            from(new File(webRuntimeDir, 'assets'))
+            into(new File(webComponentBundleDir, 'assets'))
+        }
+        copy {
+            from(new File(webRuntimeDir, 'scripts'))
+            into(new File(webComponentBundleDir, 'scripts'))
+        }
+        copy {
+            from(new File(webRuntimeDir, "${webOutputName}.js"))
+            into(webComponentBundleDir)
+            rename { 'voxcraft-runtime.js' }
+        }
+        copy {
+            from(webComponentSourceDir)
+            into(webComponentBundleDir)
+        }
+    }
+}
+
+tasks.register('bundleWebComponentZip', Zip) {
+    group = 'distribution'
+    description = 'Builds the embeddable voxcraft web component zip in dist/.'
+    dependsOn(tasks.named('prepareWebComponentBundle'))
+    from(webComponentBundleDir)
+    destinationDirectory = rootProject.file('dist')
+    archiveFileName = "voxcraft-${bundleVersion}-webcomponent.zip"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('bundleWeb') {
+    group = 'distribution'
+    description = 'Builds the voxcraft webapp zip artifact.'
+    dependsOn(tasks.named('bundleWebZip'))
+}

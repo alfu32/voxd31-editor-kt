@@ -1,0 +1,154 @@
+name: voxkraft
+title: voxkraft
+base: core24
+adopt-info: voxkraft
+summary: Voxel model editor
+description: |
+  voxcraft is a LibGDX-based voxel model editor packaged directly
+  from this repository. The snap ships the desktop jar, runtime assets,
+  and a bundled JRE 21 built with jlink.
+icon: snap/gui/icon.png
+
+grade: stable
+confinement: strict
+
+platforms:
+  amd64:
+  arm64:
+
+apps:
+  voxkraft:
+    command: bin/voxkraft
+    desktop: snap/gui/voxkraft.desktop
+    environment:
+      ALSA_CONFIG_PATH: $SNAP/usr/share/alsa/alsa.conf
+    plugs:
+      - desktop
+      - desktop-legacy
+      - home
+      - removable-media
+      - network
+      - network-bind
+      - opengl
+      - wayland
+      - x11
+      - audio-playback
+
+parts:
+  voxkraft:
+    plugin: nil
+    source: .
+    build-packages:
+      - git
+      - openjdk-21-jdk-headless
+    stage-packages:
+      - libharfbuzz0b
+      - libasound2t64
+      - libasound2-data
+      - alsa-topology-conf
+      - alsa-ucm-conf
+      - libgif7
+      - libdrm2
+      - libegl1
+      - libgbm1
+      - libgl1
+      - libgles2
+      - libgl1-mesa-dri
+      - libglx-mesa0
+      - libglu1-mesa
+      - libopengl0
+      - libjpeg-turbo8
+      - liblcms2-2
+      - libwayland-client0
+      - libwayland-cursor0
+      - libwayland-egl1
+      - libx11-6
+      - libxcursor1
+      - libxext6
+      - libxfixes3
+      - libxi6
+      - libxinerama1
+      - libxkbcommon0
+      - libxrandr2
+      - libxrender1
+      - libxtst6
+      - libxxf86vm1
+    override-build: |
+      set -eux
+
+      export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")"
+      export GRADLE_USER_HOME="$CRAFT_PART_BUILD/.gradle"
+      export PATH="$JAVA_HOME/bin:$PATH"
+      SNAP_VERSION="${VOXKRAFT_SNAP_VERSION:-$(git describe --tags --abbrev=0 2>/dev/null || echo 0.0.0)}"
+
+      chmod 755 ./gradlew
+      ./gradlew --no-daemon -PreleaseNumber="$SNAP_VERSION" generateAssetList :lwjgl3:jar
+
+      APP_JAR="desktop/build/libs/voxcraft-$SNAP_VERSION.jar"
+      if [ ! -f "$APP_JAR" ]; then
+        APP_JAR="$(find desktop/build/libs -maxdepth 1 -type f -name 'voxcraft-*.jar' ! -name '*-linux.jar' ! -name '*-mac.jar' ! -name '*-win.jar' -printf '%T@ %p\n' | sort -nr | awk 'NR==1 {print $2}')"
+      fi
+      if [ -z "$APP_JAR" ]; then
+        echo "Unable to locate built desktop jar." >&2
+        exit 1
+      fi
+
+      MODULES_RAW="$("$JAVA_HOME/bin/jdeps" \
+        --ignore-missing-deps \
+        --multi-release 21 \
+        --print-module-deps \
+        "$APP_JAR"),jdk.crypto.ec,jdk.unsupported"
+      MODULES="$(printf '%s\n' "$MODULES_RAW" | tr ',' '\n' | sed '/^$/d' | sort -u | paste -sd, -)"
+
+      install -d "$CRAFT_PART_INSTALL/opt/voxkraft"
+      install -d "$CRAFT_PART_INSTALL/bin"
+      install -d "$CRAFT_PART_INSTALL/snap/gui"
+      rm -rf "$CRAFT_PART_INSTALL/opt/voxkraft/runtime"
+
+      "$JAVA_HOME/bin/jlink" \
+        --add-modules "$MODULES" \
+        --strip-debug \
+        --no-header-files \
+        --no-man-pages \
+        --compress=2 \
+        --output "$CRAFT_PART_INSTALL/opt/voxkraft/runtime"
+
+      install -m 0644 "$APP_JAR" "$CRAFT_PART_INSTALL/opt/voxkraft/voxcraft-editor.jar"
+      cp -a assets "$CRAFT_PART_INSTALL/opt/voxkraft/"
+      install -m 0644 readme.md "$CRAFT_PART_INSTALL/opt/voxkraft/readme.md"
+      install -m 0644 snap/gui/voxkraft.desktop "$CRAFT_PART_INSTALL/snap/gui/voxkraft.desktop"
+      install -m 0644 snap/gui/icon.png "$CRAFT_PART_INSTALL/snap/gui/icon.png"
+
+      cat > "$CRAFT_PART_INSTALL/bin/voxkraft" <<'EOF'
+      #!/bin/sh
+      set -eu
+
+      INSTALL_PATH="$SNAP/opt/voxkraft"
+      JAVA_BIN="$INSTALL_PATH/runtime/bin/java"
+      APP_HOME="$SNAP_USER_COMMON"
+      MODEL_FILE="$APP_HOME/default.vxdi"
+
+      mkdir -p "$APP_HOME"
+      if [ ! -f "$MODEL_FILE" ] && [ -f "$INSTALL_PATH/assets/default.vxdi" ]; then
+        cp "$INSTALL_PATH/assets/default.vxdi" "$MODEL_FILE"
+      fi
+
+      if [ -z "${1-}" ]; then
+        exec "$JAVA_BIN" -Duser.home="$APP_HOME" -jar "$INSTALL_PATH/voxcraft-editor.jar" "$MODEL_FILE"
+      fi
+
+      case "$1" in
+        [0-9]*x[0-9]*)
+          if [ -z "${2-}" ]; then
+            exec "$JAVA_BIN" -Duser.home="$APP_HOME" -jar "$INSTALL_PATH/voxcraft-editor.jar" "$1" "$MODEL_FILE"
+          fi
+          exec "$JAVA_BIN" -Duser.home="$APP_HOME" -jar "$INSTALL_PATH/voxcraft-editor.jar" "$@"
+          ;;
+        *)
+          exec "$JAVA_BIN" -Duser.home="$APP_HOME" -jar "$INSTALL_PATH/voxcraft-editor.jar" "$@"
+          ;;
+      esac
+      EOF
+      chmod 755 "$CRAFT_PART_INSTALL/bin/voxkraft"
+
+      craftctl set version="$SNAP_VERSION"

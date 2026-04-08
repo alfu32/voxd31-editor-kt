@@ -1,52 +1,576 @@
-sourceCompatibility = project.hasProperty('javaCompatVersion') ? project.property('javaCompatVersion') : '17'
-def releaseNumber = project.hasProperty('releaseNumber') ? project.property('releaseNumber') : 'latest'
+apply plugin: 'application'
 
-sourceSets.main.java.srcDirs = [ "src/" ]
-sourceSets.main.resources.srcDirs = ["../assets"]
+import java.util.Locale
 
-project.ext.mainClassName = "com.voxd31.editor.DesktopLauncher"
-project.ext.assetsDir = new File("../assets")
+def compatVersion = (project.findProperty('javaCompatVersion') ?: '17').toString()
+def bundleVersion = (project.findProperty("releaseNumber") ?: project.version).toString()
+def os = System.properties['os.name'].toLowerCase(Locale.ROOT)
+def packagedJvmArgs = ["-Xms512m", "-Xmx2g"]
 
-import org.gradle.internal.os.OperatingSystem
+sourceSets.main.java.srcDirs = ["src/"]
+sourceSets.main.resources.srcDirs = [rootProject.file("assets").path]
 
-tasks.register('run', JavaExec) {
+application.mainClass = "com.voxd31.editor.DesktopLauncher"
+project.ext.assetsDir = rootProject.file("assets")
+
+eclipse.project.name = appName + "-lwjgl3"
+java.sourceCompatibility = JavaVersion.toVersion(compatVersion)
+java.targetCompatibility = JavaVersion.toVersion(compatVersion)
+if (JavaVersion.current().isJava9Compatible()) {
+    compileJava.options.release.set(Integer.parseInt(compatVersion))
+}
+kotlin.compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(compatVersion))
+
+tasks.named('run', JavaExec).configure {
     dependsOn classes
-    mainClass = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = project.assetsDir
     ignoreExitValue = true
 
-    if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
-        // Required to run on macOS
+    if (os.contains('mac')) {
         jvmArgs += "-XstartOnFirstThread"
     }
 }
 
 tasks.register('debug', JavaExec) {
     dependsOn classes
-    mainClass = project.mainClassName
+    mainClass = application.mainClass
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = project.assetsDir
     ignoreExitValue = true
     debug = true
+
+    if (os.contains('mac')) {
+        jvmArgs += "-XstartOnFirstThread"
+    }
 }
 
-tasks.register('dist', Jar) {
-    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-    manifest {
-        attributes 'Main-Class': project.mainClassName
+def configureFatJarTask = { Jar jarTask, String archiveName, List<String> extraExcludes ->
+    jarTask.archiveFileName.set(archiveName)
+    jarTask.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    jarTask.dependsOn configurations.runtimeClasspath
+    jarTask.from(sourceSets.main.output)
+    jarTask.from {
+        configurations.runtimeClasspath.collect { file ->
+            file.isDirectory() ? file : zipTree(file)
+        }
     }
-    dependsOn configurations.runtimeClasspath
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    jarTask.exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+    extraExcludes.each { jarTask.exclude(it) }
+    jarTask.manifest {
+        attributes 'Main-Class': application.mainClass.get(), 'Enable-Native-Access': 'ALL-UNNAMED'
     }
-    with jar
-    archiveFileName = appName + "-desktop-jvm" + sourceCompatibility + "-" + releaseNumber + ".jar"
+    jarTask.doLast {
+        archiveFile.get().asFile.setExecutable(true, false)
+    }
 }
 
+tasks.named('jar', Jar).configure {
+    configureFatJarTask(delegate, "${appName}-${projectVersion}.jar", [])
+}
 
-dist.dependsOn classes
+tasks.register("jarMac", Jar) {
+    configureFatJarTask(delegate, "${appName}-${projectVersion}-mac.jar", [
+        "windows/x86/**",
+        "windows/x64/**",
+        "linux/arm32/**",
+        "linux/arm64/**",
+        "linux/x64/**",
+        "**/*.dll",
+        "**/*.so"
+    ])
+}
 
-eclipse.project.name = appName + "-desktop"
+tasks.register("jarLinux", Jar) {
+    configureFatJarTask(delegate, "${appName}-${projectVersion}-linux.jar", [
+        "windows/x86/**",
+        "windows/x64/**",
+        "macos/arm64/**",
+        "macos/x64/**",
+        "**/*.dll",
+        "**/*.dylib"
+    ])
+}
+
+tasks.register("jarWin", Jar) {
+    configureFatJarTask(delegate, "${appName}-${projectVersion}-win.jar", [
+        "macos/arm64/**",
+        "macos/x64/**",
+        "linux/arm32/**",
+        "linux/arm64/**",
+        "linux/x64/**",
+        "**/*.dylib",
+        "**/*.so"
+    ])
+}
+
+tasks.register('dist') {
+    dependsOn 'jar'
+}
+
+def bundleJdkVersion = (project.findProperty("bundleJdkVersion") ?: "21.0.9+10").toString()
+def bundleJdkTag = bundleJdkVersion.replace("+", "%2B")
+def bundleJdkSuffix = bundleJdkVersion.replace("+", "_")
+def temurinBase = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${bundleJdkTag}"
+def jdkUrls = [
+    linuxX64: project.findProperty("bundleJdkLinuxUrl") ?: "${temurinBase}/OpenJDK21U-jre_x64_linux_hotspot_${bundleJdkSuffix}.tar.gz",
+    winX64  : project.findProperty("bundleJdkWinUrl") ?: "${temurinBase}/OpenJDK21U-jre_x64_windows_hotspot_${bundleJdkSuffix}.zip",
+    macArm64: project.findProperty("bundleJdkMacArmUrl") ?: "${temurinBase}/OpenJDK21U-jre_aarch64_mac_hotspot_${bundleJdkSuffix}.tar.gz"
+]
+
+def jdkCacheDir = file("$buildDir/jdk-cache")
+def launcherDir = file("$buildDir/generated/launchers")
+
+def resolveJdkRoot = { File cacheDir ->
+    if (!cacheDir.exists()) {
+        return cacheDir
+    }
+    def candidates = cacheDir.listFiles()?.findAll { it.isDirectory() } ?: []
+    if (candidates.size() == 1) {
+        return candidates.first()
+    }
+    def javaFiles = project.fileTree(cacheDir) {
+        include "**/bin/java"
+        include "**/bin/java.exe"
+        include "**/Contents/Home/bin/java"
+    }.files
+    if (!javaFiles.isEmpty()) {
+        def best = javaFiles.min { it.absolutePath.length() }
+        def path = best.absolutePath.replace("\\", "/")
+        if (path.endsWith("/Contents/Home/bin/java")) {
+            return best.parentFile.parentFile.parentFile.parentFile
+        }
+        return best.parentFile.parentFile
+    }
+    def direct = candidates.find {
+        new File(it, "bin/java").exists() ||
+            new File(it, "bin/java.exe").exists() ||
+            new File(it, "Contents/Home/bin/java").exists()
+    }
+    return direct ?: cacheDir
+}
+
+def downloadAndExtractJdk = { String url, File cacheDir ->
+    if (cacheDir.exists() && cacheDir.listFiles()?.length > 0) {
+        return
+    }
+    cacheDir.mkdirs()
+    def archiveName = url.tokenize('/').last()
+    def archiveFile = new File(cacheDir, archiveName)
+    if (!archiveFile.exists()) {
+        ant.get(src: url, dest: archiveFile, skipexisting: true, verbose: true)
+    }
+    if (archiveName.endsWith(".zip")) {
+        ant.unzip(src: archiveFile, dest: cacheDir)
+    } else if (archiveName.endsWith(".tar.gz")) {
+        ant.untar(src: archiveFile, dest: cacheDir, compression: "gzip")
+    } else {
+        throw new GradleException("Unsupported JDK archive: ${archiveName}")
+    }
+}
+
+def createUnixLauncher = { File outFile ->
+    outFile.parentFile.mkdirs()
+    outFile.text = """#!/bin/bash
+set -euo pipefail
+INSTALL_PATH="\$(cd "\$(dirname "\$0")" && pwd)"
+DEFAULT_JAVA_OPTS=(${packagedJvmArgs.collect { "\"${it}\"" }.join(' ')})
+if [[ -n "\${VOXCRAFT_JAVA_OPTS:-}" ]]; then
+  # shellcheck disable=SC2206
+  JAVA_OPTS=(\${VOXCRAFT_JAVA_OPTS})
+else
+  JAVA_OPTS=("\${DEFAULT_JAVA_OPTS[@]}")
+fi
+exec java "\${JAVA_OPTS[@]}" -jar "\$INSTALL_PATH/voxcraft-editor.jar" "\$@"
+"""
+}
+
+def createUnixJreLauncher = { File outFile ->
+    outFile.parentFile.mkdirs()
+    outFile.text = """#!/bin/bash
+set -euo pipefail
+INSTALL_PATH="\$(cd "\$(dirname "\$0")" && pwd)"
+JAVA_BIN="\$INSTALL_PATH/jre/bin/java"
+if [[ ! -x "\$JAVA_BIN" && -x "\$INSTALL_PATH/jre/Contents/Home/bin/java" ]]; then
+  JAVA_BIN="\$INSTALL_PATH/jre/Contents/Home/bin/java"
+fi
+if [[ ! -x "\$JAVA_BIN" ]]; then
+  echo "Bundled Java not found at \$JAVA_BIN" >&2
+  exit 1
+fi
+DEFAULT_JAVA_OPTS=(${packagedJvmArgs.collect { "\"${it}\"" }.join(' ')})
+if [[ -n "\${VOXCRAFT_JAVA_OPTS:-}" ]]; then
+  # shellcheck disable=SC2206
+  JAVA_OPTS=(\${VOXCRAFT_JAVA_OPTS})
+else
+  JAVA_OPTS=("\${DEFAULT_JAVA_OPTS[@]}")
+fi
+exec "\$JAVA_BIN" "\${JAVA_OPTS[@]}" -jar "\$INSTALL_PATH/voxcraft-editor.jar" "\$@"
+"""
+}
+
+def createWindowsLauncher = { File outFile ->
+    outFile.parentFile.mkdirs()
+    outFile.text = """@echo off
+setlocal
+set "APP_DIR=%~dp0"
+set "APP_DIR=%APP_DIR:~0,-1%"
+set "JAVA_OPTS=-Xms512m -Xmx2g"
+if not "%VOXCRAFT_JAVA_OPTS%"=="" set "JAVA_OPTS=%VOXCRAFT_JAVA_OPTS%"
+if "%~1"=="" (
+  java %JAVA_OPTS% -jar "%APP_DIR%\\voxcraft-editor.jar"
+  exit /b %ERRORLEVEL%
+)
+java %JAVA_OPTS% -jar "%APP_DIR%\\voxcraft-editor.jar" %*
+exit /b %ERRORLEVEL%
+"""
+}
+
+def createWindowsJreLauncher = { File outFile ->
+    outFile.parentFile.mkdirs()
+    outFile.text = """@echo off
+setlocal
+set "APP_DIR=%~dp0"
+set "APP_DIR=%APP_DIR:~0,-1%"
+set "JAVA_BIN=%APP_DIR%\\jre\\bin\\java.exe"
+if not exist "%JAVA_BIN%" (
+  echo Bundled Java not found at %JAVA_BIN%
+  exit /b 1
+)
+set "JAVA_OPTS=-Xms512m -Xmx2g"
+if not "%VOXCRAFT_JAVA_OPTS%"=="" set "JAVA_OPTS=%VOXCRAFT_JAVA_OPTS%"
+if "%~1"=="" (
+  "%JAVA_BIN%" %JAVA_OPTS% -jar "%APP_DIR%\\voxcraft-editor.jar"
+  exit /b %ERRORLEVEL%
+)
+"%JAVA_BIN%" %JAVA_OPTS% -jar "%APP_DIR%\\voxcraft-editor.jar" %*
+exit /b %ERRORLEVEL%
+"""
+}
+
+def createWindowsInstall = { File outFile ->
+    outFile.parentFile.mkdirs()
+    outFile.text = """@echo off
+setlocal
+set "APP_DIR=%~dp0"
+set "APP_DIR=%APP_DIR:~0,-1%"
+
+echo Registering Voxcraft path: %APP_DIR%
+setx PATH "%PATH%;%APP_DIR%" >nul
+
+echo Registering .vxdi file association...
+reg add "HKCU\\Software\\Classes\\.vxdi" /ve /d "VoxcraftFile" /f >nul
+reg add "HKCU\\Software\\Classes\\VoxcraftFile" /ve /d "voxcraft File" /f >nul
+reg add "HKCU\\Software\\Classes\\VoxcraftFile\\shell\\open\\command" /ve /d "\\"%APP_DIR%\\voxcraft.cmd\\" \\"%%1\\"" /f >nul
+
+echo Done. You may need to restart your shell for PATH changes to apply.
+pause
+"""
+}
+
+def ensureUnixRuntimeExecutables = { File installDir ->
+    ["voxcraft", "voxcraft-jre"].each { name ->
+        def launcher = new File(installDir, name)
+        if (launcher.exists()) {
+            launcher.setExecutable(true, false)
+            launcher.setReadable(true, false)
+        }
+    }
+    def javaBinDir = new File(installDir, "jre/bin")
+    if (javaBinDir.exists()) {
+        javaBinDir.eachFileRecurse { file ->
+            if (file.isFile()) {
+                file.setExecutable(true, false)
+                file.setReadable(true, false)
+            }
+        }
+    }
+    ["jre/lib/jspawnhelper", "jre/lib/jexec"].each { relPath ->
+        def helper = new File(installDir, relPath)
+        if (helper.exists()) {
+            helper.setExecutable(true, false)
+            helper.setReadable(true, false)
+        }
+    }
+}
+
+tasks.register("fetchJdkLinux") {
+    outputs.dir file("$jdkCacheDir/linux-x64")
+    doLast { downloadAndExtractJdk(jdkUrls.linuxX64, file("$jdkCacheDir/linux-x64")) }
+}
+
+tasks.register("fetchJdkWin") {
+    outputs.dir file("$jdkCacheDir/win-x64")
+    doLast { downloadAndExtractJdk(jdkUrls.winX64, file("$jdkCacheDir/win-x64")) }
+}
+
+tasks.register("fetchJdkMacArm64") {
+    outputs.dir file("$jdkCacheDir/mac-arm64")
+    doLast { downloadAndExtractJdk(jdkUrls.macArm64, file("$jdkCacheDir/mac-arm64")) }
+}
+
+tasks.register("generateUnixLauncher") {
+    outputs.file file("$launcherDir/voxcraft")
+    doLast {
+        def outFile = file("$launcherDir/voxcraft")
+        createUnixLauncher(outFile)
+        outFile.setExecutable(true, false)
+    }
+}
+
+tasks.register("generateUnixJreLauncher") {
+    outputs.file file("$launcherDir/voxcraft-jre")
+    doLast {
+        def outFile = file("$launcherDir/voxcraft-jre")
+        createUnixJreLauncher(outFile)
+        outFile.setExecutable(true, false)
+    }
+}
+
+tasks.register("generateWindowsLauncher") {
+    outputs.file file("$launcherDir/voxcraft.cmd")
+    doLast { createWindowsLauncher(file("$launcherDir/voxcraft.cmd")) }
+}
+
+tasks.register("generateWindowsJreLauncher") {
+    outputs.file file("$launcherDir/voxcraft-jre.cmd")
+    doLast { createWindowsJreLauncher(file("$launcherDir/voxcraft-jre.cmd")) }
+}
+
+tasks.register("generateWindowsInstall") {
+    outputs.file file("$launcherDir/voxcraft.install.cmd")
+    doLast { createWindowsInstall(file("$launcherDir/voxcraft.install.cmd")) }
+}
+
+def baseBundleFiles = {
+    from(rootProject.file("readme.md"))
+    from(rootProject.file("LICENSE.libgdx.apache.txt"))
+    from(rootProject.file("LICENSE.noto.OFL.md"))
+    from(rootProject.file("assets/default.vxdi"))
+    from(rootProject.file("assets/voxd31.icon.png"))
+}
+
+def configureBundleZipTask = { String name, String osLabel, String fetchTaskName, File jdkCache, boolean includeUnixLauncher, boolean includeWindowsScripts ->
+    tasks.register(name, Zip) {
+        dependsOn "jar", fetchTaskName, "generateUnixLauncher", "generateUnixJreLauncher",
+            "generateWindowsLauncher", "generateWindowsJreLauncher", "generateWindowsInstall"
+        destinationDirectory.set(rootProject.file("dist"))
+        archiveFileName.set("${appName}-dist-${bundleVersion}-${osLabel}.zip")
+        from(tasks.named("jar").flatMap { it.archiveFile }) {
+            rename { "voxcraft-editor.jar" }
+        }
+        baseBundleFiles.delegate = delegate
+        baseBundleFiles()
+        from({ resolveJdkRoot(jdkCache) }) {
+            into("jre")
+            exclude("*.zip", "*.tar.gz", "*.tar")
+        }
+        if (includeUnixLauncher) {
+            from(file("$launcherDir/voxcraft"))
+            from(file("$launcherDir/voxcraft-jre"))
+        }
+        if (includeWindowsScripts) {
+            from(file("$launcherDir/voxcraft.cmd"))
+            from(file("$launcherDir/voxcraft-jre.cmd"))
+            from(file("$launcherDir/voxcraft.install.cmd"))
+        }
+    }
+}
+
+def configureBundleTarTask = { String name, String osLabel, String fetchTaskName, File jdkCache ->
+    tasks.register(name, Tar) {
+        dependsOn "jar", fetchTaskName, "generateUnixLauncher", "generateUnixJreLauncher"
+        destinationDirectory.set(rootProject.file("dist"))
+        archiveFileName.set("${appName}-dist-${bundleVersion}-${osLabel}.tar.gz")
+        compression = Compression.GZIP
+        from(tasks.named("jar").flatMap { it.archiveFile }) {
+            rename { "voxcraft-editor.jar" }
+        }
+        baseBundleFiles.delegate = delegate
+        baseBundleFiles()
+        from({ resolveJdkRoot(jdkCache) }) {
+            into("jre")
+            exclude("*.zip", "*.tar.gz", "*.tar")
+        }
+        from(file("$launcherDir/voxcraft"))
+        from(file("$launcherDir/voxcraft-jre"))
+    }
+}
+
+def configureBundleDirTask = { String name, String osLabel, String fetchTaskName, File jdkCache, boolean includeUnixLauncher, boolean includeWindowsScripts ->
+    tasks.register(name, Sync) {
+        dependsOn "jar", fetchTaskName, "generateUnixLauncher", "generateUnixJreLauncher",
+            "generateWindowsLauncher", "generateWindowsJreLauncher", "generateWindowsInstall"
+        into(rootProject.file("dist/${appName}-dist-${bundleVersion}-${osLabel}"))
+        from(tasks.named("jar").flatMap { it.archiveFile }) {
+            rename { "voxcraft-editor.jar" }
+        }
+        baseBundleFiles.delegate = delegate
+        baseBundleFiles()
+        from({ resolveJdkRoot(jdkCache) }) {
+            into("jre")
+            exclude("*.zip", "*.tar.gz", "*.tar")
+        }
+        if (includeUnixLauncher) {
+            from(file("$launcherDir/voxcraft"))
+            from(file("$launcherDir/voxcraft-jre"))
+        }
+        if (includeWindowsScripts) {
+            from(file("$launcherDir/voxcraft.cmd"))
+            from(file("$launcherDir/voxcraft-jre.cmd"))
+            from(file("$launcherDir/voxcraft.install.cmd"))
+        }
+        doLast {
+            if (includeUnixLauncher) {
+                ensureUnixRuntimeExecutables(destinationDir)
+            }
+        }
+    }
+}
+
+configureBundleZipTask("bundleLinux", "linux", "fetchJdkLinux", file("$jdkCacheDir/linux-x64"), true, false)
+configureBundleZipTask("bundleWin", "win", "fetchJdkWin", file("$jdkCacheDir/win-x64"), false, true)
+configureBundleZipTask("bundleMacArm64", "mac", "fetchJdkMacArm64", file("$jdkCacheDir/mac-arm64"), true, false)
+
+configureBundleTarTask("bundleLinuxTar", "linux", "fetchJdkLinux", file("$jdkCacheDir/linux-x64"))
+configureBundleTarTask("bundleMacArm64Tar", "mac", "fetchJdkMacArm64", file("$jdkCacheDir/mac-arm64"))
+
+configureBundleDirTask("bundleLinuxDir", "linux", "fetchJdkLinux", file("$jdkCacheDir/linux-x64"), true, false)
+configureBundleDirTask("bundleWinDir", "win", "fetchJdkWin", file("$jdkCacheDir/win-x64"), false, true)
+configureBundleDirTask("bundleMacArm64Dir", "mac", "fetchJdkMacArm64", file("$jdkCacheDir/mac-arm64"), true, false)
+
+tasks.register("bundleLinuxAppImage") {
+    dependsOn "bundleLinuxDir"
+    outputs.file rootProject.file("dist/${appName}-dist-${bundleVersion}-linux.AppImage")
+    doLast {
+        if (!os.contains("linux")) {
+            throw new GradleException("AppImage packaging is only supported on Linux hosts.")
+        }
+
+        def appImageToolPath = System.getenv("APPIMAGETOOL") ?: "appimagetool"
+        def probe = null
+        try {
+            probe = new ProcessBuilder(appImageToolPath, "--version")
+                .directory(project.projectDir)
+                .redirectErrorStream(true)
+            if (appImageToolPath.endsWith(".AppImage")) {
+                probe.environment().put("APPIMAGE_EXTRACT_AND_RUN", "1")
+            }
+            probe = probe.start()
+            probe.inputStream.text
+        } catch (IOException ignored) {
+            probe = null
+        }
+        if (probe == null || probe.waitFor() != 0) {
+            throw new GradleException("appimagetool not found. Install appimagetool or set APPIMAGETOOL.")
+        }
+
+        def bundleDir = rootProject.file("dist/${appName}-dist-${bundleVersion}-linux")
+        if (!bundleDir.exists()) {
+            throw new GradleException("Linux bundle directory not found: ${bundleDir}")
+        }
+
+        def appDir = file("$buildDir/appimage/Voxcraft.AppDir")
+        def outFile = rootProject.file("dist/${appName}-dist-${bundleVersion}-linux.AppImage")
+        project.delete(appDir)
+        project.delete(outFile)
+
+        def payloadDir = new File(appDir, "usr/lib/voxcraft")
+        def binDir = new File(appDir, "usr/bin")
+        def applicationsDir = new File(appDir, "usr/share/applications")
+        def iconDir = new File(appDir, "usr/share/icons/hicolor/512x512/apps")
+        [payloadDir, binDir, applicationsDir, iconDir].each { it.mkdirs() }
+
+        project.copy {
+            from(bundleDir)
+            into(payloadDir)
+        }
+
+        def launcher = new File(binDir, "voxcraft")
+        launcher.text = """#!/bin/sh
+set -eu
+HERE="\$(CDPATH= cd -- "\$(dirname -- "\$0")" && pwd)"
+APPDIR="\$(CDPATH= cd -- "\$HERE/../.." && pwd)"
+exec "\$APPDIR/usr/lib/voxcraft/voxcraft-jre" "\$@"
+"""
+        launcher.setExecutable(true, false)
+
+        def appRun = new File(appDir, "AppRun")
+        appRun.text = """#!/bin/sh
+set -eu
+HERE="\$(CDPATH= cd -- "\$(dirname -- "\$0")" && pwd)"
+exec "\$HERE/usr/bin/voxcraft" "\$@"
+"""
+        appRun.setExecutable(true, false)
+
+        def desktopEntry = """[Desktop Entry]
+Name=voxcraft
+Comment=Voxel model editor
+Exec=voxcraft %U
+Icon=voxcraft
+Terminal=false
+Type=Application
+Categories=Graphics;3DGraphics;
+MimeType=application/octet-stream;
+StartupWMClass=voxcraft
+"""
+        new File(appDir, "voxcraft.desktop").text = desktopEntry
+        new File(applicationsDir, "voxcraft.desktop").text = desktopEntry
+
+        def iconSource = rootProject.file("assets/voxd31.icon.png")
+        project.copy {
+            from(iconSource)
+            into(appDir)
+            rename { "voxcraft.png" }
+        }
+        project.copy {
+            from(iconSource)
+            into(iconDir)
+            rename { "voxcraft.png" }
+        }
+
+        ensureUnixRuntimeExecutables(payloadDir)
+
+        def pack = new ProcessBuilder(appImageToolPath, appDir.absolutePath, outFile.absolutePath)
+            .directory(rootProject.projectDir)
+            .inheritIO()
+        pack.environment().put("ARCH", "x86_64")
+        if (appImageToolPath.endsWith(".AppImage")) {
+            pack.environment().put("APPIMAGE_EXTRACT_AND_RUN", "1")
+        }
+        def process = pack.start()
+        if (process.waitFor() != 0) {
+            throw new GradleException("appimagetool failed while building ${outFile.name}.")
+        }
+    }
+}
+
+tasks.register("bundleAll") {
+    dependsOn "bundleLinuxTar", "bundleWin", "bundleMacArm64Tar"
+}
+
+tasks.register("bundleLocal") {
+    if (os.contains("win")) {
+        dependsOn "bundleWin"
+    } else if (os.contains("mac")) {
+        dependsOn "bundleMacArm64Tar"
+    } else {
+        dependsOn "bundleLinuxTar"
+    }
+}
+
+tasks.register("bundleLocalDir") {
+    if (os.contains("win")) {
+        dependsOn "bundleWinDir"
+    } else if (os.contains("mac")) {
+        dependsOn "bundleMacArm64Dir"
+    } else {
+        dependsOn "bundleLinuxDir"
+    }
+}
+
+tasks.register("dev") {
+    dependsOn "bundleLocalDir"
+}

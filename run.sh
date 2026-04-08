@@ -20,7 +20,7 @@ data class Voxd31EditorVersion(
 )
 VERSIONCLASS
 
-java_ver=17
+java_ver=21
 mkdir tmp
 ./gradlew dist  "-PjavaCompatVersion=$java_ver" -PreleaseNumber="$latest_tag-dev"
 mv desktop/build/libs/*.jar tmp/
