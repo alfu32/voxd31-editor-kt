@@ -16,14 +16,15 @@ def webComponentSourceDir = file("$projectDir/component")
 def webComponentBundleDir = file("$buildDir/dist/webcomponent")
 
 dependencies {
+    implementation project(':core')
     implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
     implementation "com.github.xpenatan.gdx-teavm:backend-web:$gdxTeaVMVersion"
 }
 
 tasks.register('buildWebRuntime', JavaExec) {
     group = 'distribution'
-    description = 'Compiles the TeaVM/WebGL runtime shell.'
-    dependsOn(tasks.named('classes'))
+    description = 'Compiles the TeaVM/WebGL runtime.'
+    dependsOn(tasks.named('classes'), rootProject.tasks.named('generateAssetList'))
     doFirst {
         delete(webDistRoot)
     }

@@ -3,7 +3,7 @@ package com.voxd31.gdxui
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
+import kotlin.math.max
 
 class UIFont(
     var ttf:String,
@@ -26,13 +26,10 @@ class UIFont(
             fonts["default"]=default().bitmapFont()
         }
         private fun generateFont(filePath: String, size: Int, color: Color = Color.DARK_GRAY): BitmapFont {
-            val generator = FreeTypeFontGenerator(Gdx.files.internal(filePath))
-            val parameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-                this.size = size
-                this.color = color
-            }
-            val font = generator.generateFont(parameter)
-            generator.dispose()  // Don't forget to dispose to avoid memory leaks
+            val font = BitmapFont(Gdx.files.internal("default.fnt"), false)
+            val scale = max(0.5f, size.toFloat() / 17f)
+            font.data.setScale(scale)
+            font.color = color.cpy()
             return font
         }
         fun default():UIFont{

@@ -20,10 +20,10 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.utils.viewport.Viewport
 import com.voxd31.editor.*
+import com.voxd31.editor.exporters.appendTextFile
 import com.voxd31.editor.exporters.readCubesCsv
 import com.voxd31.editor.exporters.saveCubesAsCsv
 import com.voxd31.gdxui.*
-import java.io.File
 import kotlin.math.floor
 
 
@@ -1010,7 +1010,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         saveCubesAsCsv(scene.cubes.values.toList(),filename)
         // saveSchematicToFile(scene.cubes.values.toList(), "$filename.schematic")
         val text = tools.flatMap { tool -> tool.commands }.joinToString("\n")
-        File("$filename.mccmd").appendText(text)
+        appendTextFile("$filename.mccmd", text)
     }
 
     override fun resize(width: Int, height: Int) {

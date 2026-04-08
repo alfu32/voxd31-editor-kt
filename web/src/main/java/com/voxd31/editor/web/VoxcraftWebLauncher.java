@@ -1,5 +1,6 @@
 package com.voxd31.editor.web;
 
+import com.xovd3i.editor.Voxd31Editor;
 import com.github.xpenatan.gdx.teavm.backends.web.WebApplication;
 import com.github.xpenatan.gdx.teavm.backends.web.WebApplicationConfiguration;
 
@@ -21,6 +22,6 @@ public final class VoxcraftWebLauncher {
         config.antialiasing = true;
         config.premultipliedAlpha = true;
 
-        new WebApplication(new VoxcraftWebApp(), config);
+        new WebApplication(new Voxd31Editor("default.vxdi"), config);
     }
 }
