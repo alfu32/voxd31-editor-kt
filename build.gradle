@@ -133,10 +133,7 @@ project(":core-ui") {
         api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         api "org.simpleframework:simple-xml:2.7.1"
-        api "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$kotlinVersion"
-        api "org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion"
-        api "org.jetbrains.kotlin:kotlin-scripting-jvm:$kotlinVersion"
-        api "org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion"
+        implementation "org.jetbrains.kotlin:kotlin-scripting-common:$kotlinVersion"
 
         testImplementation "junit:junit:$junitVersion"
         testImplementation "org.junit.jupiter:junit-jupiter:$junitJupiterVersion"
