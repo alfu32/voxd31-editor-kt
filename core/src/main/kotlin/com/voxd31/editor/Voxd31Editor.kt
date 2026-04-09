@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.InputProcessor
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
 import com.badlogic.gdx.graphics.g3d.*
@@ -639,10 +640,23 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         if (Gdx.app.type == Application.ApplicationType.WebGL) {
             VisUI.setSkipGdxVersionCheck(true)
+            requireWebInternalFile("com/kotcrab/vis/ui/skin/x1/uiskin.json")
+            requireWebInternalFile("com/kotcrab/vis/ui/skin/x1/uiskin.atlas")
+            requireWebInternalFile("com/kotcrab/vis/ui/skin/x1/uiskin.png")
+            requireWebInternalFile("com/kotcrab/vis/ui/skin/x1/default.fnt")
+            requireWebInternalFile("com/kotcrab/vis/ui/skin/x1/font-small.fnt")
             VisUI.load(Gdx.files.internal("com/kotcrab/vis/ui/skin/x1/uiskin.json"))
             return
         }
         VisUI.load()
+    }
+
+    private fun requireWebInternalFile(path: String): FileHandle {
+        val file = Gdx.files.internal(path)
+        if (!file.exists()) {
+            throw IllegalStateException("Required web asset not found (internal): $path")
+        }
+        return file
     }
 
     private fun configureOrthoViewport(width: Int, height: Int) {

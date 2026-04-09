@@ -14,15 +14,11 @@ def webDistRoot = file("$buildDir/dist")
 def webRuntimeDir = file("$webDistRoot/webapp")
 def webComponentSourceDir = file("$projectDir/component")
 def webComponentBundleDir = file("$buildDir/dist/webcomponent")
-def visUiSkinTargetDir = file("$webRuntimeDir/assets/com/kotcrab/vis/ui/skin/x1")
-def visUiSkinIncludes = [
-    'com/kotcrab/vis/ui/skin/x1/uiskin.json',
-    'com/kotcrab/vis/ui/skin/x1/uiskin.atlas',
-    'com/kotcrab/vis/ui/skin/x1/uiskin.png',
-    'com/kotcrab/vis/ui/skin/x1/default.fnt',
-    'com/kotcrab/vis/ui/skin/x1/default.png',
-    'com/kotcrab/vis/ui/skin/x1/font-small.fnt',
-    'com/kotcrab/vis/ui/skin/x1/font-small.png'
+def webAssetStagingDir = file("$buildDir/generated/web-assets")
+def webClasspathResourcesDir = file("$buildDir/generated/web-classpath-resources")
+def visUiResourceIncludes = [
+    'com/kotcrab/vis/ui/skin/**',
+    'com/kotcrab/vis/ui/widget/color/internal/**'
 ]
 
 dependencies {
@@ -31,10 +27,83 @@ dependencies {
     implementation "com.github.xpenatan.gdx-teavm:backend-web:$gdxTeaVMVersion"
 }
 
+tasks.register('prepareWebAssets') {
+    group = 'distribution'
+    description = 'Stages web assets and rebuilds the asset manifest for TeaVM.'
+
+    inputs.dir(rootProject.file('assets'))
+    inputs.files(configurations.runtimeClasspath)
+    outputs.dir(webAssetStagingDir)
+
+    doLast {
+        delete(webAssetStagingDir)
+        webAssetStagingDir.mkdirs()
+
+        copy {
+            from(rootProject.file('assets'))
+            into(webAssetStagingDir)
+        }
+
+        def visUiJar = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'com.kotcrab.vis' && it.name == 'vis-ui'
+        }?.file
+        if (visUiJar == null || !visUiJar.exists()) {
+            throw new GradleException("Unable to locate vis-ui runtime jar on web classpath.")
+        }
+        copy {
+            from(zipTree(visUiJar)) {
+                include(visUiResourceIncludes)
+            }
+            into(webAssetStagingDir)
+        }
+
+        def assetsFile = new File(webAssetStagingDir, 'assets.txt')
+        def entries = fileTree(webAssetStagingDir) {
+            exclude 'assets.txt'
+        }.files.collect { asset ->
+            webAssetStagingDir.toPath().relativize(asset.toPath()).toString().replace('\\', '/')
+        }.sort()
+        assetsFile.text = entries.isEmpty() ? '' : entries.join('\n') + '\n'
+    }
+}
+
+tasks.register('prepareWebClasspathResources') {
+    group = 'build'
+    description = 'Copies dependency classpath resources required by the TeaVM runtime.'
+
+    inputs.files(configurations.runtimeClasspath)
+    outputs.dir(webClasspathResourcesDir)
+
+    doLast {
+        delete(webClasspathResourcesDir)
+        webClasspathResourcesDir.mkdirs()
+
+        def visUiJar = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'com.kotcrab.vis' && it.name == 'vis-ui'
+        }?.file
+        if (visUiJar == null || !visUiJar.exists()) {
+            throw new GradleException("Unable to locate vis-ui runtime jar on web classpath.")
+        }
+
+        copy {
+            from(zipTree(visUiJar)) {
+                include(visUiResourceIncludes)
+                exclude('**/*.class')
+            }
+            into(webClasspathResourcesDir)
+        }
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn(tasks.named('prepareWebClasspathResources'))
+    from(webClasspathResourcesDir)
+}
+
 tasks.register('buildWebRuntime', JavaExec) {
     group = 'distribution'
     description = 'Compiles the TeaVM/WebGL runtime.'
-    dependsOn(tasks.named('classes'), rootProject.tasks.named('generateAssetList'))
+    dependsOn(tasks.named('classes'), tasks.named('prepareWebAssets'))
     doFirst {
         delete(webDistRoot)
     }
@@ -42,7 +111,7 @@ tasks.register('buildWebRuntime', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     systemProperty('voxcraft.web.output', webDistRoot.absolutePath)
     systemProperty('voxcraft.web.folder', 'webapp')
-    systemProperty('voxcraft.web.assets', rootProject.file('assets').absolutePath)
+    systemProperty('voxcraft.web.assets', webAssetStagingDir.absolutePath)
     systemProperty('voxcraft.web.title', "voxcraft ${bundleVersion}")
     systemProperty('voxcraft.web.outputName', webOutputName)
     systemProperty('voxcraft.web.serve', 'false')
@@ -66,22 +135,6 @@ tasks.register('prepareWebDocs') {
         copy {
             from(rootProject.file('assets/voxd31.icon.png'))
             into(new File(webRuntimeDir, 'assets'))
-        }
-        def visUiJar = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
-            it.moduleVersion.id.group == 'com.kotcrab.vis' && it.name == 'vis-ui'
-        }?.file
-        if (visUiJar != null) {
-            copy {
-                from(zipTree(visUiJar).matching {
-                    include(visUiSkinIncludes)
-                }) {
-                    eachFile { fileCopyDetails ->
-                        fileCopyDetails.path = fileCopyDetails.name
-                    }
-                    includeEmptyDirs = false
-                }
-                into(visUiSkinTargetDir)
-            }
         }
     }
 }
