@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3
 import com.voxd31.gdxui.MockModelBuilder
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -28,6 +29,7 @@ class SceneControllerTest {
 
         assertEquals(1, scene.visibleRenderChunkCount())
         assertEquals(6, scene.visibleRenderFaceCount())
+        assertTrue(scene.hasConsistentFaceWinding())
     }
 
     @Test
@@ -37,6 +39,7 @@ class SceneControllerTest {
 
         assertEquals(2, scene.visibleRenderChunkCount())
         assertEquals(10, scene.visibleRenderFaceCount())
+        assertTrue(scene.hasConsistentFaceWinding())
     }
 
     @Test
@@ -46,5 +49,6 @@ class SceneControllerTest {
 
         assertEquals(1, scene.visibleRenderChunkCount())
         assertEquals(10, scene.visibleRenderFaceCount())
+        assertTrue(scene.hasConsistentFaceWinding())
     }
 }

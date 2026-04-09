@@ -165,6 +165,20 @@ class SceneController(val modelBuilder: ModelBuilder) {
         }
     }
 
+    internal fun hasConsistentFaceWinding(): Boolean {
+        val edgeA = Vector3()
+        val edgeB = Vector3()
+        val computedNormal = Vector3()
+        return collectChunkCoords().all { chunk ->
+            collectChunkFaces(chunk).values.flatten().all { face ->
+                edgeA.set(face.corners[1]).sub(face.corners[0])
+                edgeB.set(face.corners[2]).sub(face.corners[0])
+                computedNormal.set(edgeA).crs(edgeB)
+                computedNormal.dot(face.normal) > 0f
+            }
+        }
+    }
+
     private fun invalidateRenderCache() {
         renderCacheDirty = true
     }
@@ -257,9 +271,9 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     rect.colorKey,
                     arrayOf(
                         Vector3(x0 - Cube.DL, y + Cube.DR, z0 - Cube.DL),
-                        Vector3(x1 + Cube.DR, y + Cube.DR, z0 - Cube.DL),
+                        Vector3(x0 - Cube.DL, y + Cube.DR, z1 + Cube.DR),
                         Vector3(x1 + Cube.DR, y + Cube.DR, z1 + Cube.DR),
-                        Vector3(x0 - Cube.DL, y + Cube.DR, z1 + Cube.DR)
+                        Vector3(x1 + Cube.DR, y + Cube.DR, z0 - Cube.DL)
                     ),
                     TOP_NORMAL
                 )
@@ -289,9 +303,9 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     rect.colorKey,
                     arrayOf(
                         Vector3(x0 - Cube.DL, y - Cube.DL, z1 + Cube.DR),
-                        Vector3(x1 + Cube.DR, y - Cube.DL, z1 + Cube.DR),
+                        Vector3(x0 - Cube.DL, y - Cube.DL, z0 - Cube.DL),
                         Vector3(x1 + Cube.DR, y - Cube.DL, z0 - Cube.DL),
-                        Vector3(x0 - Cube.DL, y - Cube.DL, z0 - Cube.DL)
+                        Vector3(x1 + Cube.DR, y - Cube.DL, z1 + Cube.DR)
                     ),
                     BOTTOM_NORMAL
                 )
