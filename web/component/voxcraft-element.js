@@ -49,19 +49,7 @@
     return state.loadPromise;
   }
 
-  function isSecondaryButtonEvent(event) {
-    return event && typeof event.button === 'number' && event.button === 2;
-  }
-
-  function swallowSecondaryPointerEvent(event) {
-    if (!isSecondaryButtonEvent(event)) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  function swallowContextMenu(event) {
+  function suppressContextMenu(event) {
     event.preventDefault();
     event.stopPropagation();
   }
@@ -82,10 +70,8 @@
       canvas.style.width = '100%';
       canvas.style.height = '100%';
       canvas.style.display = 'block';
-      ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click', 'auxclick'].forEach((type) => {
-        canvas.addEventListener(type, swallowSecondaryPointerEvent);
-      });
-      canvas.addEventListener('contextmenu', swallowContextMenu);
+      this.addEventListener('contextmenu', suppressContextMenu);
+      canvas.addEventListener('contextmenu', suppressContextMenu);
       this.appendChild(canvas);
       ensureRuntimeLoaded(this).catch((error) => {
         this.dispatchEvent(new CustomEvent('error', {
