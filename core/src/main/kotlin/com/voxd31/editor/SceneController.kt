@@ -260,7 +260,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                 val x = startX + lx
                 val z = startZ + lz
                 val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                if (hasCubeAt(x, y + 1, z)) null else Color.rgba8888(cube.color)
+                val colorKey = renderMaterialKey(cube)
+                if (isOccludedBySameMaterial(x, y + 1, z, colorKey)) null else colorKey
             }.forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
@@ -292,7 +293,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                 val x = startX + lx
                 val z = startZ + lz
                 val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                if (hasCubeAt(x, y - 1, z)) null else Color.rgba8888(cube.color)
+                val colorKey = renderMaterialKey(cube)
+                if (isOccludedBySameMaterial(x, y - 1, z, colorKey)) null else colorKey
             }.forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
@@ -324,7 +326,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                 val x = startX + lx
                 val y = startY + ly
                 val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                if (hasCubeAt(x, y, z + 1)) null else Color.rgba8888(cube.color)
+                val colorKey = renderMaterialKey(cube)
+                if (isOccludedBySameMaterial(x, y, z + 1, colorKey)) null else colorKey
             }.forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
@@ -356,7 +359,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                 val x = startX + lx
                 val y = startY + ly
                 val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                if (hasCubeAt(x, y, z - 1)) null else Color.rgba8888(cube.color)
+                val colorKey = renderMaterialKey(cube)
+                if (isOccludedBySameMaterial(x, y, z - 1, colorKey)) null else colorKey
             }.forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
@@ -388,7 +392,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                 val z = startZ + lz
                 val y = startY + ly
                 val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                if (hasCubeAt(x + 1, y, z)) null else Color.rgba8888(cube.color)
+                val colorKey = renderMaterialKey(cube)
+                if (isOccludedBySameMaterial(x + 1, y, z, colorKey)) null else colorKey
             }.forEach { rect ->
                 val z0 = startZ + rect.u
                 val z1 = z0 + rect.width - 1
@@ -420,7 +425,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                 val z = startZ + lz
                 val y = startY + ly
                 val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                if (hasCubeAt(x - 1, y, z)) null else Color.rgba8888(cube.color)
+                val colorKey = renderMaterialKey(cube)
+                if (isOccludedBySameMaterial(x - 1, y, z, colorKey)) null else colorKey
             }.forEach { rect ->
                 val z0 = startZ + rect.u
                 val z1 = z0 + rect.width - 1
@@ -541,6 +547,15 @@ class SceneController(val modelBuilder: ModelBuilder) {
         val color = Color()
         Color.rgba8888ToColor(color, colorKey)
         return color.a >= 0.99f
+    }
+
+    private fun renderMaterialKey(cube: Cube): Int {
+        return Color.rgba8888(cube.color)
+    }
+
+    private fun isOccludedBySameMaterial(x: Int, y: Int, z: Int, colorKey: Int): Boolean {
+        val neighbor = cubeAtInt(x, y, z) ?: return false
+        return renderMaterialKey(neighbor) == colorKey
     }
 
     private fun hasCubeAt(x: Int, y: Int, z: Int): Boolean {

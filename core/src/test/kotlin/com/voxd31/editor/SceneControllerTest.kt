@@ -43,12 +43,12 @@ class SceneControllerTest {
     }
 
     @Test
-    fun doesNotMergeFacesAcrossColorBoundaries() {
+    fun keepsSharedFacesAcrossColorBoundaries() {
         scene.addCube(Vector3(0f, 0f, 0f), Color.RED)
         scene.addCube(Vector3(1f, 0f, 0f), Color.BLUE)
 
         assertEquals(1, scene.visibleRenderChunkCount())
-        assertEquals(10, scene.visibleRenderFaceCount())
+        assertEquals(12, scene.visibleRenderFaceCount())
         assertTrue(scene.hasConsistentFaceWinding())
     }
 }
