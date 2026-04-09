@@ -14,6 +14,7 @@ def webDistRoot = file("$buildDir/dist")
 def webRuntimeDir = file("$webDistRoot/webapp")
 def webComponentSourceDir = file("$projectDir/component")
 def webComponentBundleDir = file("$buildDir/dist/webcomponent")
+def visUiSkinTargetDir = file("$webRuntimeDir/assets/com/kotcrab/vis/ui/skin/x1")
 def visUiSkinIncludes = [
     'com/kotcrab/vis/ui/skin/x1/uiskin.json',
     'com/kotcrab/vis/ui/skin/x1/uiskin.atlas',
@@ -71,10 +72,15 @@ tasks.register('prepareWebDocs') {
         }?.file
         if (visUiJar != null) {
             copy {
-                from(zipTree(visUiJar)) {
+                from(zipTree(visUiJar).matching {
                     include(visUiSkinIncludes)
+                }) {
+                    eachFile { fileCopyDetails ->
+                        fileCopyDetails.path = fileCopyDetails.name
+                    }
+                    includeEmptyDirs = false
                 }
-                into(new File(webRuntimeDir, 'assets'))
+                into(visUiSkinTargetDir)
             }
         }
     }
