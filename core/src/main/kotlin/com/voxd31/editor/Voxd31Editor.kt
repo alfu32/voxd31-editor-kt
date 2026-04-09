@@ -185,7 +185,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
                 p ->
                 val c = scene.cubeAt(p)
                 if(c!=null){
-                    selected.cubes[c.getId()] = c
+                    selected.addCube(c.position, c.color)
                 }
             }
         }, onEnd = { s:Vector3,e:Vector3 ->
@@ -880,8 +880,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         shapeRenderer.end()
 
         modelBatch.begin(activeCamera)
-        modelBatch.render(scene.cubes.map { (k,v) -> v.getModelInstance() }, environment)
-        modelBatch.render(feedback.cubes.map { (k,v) -> v.getModelInstance() }, environment)
+        modelBatch.render(scene.renderInstances(), environment)
+        modelBatch.render(feedback.renderInstances(), environment)
         modelBatch.end()
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
@@ -918,8 +918,8 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private fun renderShadowPass() {
         shadowLight.begin(resolveShadowCenter(), resolveShadowDirection())
         shadowBatch.begin(shadowLight.camera)
-        shadowBatch.render(scene.cubes.filter { it.value.color.a > 0.99f }.map { it.value.getModelInstance() })
-        shadowBatch.render(feedback.cubes.filter { it.value.color.a > 0.99f }.map { it.value.getModelInstance() }, environment)
+        shadowBatch.render(scene.shadowInstances())
+        shadowBatch.render(feedback.shadowInstances(), environment)
         shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
@@ -1030,6 +1030,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         val text = tools.flatMap { tool -> tool.commands }.joinToString("\n")
         appendTextFile("$filename.mccmd", text)
+        Cube.disposeSharedModels()
         if (VisUI.isLoaded()) {
             VisUI.dispose()
         }

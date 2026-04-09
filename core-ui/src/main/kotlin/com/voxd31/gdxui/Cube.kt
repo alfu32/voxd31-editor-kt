@@ -41,6 +41,11 @@ class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color)
             return models[color]!!
 
         }
+
+        fun disposeSharedModels() {
+            models.values.forEach { it.dispose() }
+            models.clear()
+        }
     }
     init {
         /// instance.model.meshes.forEachIndexed{
