@@ -1,0 +1,145 @@
+//move 4 0 5 4 3 5
+//move 7 0 8 7 3 8
+# Frame -2 0 1 1 3 -2 ff0000ff
+/fill -2 0 1 -2 3 1 minecraft:stone
+/fill -2 3 1 1 3 1 minecraft:stone
+/fill 1 3 1 1 0 1 minecraft:stone
+/fill 1 0 1 -2 0 1 minecraft:stone
+/fill -2 0 1 -2 0 -2 minecraft:stone
+/fill -2 3 1 -2 3 -2 minecraft:stone
+/fill 1 3 1 1 3 -2 minecraft:stone
+/fill 1 0 1 1 0 -2 minecraft:stone
+/fill -2 0 -2 -2 3 -2 minecraft:stone
+/fill -2 3 -2 1 3 -2 minecraft:stone
+/fill 1 3 -2 1 0 -2 minecraft:stone
+/fill 1 0 -2 -2 0 -2 minecraft:stone
+# Frame -7 0 -12 -7 0 -12 ff0000ff
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+/fill -7 0 -12 -7 0 -12 minecraft:stone
+# Frame -5 0 4 4 9 -5 b3ff00ff
+/fill -5 0 4 -5 9 4 minecraft:stone
+/fill -5 9 4 4 9 4 minecraft:stone
+/fill 4 9 4 4 0 4 minecraft:stone
+/fill 4 0 4 -5 0 4 minecraft:stone
+/fill -5 0 4 -5 0 -5 minecraft:stone
+/fill -5 9 4 -5 9 -5 minecraft:stone
+/fill 4 9 4 4 9 -5 minecraft:stone
+/fill 4 0 4 4 0 -5 minecraft:stone
+/fill -5 0 -5 -5 9 -5 minecraft:stone
+/fill -5 9 -5 4 9 -5 minecraft:stone
+/fill 4 9 -5 4 0 -5 minecraft:stone
+/fill 4 0 -5 -5 0 -5 minecraft:stone
+# Frame -8 0 7 7 15 -8 a600ffff
+/fill -8 0 7 -8 15 7 minecraft:stone
+/fill -8 15 7 7 15 7 minecraft:stone
+/fill 7 15 7 7 0 7 minecraft:stone
+/fill 7 0 7 -8 0 7 minecraft:stone
+/fill -8 0 7 -8 0 -8 minecraft:stone
+/fill -8 15 7 -8 15 -8 minecraft:stone
+/fill 7 15 7 7 15 -8 minecraft:stone
+/fill 7 0 7 7 0 -8 minecraft:stone
+/fill -8 0 -8 -8 15 -8 minecraft:stone
+/fill -8 15 -8 7 15 -8 minecraft:stone
+/fill 7 15 -8 7 0 -8 minecraft:stone
+/fill 7 0 -8 -8 0 -8 minecraft:stone
+# Frame -7 15 -7 6 0 6 a600ffff
+/fill -7 15 -7 -7 0 -7 minecraft:stone
+/fill -7 0 -7 6 0 -7 minecraft:stone
+/fill 6 0 -7 6 15 -7 minecraft:stone
+/fill 6 15 -7 -7 15 -7 minecraft:stone
+/fill -7 15 -7 -7 15 6 minecraft:stone
+/fill -7 0 -7 -7 0 6 minecraft:stone
+/fill 6 0 -7 6 0 6 minecraft:stone
+/fill 6 15 -7 6 15 6 minecraft:stone
+/fill -7 15 6 -7 0 6 minecraft:stone
+/fill -7 0 6 6 0 6 minecraft:stone
+/fill 6 0 6 6 15 6 minecraft:stone
+/fill 6 15 6 -7 15 6 minecraft:stone
+# Frame 6 1 7 -7 14 7 a600ffff
+/fill 6 1 7 6 14 7 minecraft:stone
+/fill 6 14 7 -7 14 7 minecraft:stone
+/fill -7 14 7 -7 1 7 minecraft:stone
+/fill -7 1 7 6 1 7 minecraft:stone
+/fill 6 1 7 6 1 7 minecraft:stone
+/fill 6 14 7 6 14 7 minecraft:stone
+/fill -7 14 7 -7 14 7 minecraft:stone
+/fill -7 1 7 -7 1 7 minecraft:stone
+/fill 6 1 7 6 14 7 minecraft:stone
+/fill 6 14 7 -7 14 7 minecraft:stone
+/fill -7 14 7 -7 1 7 minecraft:stone
+/fill -7 1 7 6 1 7 minecraft:stone
+# Frame -8 14 -7 -8 1 6 a600ffff
+/fill -8 14 -7 -8 1 -7 minecraft:stone
+/fill -8 1 -7 -8 1 -7 minecraft:stone
+/fill -8 1 -7 -8 14 -7 minecraft:stone
+/fill -8 14 -7 -8 14 -7 minecraft:stone
+/fill -8 14 -7 -8 14 6 minecraft:stone
+/fill -8 1 -7 -8 1 6 minecraft:stone
+/fill -8 1 -7 -8 1 6 minecraft:stone
+/fill -8 14 -7 -8 14 6 minecraft:stone
+/fill -8 14 6 -8 1 6 minecraft:stone
+/fill -8 1 6 -8 1 6 minecraft:stone
+/fill -8 1 6 -8 14 6 minecraft:stone
+/fill -8 14 6 -8 14 6 minecraft:stone
+# Frame 7 1 -7 7 14 6 a600ffff
+/fill 7 1 -7 7 14 -7 minecraft:stone
+/fill 7 14 -7 7 14 -7 minecraft:stone
+/fill 7 14 -7 7 1 -7 minecraft:stone
+/fill 7 1 -7 7 1 -7 minecraft:stone
+/fill 7 1 -7 7 1 6 minecraft:stone
+/fill 7 14 -7 7 14 6 minecraft:stone
+/fill 7 14 -7 7 14 6 minecraft:stone
+/fill 7 1 -7 7 1 6 minecraft:stone
+/fill 7 1 6 7 14 6 minecraft:stone
+/fill 7 14 6 7 14 6 minecraft:stone
+/fill 7 14 6 7 1 6 minecraft:stone
+/fill 7 1 6 7 1 6 minecraft:stone
+# Frame -7 14 -8 6 1 -8 a600ffff
+/fill -7 14 -8 -7 1 -8 minecraft:stone
+/fill -7 1 -8 6 1 -8 minecraft:stone
+/fill 6 1 -8 6 14 -8 minecraft:stone
+/fill 6 14 -8 -7 14 -8 minecraft:stone
+/fill -7 14 -8 -7 14 -8 minecraft:stone
+/fill -7 1 -8 -7 1 -8 minecraft:stone
+/fill 6 1 -8 6 1 -8 minecraft:stone
+/fill 6 14 -8 6 14 -8 minecraft:stone
+/fill -7 14 -8 -7 1 -8 minecraft:stone
+/fill -7 1 -8 6 1 -8 minecraft:stone
+/fill 6 1 -8 6 14 -8 minecraft:stone
+/fill 6 14 -8 -7 14 -8 minecraft:stone
+# Frame -7 1 -7 6 1 6 a600ffff
+/fill -7 1 -7 -7 1 -7 minecraft:stone
+/fill -7 1 -7 6 1 -7 minecraft:stone
+/fill 6 1 -7 6 1 -7 minecraft:stone
+/fill 6 1 -7 -7 1 -7 minecraft:stone
+/fill -7 1 -7 -7 1 6 minecraft:stone
+/fill -7 1 -7 -7 1 6 minecraft:stone
+/fill 6 1 -7 6 1 6 minecraft:stone
+/fill 6 1 -7 6 1 6 minecraft:stone
+/fill -7 1 6 -7 1 6 minecraft:stone
+/fill -7 1 6 6 1 6 minecraft:stone
+/fill 6 1 6 6 1 6 minecraft:stone
+/fill 6 1 6 -7 1 6 minecraft:stone
+# Frame -7 14 -7 6 14 6 a600ffff
+/fill -7 14 -7 -7 14 -7 minecraft:stone
+/fill -7 14 -7 6 14 -7 minecraft:stone
+/fill 6 14 -7 6 14 -7 minecraft:stone
+/fill 6 14 -7 -7 14 -7 minecraft:stone
+/fill -7 14 -7 -7 14 6 minecraft:stone
+/fill -7 14 -7 -7 14 6 minecraft:stone
+/fill 6 14 -7 6 14 6 minecraft:stone
+/fill 6 14 -7 6 14 6 minecraft:stone
+/fill -7 14 6 -7 14 6 minecraft:stone
+/fill -7 14 6 6 14 6 minecraft:stone
+/fill 6 14 6 6 14 6 minecraft:stone
+/fill 6 14 6 -7 14 6 minecraft:stone
