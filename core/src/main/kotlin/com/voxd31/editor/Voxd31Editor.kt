@@ -33,6 +33,8 @@ import com.voxd31.editor.exporters.meshExportOptions
 import com.voxd31.editor.exporters.resolveReadableHandle
 import com.voxd31.editor.exporters.resolveWritableHandle
 import com.voxd31.editor.exporters.saveModelAsCsv
+import com.voxd31.editor.render.ShadowSettings
+import com.voxd31.editor.render.VoxcraftShaderProvider
 import com.voxd31.editor.ui.VoxcraftUiOverlay
 import com.voxd31.gdxui.Cube
 import com.voxd31.gdxui.Vox3Event
@@ -100,6 +102,13 @@ class Voxd31Editor @JvmOverloads constructor(
     private var groundDepth = minimumGroundPlaneDepth
     private var showMergedFaceEdges = false
     private var showRenderableFaceEdges = false
+    private val shadowSettings = ShadowSettings(
+        shadowBias = 2500f,
+        shadowNormalBias = 5620f,
+        pcfMode = 1,
+        dither = false,
+        useShadows = true
+    )
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -146,9 +155,6 @@ class Voxd31Editor @JvmOverloads constructor(
 
         shapeRenderer = ShapeRenderer()
 
-        modelBatch = ModelBatch()
-        shadowBatch = ModelBatch(DepthShaderProvider())
-
         environment = Environment()
         shadowLight = ResizableDirectionalShadowLight(
             8192, 8192,
@@ -169,6 +175,8 @@ class Voxd31Editor @JvmOverloads constructor(
         environment.add(DirectionalLight().set(0.1f, 0.1f, 0.1f, 1.2f, 1.8f, 0.5f).setColor(Color(0.1f,0.1f,0.1f,0.2f)))
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f,0.5f,0.5f, 0.7f)) // Reduced ambient light
         environment.set(ColorAttribute(ColorAttribute.Specular, 0.5f,0.5f,0.9f, 0.7f)) // Reduced ambient light
+        modelBatch = ModelBatch(VoxcraftShaderProvider({ shadowSettings }, { shadowLight }))
+        shadowBatch = ModelBatch(DepthShaderProvider())
 
         modelBuilder = ModelBuilder()
         scene = SceneController(modelBuilder)
@@ -613,6 +621,10 @@ class Voxd31Editor @JvmOverloads constructor(
                     setStatusMessage(
                         "Renderable face edge overlay ${if (showRenderableFaceEdges) "enabled" else "disabled"} (emitted quads)"
                     )
+                }
+                Input.Keys.F9 -> {
+                    shadowSettings.useShadows = !shadowSettings.useShadows
+                    setStatusMessage("Shadows ${if (shadowSettings.useShadows) "enabled" else "disabled"}")
                 }
                 Input.Keys.SPACE -> {
                     saveCurrentModel()
