@@ -24,8 +24,13 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.appendTextFile
-import com.voxd31.editor.exporters.readCubesCsv
-import com.voxd31.editor.exporters.saveCubesAsCsv
+import com.voxd31.editor.exporters.exportSceneMesh
+import com.voxd31.editor.exporters.loadModelFromCsv
+import com.voxd31.editor.exporters.meshExportOptionForExtension
+import com.voxd31.editor.exporters.meshExportOptions
+import com.voxd31.editor.exporters.resolveReadableHandle
+import com.voxd31.editor.exporters.resolveWritableHandle
+import com.voxd31.editor.exporters.saveModelAsCsv
 import com.voxd31.editor.ui.VoxcraftUiOverlay
 import com.voxd31.gdxui.Cube
 import com.voxd31.gdxui.Vox3Event
@@ -33,13 +38,18 @@ import com.kotcrab.vis.ui.VisUI
 import kotlin.math.floor
 
 
-class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
+class Voxd31Editor @JvmOverloads constructor(
+    initialFilename: String = "default.vxdi",
+    private val fileDialogService: FileDialogService = NoopFileDialogService
+) : ApplicationAdapter() {
     companion object {
 
     }
-    private val GNDSZ=100f
     private val groundPlaneY = -0.5f
     private val gridPlaneY = groundPlaneY + 0.03f
+    private val minimumGroundPlaneWidth = 12f
+    private val minimumGroundPlaneDepth = 12f
+    private val groundPlanePadding = 4f
     private val cameraTarget = Vector3()
     private val shadowBounds = BoundingBox()
     private val shadowBoundsCenter = Vector3()
@@ -68,12 +78,20 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var guides: SceneController
     private lateinit var feedback: SceneController
     private lateinit var modelBuilder: ModelBuilder
+    private lateinit var groundModel: Model
     private lateinit var ground: ModelInstance
     private lateinit var sphere: Model
     private lateinit var inputProcessors: InputMultiplexer
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var currentEvent: Vox3Event
     private lateinit var uiOverlay: VoxcraftUiOverlay
+    private val versionInfo = Voxd31EditorVersion()
+    private var filename: String = initialFilename
+    private var modelSettings = ModelSettings()
+    private var statusMessage = ""
+    private val groundCenter = Vector3()
+    private var groundWidth = minimumGroundPlaneWidth
+    private var groundDepth = minimumGroundPlaneDepth
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -146,26 +164,17 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
 
         modelBuilder = ModelBuilder()
         scene = SceneController(modelBuilder)
-        readCubesCsv(filename) { v:Vector3,c:Color ->
-            scene.addCube(v,c)
-        }
         guides = SceneController(modelBuilder)
         selected = SceneController(modelBuilder)
         feedback = SceneController(modelBuilder)
         feedback.currentColor = Color.GREEN
 
-        val matGround = Material(ColorAttribute.createDiffuse(Color(0.3f,0.35f,0.3f,0.5f)))
-        val groundBox = modelBuilder.createRect(
-            -GNDSZ, 0f, -GNDSZ,
-            -GNDSZ, 0f, GNDSZ,
-            GNDSZ, 0f, GNDSZ,
-            GNDSZ, 0f, -GNDSZ,
-            0f, 1f, 0f,
-            matGround, Usage.Position.toLong() or Usage.Normal.toLong())
         val matBullet = Material(ColorAttribute.createDiffuse(Color.LIME))
         sphere = modelBuilder.createSphere(0.5f,0.5f,0.5f,3,3,matBullet,Usage.Position.toLong() or Usage.Normal.toLong())
 
-        ground = ModelInstance(groundBox, 0f, groundPlaneY, 0f)
+        loadModelFromDisk(filename, announce = false)
+        rebuildGroundPlane(force = true)
+        updateWindowTitle()
         orbitCameraController = ShiftCameraController(orbitCamera, this::pickOrbitModelPoint).apply {
             rotateButton = Input.Buttons.RIGHT
             translateButton = Input.Buttons.RIGHT
@@ -179,7 +188,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         orthoCameraController = OrthographicCameraController(orthoCamera, cameraTarget)
         setCameraMode(CameraMode.ORBIT)
 
-        tools.add(EditorTool.SelectEditor(scene,feedback,selected))
+        tools.add(EditorTool.SelectEditor(scene, feedback, selected, this::queryCubesInScreenRect))
         tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
             val cc=Color()
             cc.fromHsv(120f,0.8f,0.8f)
@@ -496,7 +505,12 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             cameraModeProvider = { activeCameraMode },
             cameraModeChanged = { mode -> setCameraMode(mode) },
             orthographicViewChanged = { view -> setOrthographicView(view) },
+            openAction = { openModelDialog() },
             saveAction = { saveCurrentModel() },
+            saveAsAction = { saveModelAsDialog() },
+            exportMeshAction = { exportMeshDialog() },
+            modelSettingsProvider = { modelSettings.copy() },
+            modelSettingsChanged = { settings -> applyModelSettings(settings) },
             clearSelectionAction = { selected.clear() },
             clearGuidesAction = { guides.clear() },
             resetToolAction = { activeTool?.reset() },
@@ -625,13 +639,22 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             activeTool?.onMove?.let { it(activeTool!!, event) }
             currentEvent = event
         }
+        inputEventDispatcher.on("touchDragged"){event ->
+            if (event.pointer == 0) {
+                activeTool?.touchDragged(event)
+            }
+            currentEvent = event
+        }
         inputEventDispatcher.on("touchUp"){event ->
             if (event.button == Input.Buttons.LEFT) {
-                activeTool?.handleEvent(event)
+                activeTool?.touchUp(event)
             }
             currentEvent = event
         }
         inputEventDispatcher.on("touchDown"){event ->
+            if (event.button == Input.Buttons.LEFT) {
+                activeTool?.touchDown(event)
+            }
             currentEvent = event
         }
         inputEventDispatcher.on("keyDown"){event ->
@@ -817,8 +840,262 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         target.update()
     }
 
-    private fun saveCurrentModel() {
-        saveCubesAsCsv(scene.cubes.values.toList(), filename)
+    private fun setStatusMessage(message: String) {
+        statusMessage = message
+        println(message)
+    }
+
+    private fun displayFileName(path: String): String {
+        val normalized = path.replace('\\', '/')
+        return normalized.substringAfterLast('/')
+    }
+
+    private fun directoryHint(path: String): String? {
+        val normalized = path.replace('\\', '/')
+        val lastSlash = normalized.lastIndexOf('/')
+        return if (lastSlash > 0) normalized.substring(0, lastSlash) else null
+    }
+
+    private fun baseName(path: String): String {
+        val name = displayFileName(path)
+        val dot = name.lastIndexOf('.')
+        return if (dot > 0) name.substring(0, dot) else name
+    }
+
+    private fun extensionOf(path: String): String {
+        val name = displayFileName(path)
+        val dot = name.lastIndexOf('.')
+        return if (dot >= 0 && dot < name.length - 1) name.substring(dot + 1).lowercase() else ""
+    }
+
+    private fun ensureExtension(path: String, extension: String): String {
+        if (extensionOf(path).isNotEmpty()) {
+            return path
+        }
+        return "$path.$extension"
+    }
+
+    private fun updateWindowTitle() {
+        Gdx.graphics.setTitle(
+            "voxcraft   version : ${versionInfo.buildVersion}   file : [${displayFileName(filename)}]"
+        )
+    }
+
+    private fun applyModelSettings(settings: ModelSettings) {
+        modelSettings = settings.copy(
+            gridSize = settings.gridSize.coerceAtLeast(1),
+            unitSize = settings.unitSize.coerceAtLeast(1e-6f),
+            unitSuffix = settings.unitSuffix.ifBlank { "unit" }
+        )
+        setStatusMessage(
+            "Model settings updated: grid=${modelSettings.gridSize}, unit=${modelSettings.unitSize} ${modelSettings.unitSuffix}"
+        )
+    }
+
+    private fun loadModelFromDisk(path: String, announce: Boolean = true) {
+        val source = resolveReadableHandle(path)
+        val exists = source.exists()
+        val loaded = loadModelFromCsv(path)
+        scene.clear()
+        selected.clear()
+        guides.clear()
+        feedback.clear()
+        loaded.cubes.forEach { (position, color) ->
+            scene.addCube(position, color)
+        }
+        modelSettings = loaded.settings.copy(
+            gridSize = loaded.settings.gridSize.coerceAtLeast(1),
+            unitSize = loaded.settings.unitSize.coerceAtLeast(1e-6f),
+            unitSuffix = loaded.settings.unitSuffix.ifBlank { "unit" }
+        )
+        filename = path
+        activeTool?.reset()
+        rebuildGroundPlane(force = true)
+        updateWindowTitle()
+        if (announce) {
+            if (exists) {
+                setStatusMessage("Loaded ${displayFileName(filename)}")
+            } else {
+                setStatusMessage("Started new model ${displayFileName(filename)}")
+            }
+        }
+    }
+
+    private fun saveCurrentModel(announce: Boolean = true) {
+        saveModelAsCsv(scene.cubes.values.toList(), filename, modelSettings)
+        rebuildGroundPlane(force = true)
+        updateWindowTitle()
+        if (announce) {
+            setStatusMessage("Saved ${displayFileName(filename)}")
+        }
+    }
+
+    private fun openModelDialog() {
+        if (!fileDialogService.isSupported()) {
+            setStatusMessage("Open dialog is unavailable in this runtime.")
+            return
+        }
+        val path = fileDialogService.openFile(
+            title = "Open Voxcraft Model",
+            directoryHint = directoryHint(filename),
+            defaultFileName = displayFileName(filename),
+            allowedExtensions = setOf("vxdi")
+        ) ?: run {
+            setStatusMessage("Open canceled.")
+            return
+        }
+        loadModelFromDisk(path)
+    }
+
+    private fun saveModelAsDialog() {
+        if (!fileDialogService.isSupported()) {
+            setStatusMessage("Save As dialog is unavailable in this runtime.")
+            return
+        }
+        val requested = fileDialogService.saveFile(
+            title = "Save Voxcraft Model As",
+            directoryHint = directoryHint(filename),
+            defaultFileName = displayFileName(filename),
+            allowedExtensions = setOf("vxdi")
+        ) ?: run {
+            setStatusMessage("Save As canceled.")
+            return
+        }
+        filename = ensureExtension(requested, "vxdi")
+        saveCurrentModel()
+    }
+
+    private fun exportMeshDialog() {
+        if (scene.cubes.isEmpty()) {
+            setStatusMessage("Export failed: the model is empty.")
+            return
+        }
+        if (!fileDialogService.isSupported()) {
+            setStatusMessage("Export dialog is unavailable in this runtime.")
+            return
+        }
+        val requested = fileDialogService.saveFile(
+            title = "Export Mesh",
+            directoryHint = directoryHint(filename),
+            defaultFileName = "${baseName(filename)}.obj",
+            allowedExtensions = meshExportOptions.flatMap { it.extensions }.toSet()
+        ) ?: run {
+            setStatusMessage("Export canceled.")
+            return
+        }
+        var targetPath = requested
+        var extension = extensionOf(targetPath)
+        if (extension.isEmpty()) {
+            targetPath = ensureExtension(targetPath, "obj")
+            extension = "obj"
+        }
+        val option = meshExportOptionForExtension(extension) ?: run {
+            setStatusMessage("Export failed: unsupported extension .$extension")
+            return
+        }
+        try {
+            val bytes = exportSceneMesh(scene, option.format, modelSettings)
+            resolveWritableHandle(targetPath).writeBytes(bytes, false)
+            setStatusMessage("Exported ${displayFileName(targetPath)}")
+        } catch (t: Throwable) {
+            setStatusMessage("Export failed: ${t.message ?: t.javaClass.simpleName}")
+        }
+    }
+
+    private fun rebuildGroundPlane(force: Boolean = false) {
+        var minX = Float.POSITIVE_INFINITY
+        var minZ = Float.POSITIVE_INFINITY
+        var maxX = Float.NEGATIVE_INFINITY
+        var maxZ = Float.NEGATIVE_INFINITY
+
+        scene.cubes.values.forEach { cube ->
+            val bounds = cube.getBoundingBox()
+            minX = minOf(minX, bounds.min.x)
+            minZ = minOf(minZ, bounds.min.z)
+            maxX = maxOf(maxX, bounds.max.x)
+            maxZ = maxOf(maxZ, bounds.max.z)
+        }
+
+        val newWidth: Float
+        val newDepth: Float
+        val newCenterX: Float
+        val newCenterZ: Float
+        if (scene.cubes.isEmpty()) {
+            newWidth = minimumGroundPlaneWidth
+            newDepth = minimumGroundPlaneDepth
+            newCenterX = 0f
+            newCenterZ = 0f
+        } else {
+            newWidth = maxOf(minimumGroundPlaneWidth, (maxX - minX) + groundPlanePadding * 2f)
+            newDepth = maxOf(minimumGroundPlaneDepth, (maxZ - minZ) + groundPlanePadding * 2f)
+            newCenterX = (minX + maxX) * 0.5f
+            newCenterZ = (minZ + maxZ) * 0.5f
+        }
+
+        if (!force &&
+            ::ground.isInitialized &&
+            kotlin.math.abs(newWidth - groundWidth) < 0.01f &&
+            kotlin.math.abs(newDepth - groundDepth) < 0.01f &&
+            groundCenter.epsilonEquals(newCenterX, groundPlaneY, newCenterZ, 0.01f)
+        ) {
+            return
+        }
+
+        if (::groundModel.isInitialized) {
+            groundModel.dispose()
+        }
+        val halfWidth = newWidth * 0.5f
+        val halfDepth = newDepth * 0.5f
+        val material = Material(ColorAttribute.createDiffuse(Color(0.3f,0.35f,0.3f,0.5f)))
+        groundModel = modelBuilder.createRect(
+            -halfWidth, 0f, -halfDepth,
+            -halfWidth, 0f, halfDepth,
+            halfWidth, 0f, halfDepth,
+            halfWidth, 0f, -halfDepth,
+            0f, 1f, 0f,
+            material,
+            Usage.Position.toLong() or Usage.Normal.toLong()
+        )
+        ground = ModelInstance(groundModel, newCenterX, groundPlaneY, newCenterZ)
+        groundCenter.set(newCenterX, groundPlaneY, newCenterZ)
+        groundWidth = newWidth
+        groundDepth = newDepth
+    }
+
+    private fun queryCubesInScreenRect(startRaw: Vector2, endRaw: Vector2): List<Cube> {
+        val minX = minOf(startRaw.x, endRaw.x)
+        val maxX = maxOf(startRaw.x, endRaw.x)
+        val minY = minOf(startRaw.y, endRaw.y)
+        val maxY = maxOf(startRaw.y, endRaw.y)
+        return scene.cubes.values.filter { cube ->
+            val bounds = cube.getBoundingBox()
+            val corners = arrayOf(
+                Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
+                Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
+                Vector3(bounds.min.x, bounds.max.y, bounds.min.z),
+                Vector3(bounds.min.x, bounds.max.y, bounds.max.z),
+                Vector3(bounds.max.x, bounds.min.y, bounds.min.z),
+                Vector3(bounds.max.x, bounds.min.y, bounds.max.z),
+                Vector3(bounds.max.x, bounds.max.y, bounds.min.z),
+                Vector3(bounds.max.x, bounds.max.y, bounds.max.z)
+            )
+            var projectedMinX = Float.POSITIVE_INFINITY
+            var projectedMaxX = Float.NEGATIVE_INFINITY
+            var projectedMinY = Float.POSITIVE_INFINITY
+            var projectedMaxY = Float.NEGATIVE_INFINITY
+            corners.forEach { corner ->
+                val projected = activeCamera.project(Vector3(corner))
+                val rawY = Gdx.graphics.height.toFloat() - projected.y
+                projectedMinX = minOf(projectedMinX, projected.x)
+                projectedMaxX = maxOf(projectedMaxX, projected.x)
+                projectedMinY = minOf(projectedMinY, rawY)
+                projectedMaxY = maxOf(projectedMaxY, rawY)
+            }
+            projectedMaxX >= minX &&
+                projectedMinX <= maxX &&
+                projectedMaxY >= minY &&
+                projectedMinY <= maxY
+        }
     }
 
     private fun pickOrbitModelPoint(screenX: Int, screenY: Int): Vector3? {
@@ -870,12 +1147,14 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             selectionCount = selected.cubes.size,
             guideCount = guides.cubes.size,
             addMode = scene.addMode,
+            message = statusMessage,
             cursor = cursorText
         )
     }
 
     override fun render() {
         updateActiveCamera(Gdx.graphics.deltaTime)
+        rebuildGroundPlane()
         renderShadowPass()
 
         Gdx.gl.glViewport(0, 0, Gdx.graphics.width, Gdx.graphics.height)
@@ -895,7 +1174,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
             Color.LIGHT_GRAY,
             Color.GRAY,
             50,
-            1,
+            modelSettings.gridSize.coerceAtLeast(1),
             Vector3(-0.5f, gridPlaneY, -0.5f)
         )
         drawCameraTarget()
@@ -930,6 +1209,11 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
+
+        shapeRenderer.projectionMatrix = uiOverlay.stage.camera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        activeTool?.drawScreenOverlay(shapeRenderer)
+        shapeRenderer.end()
 
         uiOverlay.releaseScrollFocusIfPointerOutside(Gdx.input.x, Gdx.input.y)
         uiOverlay.act(Gdx.graphics.deltaTime)
@@ -1071,11 +1355,14 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     }
 
     override fun dispose() {
-        saveCurrentModel()
+        saveCurrentModel(announce = false)
         modelBatch.dispose()
         shadowBatch.dispose()
         shapeRenderer.dispose()
         sphere.dispose()
+        if (::groundModel.isInitialized) {
+            groundModel.dispose()
+        }
         scene.dispose()
         selected.dispose()
         guides.dispose()

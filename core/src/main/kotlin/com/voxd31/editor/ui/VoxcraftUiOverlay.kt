@@ -20,10 +20,12 @@ import com.kotcrab.vis.ui.widget.VisScrollPane
 import com.kotcrab.vis.ui.widget.VisSelectBox
 import com.kotcrab.vis.ui.widget.VisTable
 import com.kotcrab.vis.ui.widget.VisTextButton
+import com.kotcrab.vis.ui.widget.VisTextField
 import com.kotcrab.vis.ui.widget.VisWindow
 import com.kotcrab.vis.ui.widget.color.ColorPicker
 import com.kotcrab.vis.ui.widget.color.ColorPickerListener
 import com.voxd31.editor.CameraMode
+import com.voxd31.editor.ModelSettings
 import com.voxd31.editor.OrthographicView
 
 class VoxcraftUiOverlay(
@@ -37,7 +39,12 @@ class VoxcraftUiOverlay(
     private val cameraModeProvider: () -> CameraMode,
     private val cameraModeChanged: (CameraMode) -> Unit,
     private val orthographicViewChanged: (OrthographicView) -> Unit,
+    private val openAction: () -> Unit,
     private val saveAction: () -> Unit,
+    private val saveAsAction: () -> Unit,
+    private val exportMeshAction: () -> Unit,
+    private val modelSettingsProvider: () -> ModelSettings,
+    private val modelSettingsChanged: (ModelSettings) -> Unit,
     private val clearSelectionAction: () -> Unit,
     private val clearGuidesAction: () -> Unit,
     private val resetToolAction: () -> Unit,
@@ -51,6 +58,7 @@ class VoxcraftUiOverlay(
         val selectionCount: Int,
         val guideCount: Int,
         val addMode: String,
+        val message: String,
         val cursor: String
     )
 
@@ -75,8 +83,10 @@ class VoxcraftUiOverlay(
     private val cameraLabel = VisLabel("")
     private val toolLabel = VisLabel("")
     private val countsLabel = VisLabel("")
+    private val messageLabel = VisLabel("")
     private val cursorLabel = VisLabel("")
     private var colorPicker: ColorPicker? = null
+    private var modelSettingsDialog: VisWindow? = null
     private var syncing = false
 
     init {
@@ -141,9 +151,25 @@ class VoxcraftUiOverlay(
         val window = fixedWindow("Editor")
         val content = VisTable(true)
 
+        val openButton = VisTextButton("Open")
+        openButton.addListener(onChange { openAction() })
+        content.add(openButton).padRight(6f)
+
         val saveButton = VisTextButton("Save")
         saveButton.addListener(onChange { saveAction() })
         content.add(saveButton).padRight(6f)
+
+        val saveAsButton = VisTextButton("Save As")
+        saveAsButton.addListener(onChange { saveAsAction() })
+        content.add(saveAsButton).padRight(6f)
+
+        val exportButton = VisTextButton("Export")
+        exportButton.addListener(onChange { exportMeshAction() })
+        content.add(exportButton).padRight(6f)
+
+        val modelButton = VisTextButton("Model")
+        modelButton.addListener(onChange { showModelSettingsDialog() })
+        content.add(modelButton).padRight(6f)
 
         val resetButton = VisTextButton("Reset Tool")
         resetButton.addListener(onChange { resetToolAction() })
@@ -219,7 +245,9 @@ class VoxcraftUiOverlay(
         cameraLabel.setAlignment(Align.left)
         toolLabel.setAlignment(Align.left)
         countsLabel.setAlignment(Align.left)
+        messageLabel.setAlignment(Align.left)
         cursorLabel.setAlignment(Align.left)
+        messageLabel.setWrap(true)
         cursorLabel.setWrap(true)
 
         content.add(fileLabel).growX().left()
@@ -229,6 +257,8 @@ class VoxcraftUiOverlay(
         content.add(toolLabel).growX().left()
         content.row()
         content.add(countsLabel).growX().left()
+        content.row()
+        content.add(messageLabel).growX().left().minHeight(24f)
         content.row()
         content.add(cursorLabel).growX().left().minHeight(44f)
 
@@ -303,6 +333,54 @@ class VoxcraftUiOverlay(
         picker.fadeIn()
     }
 
+    private fun showModelSettingsDialog() {
+        val current = modelSettingsProvider()
+        modelSettingsDialog?.remove()
+        val dialog = fixedWindow("Model Settings").also {
+            it.isModal = true
+            modelSettingsDialog = it
+        }
+
+        val content = VisTable(true)
+        val gridField = VisTextField(current.gridSize.toString())
+        val unitSizeField = VisTextField(current.unitSize.toString())
+        val unitSuffixField = VisTextField(current.unitSuffix)
+
+        content.add(VisLabel("Grid Size")).left().padRight(8f)
+        content.add(gridField).width(160f).left()
+        content.row()
+        content.add(VisLabel("Unit Size")).left().padRight(8f)
+        content.add(unitSizeField).width(160f).left()
+        content.row()
+        content.add(VisLabel("Unit Suffix")).left().padRight(8f)
+        content.add(unitSuffixField).width(160f).left()
+
+        val buttons = VisTable(true)
+        val applyButton = VisTextButton("Apply")
+        applyButton.addListener(onChange {
+            val gridSize = gridField.text.toIntOrNull()?.coerceAtLeast(1) ?: current.gridSize
+            val unitSize = unitSizeField.text.toFloatOrNull()?.coerceAtLeast(1e-6f) ?: current.unitSize
+            val unitSuffix = unitSuffixField.text.ifBlank { current.unitSuffix }
+            modelSettingsChanged(ModelSettings(gridSize = gridSize, unitSize = unitSize, unitSuffix = unitSuffix))
+            dialog.remove()
+        })
+        val cancelButton = VisTextButton("Cancel")
+        cancelButton.addListener(onChange { dialog.remove() })
+        buttons.add(applyButton).padRight(6f)
+        buttons.add(cancelButton)
+
+        dialog.add(content).pad(10f)
+        dialog.row()
+        dialog.add(buttons).pad(0f, 10f, 10f, 10f).right()
+
+        if (dialog.stage == null) {
+            stage.addActor(dialog)
+        }
+        dialog.pack()
+        dialog.centerWindow()
+        dialog.fadeIn()
+    }
+
     private fun syncFromState() {
         syncing = true
         val snapshot = statusProvider()
@@ -322,6 +400,7 @@ class VoxcraftUiOverlay(
         countsLabel.setText(
             "Cubes: ${snapshot.cubeCount} | Selection: ${snapshot.selectionCount} | Guides: ${snapshot.guideCount}"
         )
+        messageLabel.setText("Message: ${snapshot.message}")
         cursorLabel.setText(snapshot.cursor)
         syncing = false
     }

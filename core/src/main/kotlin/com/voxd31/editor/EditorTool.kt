@@ -2,6 +2,8 @@ package com.voxd31.editor
 
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.voxd31.gdxui.Vox3Event
 import kotlin.math.atan2
@@ -62,69 +64,242 @@ open class EditorTool(
                 }
             ){}
         }
-        fun SelectEditor(scene: SceneController, feedback: SceneController, selected: SceneController):EditorTool{
-            val a = Color(1f,1f,0f,0.5f)
-            val b = Color(1f,0.5f,0f,0.5f)
-            fun crawl(){}
+        fun SelectEditor(
+            scene: SceneController,
+            feedback: SceneController,
+            selected: SceneController,
+            queryWindowSelection: (startRaw: Vector2, endRaw: Vector2) -> List<com.voxd31.gdxui.Cube>
+        ):EditorTool{
+            val hoverColor = Color(1f,1f,0f,0.5f)
+            val nextColor = Color(1f,0.5f,0f,0.5f)
+            val volumePreviewColor = Color(0.15f, 0.8f, 1f, 0.35f)
+            val windowColor = Color(0.15f, 0.8f, 1f, 0.9f)
+            val dragStartStage = Vector2()
+            val dragCurrentStage = Vector2()
+            val dragStartRaw = Vector2()
+            val dragCurrentRaw = Vector2()
+            val dragThresholdSq = 49f
+            val doubleClickThresholdMs = 350L
+            var pointerDown = false
+            var pointerDownOnGround = false
+            var draggingWindow = false
+            var volumeSelectionStart: Vector3? = null
+            var lastClickedSceneCubeId: String? = null
+            var lastClickAtMs = 0L
+            var lastClickWasSelectedBeforeAction = false
+
+            fun isSceneCube(event: Vox3Event): com.voxd31.gdxui.Cube? {
+                val target = event.target ?: return null
+                return scene.cubes[target.getId()]
+            }
+
+            fun updateHoverFeedback(event: Vox3Event) {
+                if (draggingWindow) {
+                    feedback.clear()
+                    return
+                }
+                val volumeStart = volumeSelectionStart
+                if (volumeStart != null) {
+                    val current = event.modelVoxel?.cpy() ?: event.modelNextVoxel?.cpy()
+                    if (current != null) {
+                        feedback.clear()
+                        val minX = minOf(volumeStart.x, current.x)
+                        val minY = minOf(volumeStart.y, current.y)
+                        val minZ = minOf(volumeStart.z, current.z)
+                        val maxX = maxOf(volumeStart.x, current.x)
+                        val maxY = maxOf(volumeStart.y, current.y)
+                        val maxZ = maxOf(volumeStart.z, current.z)
+                        scene.cubes.values.forEach { cube ->
+                            val p = cube.position
+                            if (p.x in minX..maxX && p.y in minY..maxY && p.z in minZ..maxZ) {
+                                feedback.addCube(p, volumePreviewColor)
+                            }
+                        }
+                    }
+                    return
+                }
+                feedback.clear()
+                event.modelVoxel?.let { feedback.addCube(it, hoverColor) }
+                event.modelNextVoxel?.let { feedback.addCube(it, nextColor) }
+            }
+
+            fun applyVolumeSelection(a: Vector3, b: Vector3) {
+                selected.clear()
+                val minX = minOf(a.x, b.x)
+                val minY = minOf(a.y, b.y)
+                val minZ = minOf(a.z, b.z)
+                val maxX = maxOf(a.x, b.x)
+                val maxY = maxOf(a.y, b.y)
+                val maxZ = maxOf(a.z, b.z)
+                scene.cubes.values.forEach { cube ->
+                    val p = cube.position
+                    if (p.x in minX..maxX && p.y in minY..maxY && p.z in minZ..maxZ) {
+                        selected.addCube(p, cube.color)
+                    }
+                }
+            }
+
+            fun contiguousRegion(start: com.voxd31.gdxui.Cube): List<com.voxd31.gdxui.Cube> {
+                val colorKey = Color.rgba8888(start.color)
+                val queue = ArrayDeque<com.voxd31.gdxui.Cube>()
+                val visited = linkedSetOf<String>()
+                val region = mutableListOf<com.voxd31.gdxui.Cube>()
+                queue.add(start)
+                while (queue.isNotEmpty()) {
+                    val cube = queue.removeFirst()
+                    if (!visited.add(cube.getId())) {
+                        continue
+                    }
+                    region += cube
+                    val x = cube.position.x.toInt()
+                    val y = cube.position.y.toInt()
+                    val z = cube.position.z.toInt()
+                    listOf(
+                        Triple(x - 1, y, z),
+                        Triple(x + 1, y, z),
+                        Triple(x, y - 1, z),
+                        Triple(x, y + 1, z),
+                        Triple(x, y, z - 1),
+                        Triple(x, y, z + 1)
+                    ).forEach { (nx, ny, nz) ->
+                        val neighbor = scene.cubesInt["{$nx,$ny,$nz}"] ?: return@forEach
+                        if (Color.rgba8888(neighbor.color) == colorKey && neighbor.getId() !in visited) {
+                            queue.add(neighbor)
+                        }
+                    }
+                }
+                return region
+            }
+
             return object:EditorTool(
                 name = "Select2",
                 onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    if(event.target != null ) {
-                        val targetCube=event.target!!//selected.cubes.values.first()
-                        if(scene.cubes[targetCube.getId()] != null) {
-                            val alreadySelected = selected.cubes.containsKey(targetCube.getId())
-                            selected.addCube(targetCube.position, targetCube.color)
-                            val selectedCubesNeighbors=SceneController(targetCube.modelBuilder)
-                            var oldLen=selected.cubes.size
-                            selectedCubesNeighbors.addCube(targetCube.position, targetCube.color)
-                            while(true){
-                                selectedCubesNeighbors.cubes.values
-                                    .flatMap { c ->
-                                        c.getNeighbouringPositions()
-                                    }
-                                    .filter { neighbouringPosition ->
-                                        val snc = scene.cubesInt[neighbouringPosition.getIntId()]
-                                        snc != null && snc.color == targetCube.color
-                                    }
-                                    .forEach {
-                                        selectedCubesNeighbors.addCube(it.position, it.color)
-                                    }
-                                if(alreadySelected){
-                                    println("removing connected from selection")
-                                    selectedCubesNeighbors.cubes.forEach { (k, v) ->
-                                        selected.removeCube(v)
-                                    }
-                                } else {
-                                    println("adding connected from selection")
-                                    selectedCubesNeighbors.cubes.forEach { (k, v) ->
-                                        selected.addCube(
-                                            v.position,
-                                            v.color
-                                        )
-                                    }
-                                }
-                                // selectedCubesNeighbors.clear()
-                                if(oldLen==selected.cubes.size){
-                                    break
-                                }
-                                oldLen=selected.cubes.size
-                            }
-                        } else {
-                            selected.clear()
-                        }
-                    } else {
-                        selected.clear()
-                    }
                     return true
                 },
                 onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    feedback.clear()
-                    feedback.addCube(event.modelVoxel!!, a)
-                    feedback.addCube(event.modelNextVoxel!!,  b)
-                    //currentEvent = event
+                    updateHoverFeedback(event)
                     return true
                 }
-            ){}
+            ){
+                override fun touchDown(event: Vox3Event) {
+                    if (event.button != Input.Buttons.LEFT) {
+                        return
+                    }
+                    pointerDown = true
+                    pointerDownOnGround = isSceneCube(event) == null
+                    draggingWindow = false
+                    event.screen?.let {
+                        dragStartStage.set(it)
+                        dragCurrentStage.set(it)
+                    }
+                    event.screenRaw?.let {
+                        dragStartRaw.set(it)
+                        dragCurrentRaw.set(it)
+                    }
+                }
+
+                override fun touchDragged(event: Vox3Event) {
+                    if (!pointerDown || !pointerDownOnGround) {
+                        return
+                    }
+                    event.screen?.let { dragCurrentStage.set(it) }
+                    event.screenRaw?.let { dragCurrentRaw.set(it) }
+                    val dx = dragCurrentRaw.x - dragStartRaw.x
+                    val dy = dragCurrentRaw.y - dragStartRaw.y
+                    if (dx * dx + dy * dy >= dragThresholdSq) {
+                        draggingWindow = true
+                        volumeSelectionStart = null
+                        feedback.clear()
+                    }
+                }
+
+                override fun touchUp(event: Vox3Event) {
+                    if (event.button != Input.Buttons.LEFT) {
+                        return
+                    }
+                    val sceneCube = isSceneCube(event)
+                    if (draggingWindow) {
+                        selected.clear()
+                        queryWindowSelection(dragStartRaw, dragCurrentRaw).forEach { cube ->
+                            selected.addCube(cube.position, cube.color)
+                        }
+                        feedback.clear()
+                        pointerDown = false
+                        draggingWindow = false
+                        return
+                    }
+
+                    if (sceneCube != null) {
+                        volumeSelectionStart = null
+                        feedback.clear()
+                        val now = System.currentTimeMillis()
+                        val isDoubleClick =
+                            lastClickedSceneCubeId == sceneCube.getId() &&
+                                now - lastClickAtMs <= doubleClickThresholdMs
+
+                        if (isDoubleClick) {
+                            val region = contiguousRegion(sceneCube)
+                            if (lastClickWasSelectedBeforeAction) {
+                                region.forEach { selected.removeCube(it) }
+                            } else {
+                                region.forEach { selected.addCube(it.position, it.color) }
+                            }
+                            lastClickedSceneCubeId = null
+                            lastClickAtMs = 0L
+                        } else {
+                            val wasSelected = selected.cubes.containsKey(sceneCube.getId())
+                            if (wasSelected) {
+                                selected.removeCube(sceneCube)
+                            } else {
+                                selected.addCube(sceneCube.position, sceneCube.color)
+                            }
+                            lastClickedSceneCubeId = sceneCube.getId()
+                            lastClickAtMs = now
+                            lastClickWasSelectedBeforeAction = wasSelected
+                        }
+
+                        pointerDown = false
+                        return
+                    }
+
+                    val releasePoint = event.modelVoxel?.cpy() ?: event.modelNextVoxel?.cpy()
+                    if (pointerDownOnGround && releasePoint != null) {
+                        val start = volumeSelectionStart
+                        if (start == null) {
+                            volumeSelectionStart = releasePoint
+                            updateHoverFeedback(event)
+                        } else {
+                            applyVolumeSelection(start, releasePoint)
+                            volumeSelectionStart = null
+                            feedback.clear()
+                        }
+                    } else {
+                        volumeSelectionStart = null
+                        feedback.clear()
+                    }
+                    pointerDown = false
+                }
+
+                override fun drawScreenOverlay(shapeRenderer: ShapeRenderer) {
+                    if (!draggingWindow) {
+                        return
+                    }
+                    val minX = minOf(dragStartStage.x, dragCurrentStage.x)
+                    val minY = minOf(dragStartStage.y, dragCurrentStage.y)
+                    val width = kotlin.math.abs(dragCurrentStage.x - dragStartStage.x)
+                    val height = kotlin.math.abs(dragCurrentStage.y - dragStartStage.y)
+                    shapeRenderer.color = windowColor
+                    shapeRenderer.rect(minX, minY, width, height)
+                }
+
+                override fun reset() {
+                    pointerDown = false
+                    pointerDownOnGround = false
+                    draggingWindow = false
+                    volumeSelectionStart = null
+                    feedback.clear()
+                }
+            }
         }
         fun makeTwoInputEditor(
             name:String,
@@ -452,6 +627,13 @@ open class EditorTool(
         }
     }
     var points:MutableList<Vector3> = mutableListOf()
+    open fun touchDown(event: Vox3Event) {}
+    open fun touchDragged(event: Vox3Event) {}
+    open fun touchUp(event: Vox3Event) {
+        handleEvent(event)
+    }
+    open fun drawScreenOverlay(shapeRenderer: ShapeRenderer) {}
+
     fun handleEvent(event:Vox3Event) {
         val newPoints= points + event.modelPoint!!
         val isFinished  = onClick(this, event)

@@ -57,6 +57,6 @@ public class DesktopLauncher {
 		));
 		config.setWindowIcon("voxd31.icon.png");
 		// width,height,
-		new Lwjgl3Application(new Voxd31Editor(filename), config);
+		new Lwjgl3Application(new Voxd31Editor(filename, new DesktopFileDialogService()), config);
 	}
 }

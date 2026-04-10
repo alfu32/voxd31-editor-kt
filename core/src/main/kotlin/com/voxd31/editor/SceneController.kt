@@ -155,6 +155,17 @@ class SceneController(val modelBuilder: ModelBuilder) {
         return cachedShadowInstances
     }
 
+    fun collectVisibleTriangles(consumer: (a: Vector3, b: Vector3, c: Vector3, colorKey: Int) -> Unit) {
+        collectChunkCoords().sortedWith(compareBy<ChunkCoord>({ it.x }, { it.y }, { it.z })).forEach { chunk ->
+            collectChunkFaces(chunk).forEach { (colorKey, faces) ->
+                faces.forEach { face ->
+                    consumer(face.corners[0], face.corners[1], face.corners[2], colorKey)
+                    consumer(face.corners[0], face.corners[2], face.corners[3], colorKey)
+                }
+            }
+        }
+    }
+
     internal fun visibleRenderChunkCount(): Int {
         return collectChunkCoords().size
     }

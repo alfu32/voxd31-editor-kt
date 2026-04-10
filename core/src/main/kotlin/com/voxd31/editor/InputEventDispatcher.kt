@@ -204,6 +204,7 @@ class InputEventDispatcher(
     private fun update3dVectorsFromScreenPoint(x: Int, y: Int) {
         val camera3D = activeCameraProvider()
         currentEvent.screen = screenToUi(x, y)
+        currentEvent.screenRaw = Vector2(x.toFloat(), y.toFloat())
 
         // Implement the conversion from screen coordinates to world coordinates
         val ray = camera3D.getPickRay(
@@ -211,15 +212,15 @@ class InputEventDispatcher(
             x/camera3D.viewportWidth, y/camera3D.viewportHeight,
             camera3D.viewportWidth,camera3D.viewportHeight,
         )
-        var points= mutableListOf<ModelIntersection>()
-        var modelIntersect = scene.sceneIntersectCubesRay(ray)
-        if(modelIntersect.hit){
-            points.add(modelIntersect.copy())
+        val points = mutableListOf<ModelIntersection>()
+        val sceneIntersect = scene.sceneIntersectCubesRay(ray)
+        if (sceneIntersect.hit) {
+            points.add(sceneIntersect.copy())
         }
-        modelIntersect = guides.sceneIntersectCubesRay(ray)
-        if(modelIntersect.hit){
-            modelIntersect.type="guide"
-            points.add(modelIntersect.copy())
+        val guideIntersect = guides.sceneIntersectCubesRay(ray)
+        if (guideIntersect.hit) {
+            guideIntersect.type = "guide"
+            points.add(guideIntersect.copy())
         }
         val intersection = Vector3()
         Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), intersection)
@@ -232,13 +233,14 @@ class InputEventDispatcher(
                 type = "ground",
             )
         )
-        val mi=points.minBy { mi0 -> mi0.point.dst2(ray.origin) }
+        val mi = points.minBy { mi0 -> mi0.point.dst2(ray.origin) }
         currentEvent.modelPoint = mi.point.cpy()
         val p = mi.target.position
         currentEvent.modelVoxel = Vector3(floor(p.x),floor(p.y),floor(p.z))
         currentEvent.normal = mi.normal
         currentEvent.target = mi.target
-        currentEvent.modelNextPoint = modelIntersect.point.cpy().add(mi.normal)
+        currentEvent.hitType = mi.type
+        currentEvent.modelNextPoint = mi.point.cpy().add(mi.normal)
         currentEvent.modelNextVoxel = currentEvent.modelVoxel!!.cpy().add(mi.normal)
         if(mi.type == "ground" || mi.type == "guide" ) {
             currentEvent.modelNextPoint = currentEvent.modelPoint
