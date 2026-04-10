@@ -40,7 +40,7 @@ fun loadModelFromCsv(filename: String): LoadedVoxelModel {
 
 fun loadModelFromCsv(filename: String, documentIoService: DocumentIoService): LoadedVoxelModel {
     if (!documentIoService.exists(filename)) {
-        println("file $filename not found")
+        // println("("file $filename not found")
         return LoadedVoxelModel()
     }
 

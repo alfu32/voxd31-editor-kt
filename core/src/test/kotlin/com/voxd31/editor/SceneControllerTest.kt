@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3
 import com.voxd31.gdxui.MockModelBuilder
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -49,6 +50,21 @@ class SceneControllerTest {
 
         assertEquals(1, scene.visibleRenderChunkCount())
         assertEquals(12, scene.visibleRenderFaceCount())
+        assertTrue(scene.hasConsistentFaceWinding())
+    }
+
+    @Test
+    fun splitsPlanarFacesToAvoidTJunctions() {
+        for (x in 0..3) {
+            for (z in 0..3) {
+                scene.addCube(Vector3(x.toFloat(), 0f, z.toFloat()), Color.BLACK)
+            }
+        }
+        for (x in 0..1) {
+            scene.addCube(Vector3(x.toFloat(), 0f, 4f), Color.ORANGE)
+        }
+
+        assertFalse(scene.hasPlanarTJunctions())
         assertTrue(scene.hasConsistentFaceWinding())
     }
 }

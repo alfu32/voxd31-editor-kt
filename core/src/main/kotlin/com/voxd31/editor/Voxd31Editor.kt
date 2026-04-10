@@ -469,7 +469,7 @@ class Voxd31Editor @JvmOverloads constructor(
             )
         })
 
-        println(tools.map{t -> t.name})
+        // println("(tools.map{t -> t.name})
 
         activeTool = tools[activeToolIndex]
         currentEvent = Vox3Event()
@@ -555,9 +555,9 @@ class Voxd31Editor @JvmOverloads constructor(
                 Input.Keys.T -> {
                     if(tools.size > 0) {
                         activeToolIndex=(activeToolIndex + 1) % tools.size
-                        println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
+                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
                         activeTool = tools[activeToolIndex]
-                        println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
+                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
 
                         activeTool!!.reset()
                     }
@@ -565,9 +565,9 @@ class Voxd31Editor @JvmOverloads constructor(
                 Input.Keys.R -> {
                     if(tools.size > 0) {
                         activeToolIndex=if(activeToolIndex < 1) tools.size -1 else activeToolIndex - 1
-                        println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
+                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
                         activeTool = tools[activeToolIndex]
-                        println("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
+                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
 
                         activeTool!!.reset()
                     }
@@ -624,7 +624,7 @@ class Voxd31Editor @JvmOverloads constructor(
                     }
                 }
                 else -> {
-                    println("key up : ${event.keyCode}")
+                    // println("("key up : ${event.keyCode}")
                 }
             }
             currentEvent = event
@@ -836,7 +836,7 @@ class Voxd31Editor @JvmOverloads constructor(
 
     private fun setStatusMessage(message: String) {
         statusMessage = message
-        println(message)
+        // println("(message)
     }
 
     private fun displayFileName(path: String): String {

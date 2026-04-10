@@ -33,7 +33,7 @@ class UiElementGrid(
         data.forEachIndexed{ j,row ->
             row.forEachIndexed{ i,cell ->
                 val ord0=ord
-                println("[$i,$j] ord:$ord sz:${elements.size} ord0:$ord0")
+                // println("("[$i,$j] ord:$ord sz:${elements.size} ord0:$ord0")
                 elements.add(
                     UiElementButton(
                         text=cell.text,
@@ -48,7 +48,7 @@ class UiElementGrid(
                         hoverStyle = cell.hover
                     ){ target:UiElement,ev:Vox3Event ->
                         if (target.isClicked && ev.channel == "touchDown") {
-                            println("touchDown")
+                            // println("("touchDown")
                             setElementFocus(selectedOrd,false)
                             val cell0 = selectedCell
                             selectedCell = cell

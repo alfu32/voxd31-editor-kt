@@ -22,6 +22,25 @@ class SceneController(val modelBuilder: ModelBuilder) {
     private data class ChunkCoord(val x: Int, val y: Int, val z: Int)
     private data class GreedyRect(val u: Int, val v: Int, val width: Int, val height: Int, val colorKey: Int)
     private data class MergedFace(val corners: Array<Vector3>, val normal: Vector3)
+    private data class ProjectedRect(
+        val planeAxis: Int,
+        val planeValue2x: Int,
+        val normalAxis: Int,
+        val normalSign: Int,
+        val u0: Float,
+        val v0: Float,
+        val u1: Float,
+        val v1: Float
+    ) {
+        fun corners(): Array<Vector3> {
+            return arrayOf(
+                Vector3(u0, v0, 0f),
+                Vector3(u1, v0, 0f),
+                Vector3(u1, v1, 0f),
+                Vector3(u0, v1, 0f)
+            )
+        }
+    }
 
     companion object {
         private const val CHUNK_SIZE = 16
@@ -190,6 +209,23 @@ class SceneController(val modelBuilder: ModelBuilder) {
         }
     }
 
+    internal fun hasPlanarTJunctions(): Boolean {
+        return collectChunkCoords()
+            .flatMap { chunk -> collectChunkFaces(chunk).values.flatten() }
+            .mapNotNull { face -> projectRect(face) }
+            .groupBy { rect ->
+                listOf(rect.planeAxis, rect.planeValue2x, rect.normalAxis, rect.normalSign).joinToString(":")
+            }
+            .values
+            .any { rects ->
+                rects.indices.any { i ->
+                    rects.indices.any { j ->
+                        i != j && cornersTouchEdgeInterior(rects[j], rects[i])
+                    }
+                }
+            }
+    }
+
     private fun invalidateRenderCache() {
         renderCacheDirty = true
     }
@@ -267,13 +303,15 @@ class SceneController(val modelBuilder: ModelBuilder) {
         startZ: Int
     ) {
         for (y in startY until startY + CHUNK_SIZE) {
-            collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, lz ->
-                val x = startX + lx
-                val z = startZ + lz
-                val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                val colorKey = renderMaterialKey(cube)
-                if (isOccludedBySameMaterial(x, y + 1, z, colorKey)) null else colorKey
-            }.forEach { rect ->
+            stitchRectanglesToSharedGrid(
+                collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, lz ->
+                    val x = startX + lx
+                    val z = startZ + lz
+                    val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
+                    val colorKey = renderMaterialKey(cube)
+                    if (isOccludedBySameMaterial(x, y + 1, z, colorKey)) null else colorKey
+                }
+            ).forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
                 val z0 = startZ + rect.v
@@ -300,13 +338,15 @@ class SceneController(val modelBuilder: ModelBuilder) {
         startZ: Int
     ) {
         for (y in startY until startY + CHUNK_SIZE) {
-            collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, lz ->
-                val x = startX + lx
-                val z = startZ + lz
-                val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                val colorKey = renderMaterialKey(cube)
-                if (isOccludedBySameMaterial(x, y - 1, z, colorKey)) null else colorKey
-            }.forEach { rect ->
+            stitchRectanglesToSharedGrid(
+                collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, lz ->
+                    val x = startX + lx
+                    val z = startZ + lz
+                    val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
+                    val colorKey = renderMaterialKey(cube)
+                    if (isOccludedBySameMaterial(x, y - 1, z, colorKey)) null else colorKey
+                }
+            ).forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
                 val z0 = startZ + rect.v
@@ -333,13 +373,15 @@ class SceneController(val modelBuilder: ModelBuilder) {
         startZ: Int
     ) {
         for (z in startZ until startZ + CHUNK_SIZE) {
-            collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, ly ->
-                val x = startX + lx
-                val y = startY + ly
-                val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                val colorKey = renderMaterialKey(cube)
-                if (isOccludedBySameMaterial(x, y, z + 1, colorKey)) null else colorKey
-            }.forEach { rect ->
+            stitchRectanglesToSharedGrid(
+                collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, ly ->
+                    val x = startX + lx
+                    val y = startY + ly
+                    val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
+                    val colorKey = renderMaterialKey(cube)
+                    if (isOccludedBySameMaterial(x, y, z + 1, colorKey)) null else colorKey
+                }
+            ).forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
                 val y0 = startY + rect.v
@@ -366,13 +408,15 @@ class SceneController(val modelBuilder: ModelBuilder) {
         startZ: Int
     ) {
         for (z in startZ until startZ + CHUNK_SIZE) {
-            collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, ly ->
-                val x = startX + lx
-                val y = startY + ly
-                val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                val colorKey = renderMaterialKey(cube)
-                if (isOccludedBySameMaterial(x, y, z - 1, colorKey)) null else colorKey
-            }.forEach { rect ->
+            stitchRectanglesToSharedGrid(
+                collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lx, ly ->
+                    val x = startX + lx
+                    val y = startY + ly
+                    val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
+                    val colorKey = renderMaterialKey(cube)
+                    if (isOccludedBySameMaterial(x, y, z - 1, colorKey)) null else colorKey
+                }
+            ).forEach { rect ->
                 val x0 = startX + rect.u
                 val x1 = x0 + rect.width - 1
                 val y0 = startY + rect.v
@@ -399,13 +443,15 @@ class SceneController(val modelBuilder: ModelBuilder) {
         startZ: Int
     ) {
         for (x in startX until startX + CHUNK_SIZE) {
-            collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lz, ly ->
-                val z = startZ + lz
-                val y = startY + ly
-                val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                val colorKey = renderMaterialKey(cube)
-                if (isOccludedBySameMaterial(x + 1, y, z, colorKey)) null else colorKey
-            }.forEach { rect ->
+            stitchRectanglesToSharedGrid(
+                collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lz, ly ->
+                    val z = startZ + lz
+                    val y = startY + ly
+                    val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
+                    val colorKey = renderMaterialKey(cube)
+                    if (isOccludedBySameMaterial(x + 1, y, z, colorKey)) null else colorKey
+                }
+            ).forEach { rect ->
                 val z0 = startZ + rect.u
                 val z1 = z0 + rect.width - 1
                 val y0 = startY + rect.v
@@ -432,13 +478,15 @@ class SceneController(val modelBuilder: ModelBuilder) {
         startZ: Int
     ) {
         for (x in startX until startX + CHUNK_SIZE) {
-            collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lz, ly ->
-                val z = startZ + lz
-                val y = startY + ly
-                val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                val colorKey = renderMaterialKey(cube)
-                if (isOccludedBySameMaterial(x - 1, y, z, colorKey)) null else colorKey
-            }.forEach { rect ->
+            stitchRectanglesToSharedGrid(
+                collectRectangles(CHUNK_SIZE, CHUNK_SIZE) { lz, ly ->
+                    val z = startZ + lz
+                    val y = startY + ly
+                    val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
+                    val colorKey = renderMaterialKey(cube)
+                    if (isOccludedBySameMaterial(x - 1, y, z, colorKey)) null else colorKey
+                }
+            ).forEach { rect ->
                 val z0 = startZ + rect.u
                 val z1 = z0 + rect.width - 1
                 val y0 = startY + rect.v
@@ -511,6 +559,51 @@ class SceneController(val modelBuilder: ModelBuilder) {
         return rects
     }
 
+    private fun stitchRectanglesToSharedGrid(rects: List<GreedyRect>): List<GreedyRect> {
+        if (rects.size <= 1) {
+            return rects
+        }
+        val uCuts = sortedSetOf<Int>()
+        val vCuts = sortedSetOf<Int>()
+        rects.forEach { rect ->
+            uCuts += rect.u
+            uCuts += rect.u + rect.width
+            vCuts += rect.v
+            vCuts += rect.v + rect.height
+        }
+        val stitched = ArrayList<GreedyRect>(rects.size)
+        rects.forEach { rect ->
+            val u0 = rect.u
+            val u1 = rect.u + rect.width
+            val v0 = rect.v
+            val v1 = rect.v + rect.height
+            val relevantUCuts = uCuts.filter { it in u0..u1 }
+            val relevantVCuts = vCuts.filter { it in v0..v1 }
+            for (ui in 0 until relevantUCuts.lastIndex) {
+                val splitU0 = relevantUCuts[ui]
+                val splitU1 = relevantUCuts[ui + 1]
+                if (splitU1 <= splitU0) {
+                    continue
+                }
+                for (vi in 0 until relevantVCuts.lastIndex) {
+                    val splitV0 = relevantVCuts[vi]
+                    val splitV1 = relevantVCuts[vi + 1]
+                    if (splitV1 <= splitV0) {
+                        continue
+                    }
+                    stitched += GreedyRect(
+                        splitU0,
+                        splitV0,
+                        splitU1 - splitU0,
+                        splitV1 - splitV0,
+                        rect.colorKey
+                    )
+                }
+            }
+        }
+        return stitched
+    }
+
     private fun addMergedFace(
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         colorKey: Int,
@@ -579,6 +672,68 @@ class SceneController(val modelBuilder: ModelBuilder) {
 
     private fun intId(x: Int, y: Int, z: Int): String {
         return "{$x,$y,$z}"
+    }
+
+    private fun projectRect(face: MergedFace): ProjectedRect? {
+        val normal = face.normal
+        val xs = face.corners.map { it.x }
+        val ys = face.corners.map { it.y }
+        val zs = face.corners.map { it.z }
+        return when {
+            kotlin.math.abs(normal.x) > 0.5f -> ProjectedRect(
+                planeAxis = 0,
+                planeValue2x = (xs.first() * 2f).toInt(),
+                normalAxis = 0,
+                normalSign = if (normal.x >= 0f) 1 else -1,
+                u0 = zs.minOrNull() ?: return null,
+                v0 = ys.minOrNull() ?: return null,
+                u1 = zs.maxOrNull() ?: return null,
+                v1 = ys.maxOrNull() ?: return null
+            )
+
+            kotlin.math.abs(normal.y) > 0.5f -> ProjectedRect(
+                planeAxis = 1,
+                planeValue2x = (ys.first() * 2f).toInt(),
+                normalAxis = 1,
+                normalSign = if (normal.y >= 0f) 1 else -1,
+                u0 = xs.minOrNull() ?: return null,
+                v0 = zs.minOrNull() ?: return null,
+                u1 = xs.maxOrNull() ?: return null,
+                v1 = zs.maxOrNull() ?: return null
+            )
+
+            kotlin.math.abs(normal.z) > 0.5f -> ProjectedRect(
+                planeAxis = 2,
+                planeValue2x = (zs.first() * 2f).toInt(),
+                normalAxis = 2,
+                normalSign = if (normal.z >= 0f) 1 else -1,
+                u0 = xs.minOrNull() ?: return null,
+                v0 = ys.minOrNull() ?: return null,
+                u1 = xs.maxOrNull() ?: return null,
+                v1 = ys.maxOrNull() ?: return null
+            )
+
+            else -> null
+        }
+    }
+
+    private fun cornersTouchEdgeInterior(source: ProjectedRect, target: ProjectedRect): Boolean {
+        return source.corners().any { corner ->
+            pointTouchesEdgeInterior(corner.x, corner.y, target)
+        }
+    }
+
+    private fun pointTouchesEdgeInterior(u: Float, v: Float, rect: ProjectedRect): Boolean {
+        val epsilon = 1e-4f
+        val onVerticalEdge = (kotlin.math.abs(u - rect.u0) <= epsilon || kotlin.math.abs(u - rect.u1) <= epsilon) &&
+            v > rect.v0 + epsilon &&
+            v < rect.v1 - epsilon
+        if (onVerticalEdge) {
+            return true
+        }
+        return (kotlin.math.abs(v - rect.v0) <= epsilon || kotlin.math.abs(v - rect.v1) <= epsilon) &&
+            u > rect.u0 + epsilon &&
+            u < rect.u1 - epsilon
     }
 
     private fun disposeRenderCache() {

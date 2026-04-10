@@ -74,7 +74,7 @@ class UiElementOptgroup<T>(
                     }
                 ){ target:UiElement,ev:Vox3Event ->
                     if (target.isClicked && ev.channel == "touchDown") {
-                        println("touchDown")
+                        // println("("touchDown")
                         setElementFocus(selectedIndex,false)
                         changed(target, ev, options[selectedIndex], options[i])
                         selectedIndex = i

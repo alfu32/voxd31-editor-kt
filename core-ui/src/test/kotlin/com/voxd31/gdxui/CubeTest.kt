@@ -55,7 +55,7 @@ class CubeTest {
         val cube = Cube(mb, Vector3(1f,1f,1f),Color.RED)
         val bb = cube.getBoundingBox()
 
-        println(bb)
+        // println("(bb)
     }
 
     @Test

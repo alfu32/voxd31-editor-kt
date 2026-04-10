@@ -27,7 +27,7 @@ class UiElementTabPanel(
         val bb0 = BoundingBox().set(arrayOf(
             Vector3(Vector2(0f,0f),0f)//,Vector3(position.cpy().add(size),0f)
         ))
-        println("bb0=$bb0")
+        // println("("bb0=$bb0")
         var prev= Rectangle(position.x,position.y,bb0.width,bb0.height)
         val self= this
         tabs.forEachIndexed { i,pair ->
@@ -41,7 +41,7 @@ class UiElementTabPanel(
                     pair.first.apply{
                         this.clicked = { target:UiElement,ev:Vox3Event ->
                             if (target.isClicked && ev.channel == "touchDown") {
-                                println("touchDown")
+                                // println("("touchDown")
                                 setElementFocus(selectedIndex,false)
                                 val j = selectedIndex
                                 selectedIndex = i

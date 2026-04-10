@@ -19,16 +19,16 @@ class UiStyleTest {
 
     @Test
     fun getTextColorTest() {
-        println("dummy test passed getTextColor")
+        // println("("dummy test passed getTextColor")
     }
 
     @Test
     fun setTextColorTest() {
-        println("dummy test passed setTextColor")
+        // println("("dummy test passed setTextColor")
     }
     @Test
     fun getFontIdTest() {
         val key = UIFont("NotoSans-Regular.ttf",12, Color.BLUE).fontId()
-        println(key)
+        // println("(key)
     }
 }

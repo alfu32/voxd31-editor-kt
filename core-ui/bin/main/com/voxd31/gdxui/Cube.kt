@@ -195,10 +195,10 @@ class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color)
         val closestPointOnRay2 = p2.cpy().add(d2.cpy().scl(c2))
 
         if(closestPointOnRay1.dst2(closestPointOnRay2)<0.25) {
-            println("points found between $ray1 and $ray2 -> $closestPointOnRay1 $closestPointOnRay2")
+            // println("("points found between $ray1 and $ray2 -> $closestPointOnRay1 $closestPointOnRay2")
             return closestPointOnRay2
         } else {
-            println("points not close enough between $ray1 and $ray2 -> $closestPointOnRay1 $closestPointOnRay2")
+            // println("("points not close enough between $ray1 and $ray2 -> $closestPointOnRay1 $closestPointOnRay2")
             return null
         }
     }

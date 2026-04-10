@@ -39,7 +39,7 @@ class CubeTest {
 
         val neighbors = cube.getNeighbouringPositions()
 
-        neighbors.forEach{ neighbor -> println(neighbor.getIntId()) }
+        //neighbors.forEach{ neighbor -> println(neighbor.getIntId()) }
     }
 
     @Test
@@ -47,7 +47,7 @@ class CubeTest {
         val cube = Cube(mb, Vector3(1f,1f,1f),Color.RED)
         val triangles = cube.getFaceTriangles()
 
-        triangles.forEach{ triangle -> println(""" ${triangle.key} = ${triangle.value}""") }
+        //triangles.forEach{ triangle -> println(""" ${triangle.key} = ${triangle.value}""") }
     }
 
     @Test
@@ -55,7 +55,7 @@ class CubeTest {
         val cube = Cube(mb, Vector3(1f,1f,1f),Color.RED)
         val bb = cube.getBoundingBox()
 
-        println(bb)
+        // println("(bb)
     }
 
     @Test

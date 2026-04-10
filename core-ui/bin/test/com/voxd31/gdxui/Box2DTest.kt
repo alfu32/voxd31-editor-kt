@@ -33,7 +33,7 @@ class Box2DTest {
         val box = Box2D.of(vector)
         assertEquals(vector, box.min)
         assertEquals(vector, box.max)
-        println(box.getCenter())
+        // println("(box.getCenter())
     }
 
     @Test
