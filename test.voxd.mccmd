@@ -1011,4 +1011,4 @@
 /setblock 72 0 23 minecraft:stone
 /setblock 77 0 29 minecraft:stone
 /setblock 92 0 30 minecraft:stone
-/setblock 93 0 30 minecraft:stone
+/setblock 93 0 30 minecraft:stone//move 57 0 48 -17 0 59

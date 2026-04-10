@@ -43,7 +43,9 @@ import kotlin.math.floor
 
 class Voxd31Editor @JvmOverloads constructor(
     initialFilename: String = "default.vxdi",
-    private val fileDialogService: FileDialogService = NoopFileDialogService
+    private val fileDialogService: FileDialogService = NoopFileDialogService,
+    private val documentIoService: DocumentIoService = DefaultDocumentIoService,
+    private val inputProcessorDecorator: InputProcessorDecorator = PassthroughInputProcessorDecorator
 ) : ApplicationAdapter() {
     companion object {
 
@@ -85,6 +87,7 @@ class Voxd31Editor @JvmOverloads constructor(
     private lateinit var ground: ModelInstance
     private lateinit var sphere: Model
     private lateinit var inputProcessors: InputMultiplexer
+    private lateinit var installedInputProcessor: InputProcessor
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var currentEvent: Vox3Event
     private lateinit var uiOverlay: VoxcraftUiOverlay
@@ -534,8 +537,8 @@ class Voxd31Editor @JvmOverloads constructor(
             }
         }
         inputProcessors = InputMultiplexer(uiOverlay.stage, activeCameraProcessor, inputEventDispatcher)
-
-        Gdx.input.inputProcessor = inputProcessors
+        installedInputProcessor = inputProcessorDecorator.wrap(inputProcessors)
+        Gdx.input.inputProcessor = installedInputProcessor
         inputEventDispatcher.on("keyUp"){event ->
             when(event.keyCode){
                 Input.Keys.DEL,
@@ -631,7 +634,7 @@ class Voxd31Editor @JvmOverloads constructor(
             currentEvent = event
         }
         inputEventDispatcher.on("touchDragged"){event ->
-            if (event.pointer == 0) {
+            if (event.pointer == 0 && event.button == Input.Buttons.LEFT) {
                 activeTool?.touchDragged(event)
             }
             currentEvent = event
@@ -837,11 +840,13 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun displayFileName(path: String): String {
-        val normalized = path.replace('\\', '/')
-        return normalized.substringAfterLast('/')
+        return documentIoService.displayName(path)?.ifBlank { null } ?: fallbackDisplayName(path)
     }
 
     private fun directoryHint(path: String): String? {
+        if (isDocumentUriPath(path)) {
+            return path
+        }
         val normalized = path.replace('\\', '/')
         val lastSlash = normalized.lastIndexOf('/')
         return if (lastSlash > 0) normalized.substring(0, lastSlash) else null
@@ -860,6 +865,9 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun ensureExtension(path: String, extension: String): String {
+        if (isDocumentUriPath(path)) {
+            return path
+        }
         if (extensionOf(path).isNotEmpty()) {
             return path
         }
@@ -922,9 +930,8 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun loadModelFromDisk(path: String, announce: Boolean = true) {
-        val source = resolveReadableHandle(path)
-        val exists = source.exists()
-        val loaded = loadModelFromCsv(path)
+        val exists = documentIoService.exists(path)
+        val loaded = loadModelFromCsv(path, documentIoService)
         scene.clear()
         selected.clear()
         guides.clear()
@@ -951,7 +958,7 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun saveCurrentModel(announce: Boolean = true) {
-        saveModelAsCsv(scene.cubes.values.toList(), filename, modelSettings)
+        saveModelAsCsv(scene.cubes.values.toList(), filename, modelSettings, documentIoService)
         rebuildGroundPlane(force = true)
         updateWindowTitle()
         if (announce) {
@@ -1036,7 +1043,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 }
                 try {
                     val bytes = exportSceneMesh(scene, option.format, modelSettings)
-                    resolveWritableHandle(targetPath).writeBytes(bytes, false)
+                    documentIoService.writeBytes(targetPath, bytes)
                     setStatusMessage("Exported ${displayFileName(targetPath)}")
                 } catch (t: Throwable) {
                     setStatusMessage("Export failed: ${t.message ?: t.javaClass.simpleName}")
@@ -1052,7 +1059,16 @@ class Voxd31Editor @JvmOverloads constructor(
         val pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, Gdx.graphics.width, Gdx.graphics.height)
         try {
             flipPixmapVertical(pixmap)
-            PixmapIO.writePNG(resolveWritableHandle(path), pixmap)
+            val output = java.io.ByteArrayOutputStream()
+            val writer = PixmapIO.PNG((pixmap.width * pixmap.height).coerceAtLeast(1024))
+            try {
+                writer.setFlipY(false)
+                writer.write(output, pixmap)
+            } finally {
+                writer.dispose()
+                output.close()
+            }
+            documentIoService.writeBytes(path, output.toByteArray())
             setStatusMessage("Exported ${displayFileName(path)}")
         } catch (t: Throwable) {
             setStatusMessage("PNG export failed: ${t.message ?: t.javaClass.simpleName}")
@@ -1132,7 +1148,7 @@ class Voxd31Editor @JvmOverloads constructor(
         svg.append("</svg>\n")
 
         try {
-            resolveWritableHandle(path).writeString(svg.toString(), false, "UTF-8")
+            documentIoService.writeUtf8(path, svg.toString(), append = false)
             setStatusMessage("Exported ${displayFileName(path)}")
         } catch (t: Throwable) {
             setStatusMessage("SVG export failed: ${t.message ?: t.javaClass.simpleName}")
@@ -1507,11 +1523,15 @@ class Voxd31Editor @JvmOverloads constructor(
         shadowLight.dispose()
         uiOverlay.dispose()
 
-        if (Gdx.input.inputProcessor === inputProcessors) {
+        if (Gdx.input.inputProcessor === installedInputProcessor) {
             Gdx.input.inputProcessor = null
         }
         val text = tools.flatMap { tool -> tool.commands }.joinToString("\n")
-        appendTextFile("$filename.mccmd", text)
+        documentIoService.sidecarPath(filename, ".mccmd")?.let { sidecarPath ->
+            if (text.isNotEmpty()) {
+                documentIoService.writeUtf8(sidecarPath, text, append = true)
+            }
+        }
         Cube.disposeSharedModels()
         if (VisUI.isLoaded()) {
             VisUI.dispose()

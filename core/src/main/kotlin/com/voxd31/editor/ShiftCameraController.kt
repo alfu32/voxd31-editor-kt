@@ -14,6 +14,7 @@ class ShiftCameraController(
     camera: PerspectiveCamera,
     private val pickModelPoint: (screenX: Int, screenY: Int) -> Vector3?
 ) : CameraInputController(camera) {
+    var panButton: Int = Input.Buttons.MIDDLE
     private var translating = false
     private var orbitRotating = false
     private var orbitRotateAroundPosition = false
@@ -51,8 +52,8 @@ class ShiftCameraController(
             rotateButton = if (alt) -1 else Input.Buttons.RIGHT
             translateButton = -1
         }
-        translating = shift && button == Input.Buttons.RIGHT
-        orbitRotating = !shift && button == Input.Buttons.RIGHT
+        translating = button == panButton || (shift && button == Input.Buttons.RIGHT)
+        orbitRotating = !translating && button == Input.Buttons.RIGHT
         orbitRotateAroundPosition = orbitRotating && alt
         if (orbitRotating) {
             orbitRotateMoved = false
