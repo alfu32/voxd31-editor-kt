@@ -1364,6 +1364,10 @@ class Voxd31Editor @JvmOverloads constructor(
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST)
 
         shapeRenderer.projectionMatrix = uiOverlay.stage.camera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        activeTool?.drawScreenOverlayFill(shapeRenderer)
+        shapeRenderer.end()
+
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         activeTool?.drawScreenOverlay(shapeRenderer)
         shapeRenderer.end()

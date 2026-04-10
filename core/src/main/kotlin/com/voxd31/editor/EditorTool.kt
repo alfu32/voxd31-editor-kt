@@ -72,8 +72,9 @@ open class EditorTool(
         ):EditorTool{
             val hoverColor = Color(1f,1f,0f,0.5f)
             val nextColor = Color(1f,0.5f,0f,0.5f)
-            val volumePreviewColor = Color(0.15f, 0.8f, 1f, 0.35f)
-            val windowColor = Color(0.15f, 0.8f, 1f, 0.9f)
+            val volumePreviewColor = Color(0.15f, 0.8f, 1f, 0.65f)
+            val windowFillColor = Color(0.15f, 0.8f, 1f, 0.65f)
+            val windowOutlineColor = Color(0.15f, 0.8f, 1f, 0.95f)
             val dragStartStage = Vector2()
             val dragCurrentStage = Vector2()
             val dragStartRaw = Vector2()
@@ -289,7 +290,19 @@ open class EditorTool(
                     val minY = minOf(dragStartStage.y, dragCurrentStage.y)
                     val width = kotlin.math.abs(dragCurrentStage.x - dragStartStage.x)
                     val height = kotlin.math.abs(dragCurrentStage.y - dragStartStage.y)
-                    shapeRenderer.color = windowColor
+                    shapeRenderer.color = windowOutlineColor
+                    shapeRenderer.rect(minX, minY, width, height)
+                }
+
+                override fun drawScreenOverlayFill(shapeRenderer: ShapeRenderer) {
+                    if (!draggingWindow) {
+                        return
+                    }
+                    val minX = minOf(dragStartStage.x, dragCurrentStage.x)
+                    val minY = minOf(dragStartStage.y, dragCurrentStage.y)
+                    val width = kotlin.math.abs(dragCurrentStage.x - dragStartStage.x)
+                    val height = kotlin.math.abs(dragCurrentStage.y - dragStartStage.y)
+                    shapeRenderer.color = windowFillColor
                     shapeRenderer.rect(minX, minY, width, height)
                 }
 
@@ -633,6 +646,7 @@ open class EditorTool(
     open fun touchUp(event: Vox3Event) {
         handleEvent(event)
     }
+    open fun drawScreenOverlayFill(shapeRenderer: ShapeRenderer) {}
     open fun drawScreenOverlay(shapeRenderer: ShapeRenderer) {}
 
     fun handleEvent(event:Vox3Event) {
