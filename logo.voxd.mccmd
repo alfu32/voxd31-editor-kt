@@ -1,0 +1,13 @@
+# Frame -5 0 4 4 11 -5 ff0000ff
+/fill -5 0 4 -5 11 4 minecraft:stone
+/fill -5 11 4 4 11 4 minecraft:stone
+/fill 4 11 4 4 0 4 minecraft:stone
+/fill 4 0 4 -5 0 4 minecraft:stone
+/fill -5 0 4 -5 0 -5 minecraft:stone
+/fill -5 11 4 -5 11 -5 minecraft:stone
+/fill 4 11 4 4 11 -5 minecraft:stone
+/fill 4 0 4 4 0 -5 minecraft:stone
+/fill -5 0 -5 -5 11 -5 minecraft:stone
+/fill -5 11 -5 4 11 -5 minecraft:stone
+/fill 4 11 -5 4 0 -5 minecraft:stone
+/fill 4 0 -5 -5 0 -5 minecraft:stone

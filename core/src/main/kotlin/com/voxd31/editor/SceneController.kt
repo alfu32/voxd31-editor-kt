@@ -187,6 +187,25 @@ class SceneController(val modelBuilder: ModelBuilder) {
         }
     }
 
+    fun collectVisibleFaceEdges(
+        subdivideRenderableFaces: Boolean,
+        consumer: (a: Vector3, b: Vector3, normal: Vector3, colorKey: Int) -> Unit
+    ) {
+        collectChunkCoords().sortedWith(compareBy<ChunkCoord>({ it.x }, { it.y }, { it.z })).forEach { chunk ->
+            collectChunkFaces(chunk).forEach { (colorKey, faces) ->
+                faces.forEach { face ->
+                    if (subdivideRenderableFaces) {
+                        forEachRenderableFace(face) { corners, normal ->
+                            collectFaceEdges(corners, normal, colorKey, consumer)
+                        }
+                    } else {
+                        collectFaceEdges(face.corners, face.normal, colorKey, consumer)
+                    }
+                }
+            }
+        }
+    }
+
     internal fun visibleRenderChunkCount(): Int {
         return collectChunkCoords().size
     }
@@ -252,6 +271,18 @@ class SceneController(val modelBuilder: ModelBuilder) {
 
     private fun invalidateRenderCache() {
         renderCacheDirty = true
+    }
+
+    private fun collectFaceEdges(
+        corners: Array<Vector3>,
+        normal: Vector3,
+        colorKey: Int,
+        consumer: (a: Vector3, b: Vector3, normal: Vector3, colorKey: Int) -> Unit
+    ) {
+        for (index in corners.indices) {
+            val next = (index + 1) % corners.size
+            consumer(corners[index], corners[next], normal, colorKey)
+        }
     }
 
     private fun ensureRenderCache() {

@@ -98,6 +98,8 @@ class Voxd31Editor @JvmOverloads constructor(
     private val groundCenter = Vector3()
     private var groundWidth = minimumGroundPlaneWidth
     private var groundDepth = minimumGroundPlaneDepth
+    private var showMergedFaceEdges = false
+    private var showRenderableFaceEdges = false
 
 
     val tools: MutableList<EditorTool> = mutableListOf() // Map activation keys to tools
@@ -599,6 +601,18 @@ class Voxd31Editor @JvmOverloads constructor(
                 }
                 Input.Keys.NUM_4 -> {
                     setOrthographicView(OrthographicView.FRONT)
+                }
+                Input.Keys.F7 -> {
+                    showMergedFaceEdges = !showMergedFaceEdges
+                    setStatusMessage(
+                        "Merged face edge overlay ${if (showMergedFaceEdges) "enabled" else "disabled"} (cache rectangles)"
+                    )
+                }
+                Input.Keys.F8 -> {
+                    showRenderableFaceEdges = !showRenderableFaceEdges
+                    setStatusMessage(
+                        "Renderable face edge overlay ${if (showRenderableFaceEdges) "enabled" else "disabled"} (emitted quads)"
+                    )
                 }
                 Input.Keys.SPACE -> {
                     saveCurrentModel()
@@ -1342,6 +1356,22 @@ class Voxd31Editor @JvmOverloads constructor(
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = activeCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        if (showMergedFaceEdges) {
+            drawSceneFaceEdges(
+                scene = scene,
+                subdivideRenderableFaces = false,
+                color = Color(1f, 0.85f, 0.15f, 0.95f),
+                normalOffset = 0.02f
+            )
+        }
+        if (showRenderableFaceEdges) {
+            drawSceneFaceEdges(
+                scene = scene,
+                subdivideRenderableFaces = true,
+                color = Color(0.15f, 1f, 1f, 0.8f),
+                normalOffset = 0.035f
+            )
+        }
         guides.cubes.forEach { (_:String, cub:Cube) ->
             shapeRenderer.color = cub.color
             val bb=cub.getBoundingBox()
@@ -1435,6 +1465,23 @@ class Voxd31Editor @JvmOverloads constructor(
             cameraTarget.x, cameraTarget.y, cameraTarget.z - targetSize,
             cameraTarget.x, cameraTarget.y, cameraTarget.z + targetSize
         )
+    }
+
+    private fun drawSceneFaceEdges(
+        scene: SceneController,
+        subdivideRenderableFaces: Boolean,
+        color: Color,
+        normalOffset: Float
+    ) {
+        val offset = Vector3()
+        scene.collectVisibleFaceEdges(subdivideRenderableFaces) { a, b, normal, _ ->
+            offset.set(normal).scl(normalOffset)
+            shapeRenderer.color = color
+            shapeRenderer.line(
+                a.x + offset.x, a.y + offset.y, a.z + offset.z,
+                b.x + offset.x, b.y + offset.y, b.z + offset.z
+            )
+        }
     }
 
     private fun renderGrid(

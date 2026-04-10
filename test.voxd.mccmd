@@ -1011,4 +1011,34 @@
 /setblock 72 0 23 minecraft:stone
 /setblock 77 0 29 minecraft:stone
 /setblock 92 0 30 minecraft:stone
-/setblock 93 0 30 minecraft:stone//move 57 0 48 -17 0 59
+/setblock 93 0 30 minecraft:stone//move 57 0 48 -17 0 59/setblock 30 12 -15 minecraft:stone
+/setblock 29 12 -15 minecraft:stone
+/setblock 30 1 -18 minecraft:stone
+/setblock 30 5 -18 minecraft:stone
+/setblock 30 8 -18 minecraft:stone
+/setblock 30 9 -18 minecraft:stone
+/setblock 30 3 -13 minecraft:stone
+/setblock 30 1 10 minecraft:stone
+/setblock 30 3 10 minecraft:stone
+/setblock 30 4 4 minecraft:stone
+/setblock 30 5 9 minecraft:stone
+/setblock 23 0 -4 minecraft:stone
+/setblock 30 2 7 minecraft:stone
+/setblock 30 6 0 minecraft:stone
+/setblock 30 9 -7 minecraft:stone
+/setblock 30 13 -15 minecraft:stone
+/setblock 30 16 -18 minecraft:stone
+/setblock 30 14 -18 minecraft:stone
+/setblock 30 12 -18 minecraft:stone
+/setblock 30 10 -18 minecraft:stone
+/setblock 30 7 -18 minecraft:stone
+/setblock 30 16 -16 minecraft:stone
+/setblock 30 16 -14 minecraft:stone
+/setblock 30 16 -12 minecraft:stone
+/setblock 30 16 -10 minecraft:stone
+/setblock 30 16 -8 minecraft:stone
+/setblock 30 16 -6 minecraft:stone
+# Volume 29 16 10 31 1 -18 a3a3a3ff
+/fill 29 16 10 31 1 -18 minecraft:stone
+# Volume 29 16 9 31 1 -18 292929ff
+/fill 29 16 9 31 1 -18 minecraft:stone
