@@ -296,6 +296,7 @@ class SceneController(val modelBuilder: ModelBuilder) {
         return facesByColor
     }
 
+    // fixed stitching
     private fun appendTopFaces(
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         startX: Int,
