@@ -8,11 +8,39 @@ import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Set;
+import javax.swing.JOptionPane;
 
 public final class DesktopFileDialogService implements FileDialogService {
     @Override
     public boolean isSupported() {
         return !GraphicsEnvironment.isHeadless();
+    }
+
+    @Override
+    public String chooseOption(String title, String message, java.util.List<String> options, String defaultOption) {
+        if (!isSupported() || options == null || options.isEmpty()) {
+            return null;
+        }
+        final String[] result = new String[1];
+        Runnable chooseDialog = () -> result[0] = (String) JOptionPane.showInputDialog(
+                null,
+                message,
+                title,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                options.toArray(new String[0]),
+                defaultOption != null ? defaultOption : options.get(0)
+        );
+        try {
+            if (EventQueue.isDispatchThread()) {
+                chooseDialog.run();
+            } else {
+                EventQueue.invokeAndWait(chooseDialog);
+            }
+            return result[0];
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     @Override

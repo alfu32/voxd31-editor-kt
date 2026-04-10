@@ -9,6 +9,7 @@ import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.PixmapIO
 import com.badlogic.gdx.graphics.VertexAttributes.Usage
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
@@ -22,6 +23,7 @@ import com.badlogic.gdx.math.Plane
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.math.collision.BoundingBox
+import com.badlogic.gdx.utils.ScreenUtils
 import com.voxd31.editor.*
 import com.voxd31.editor.exporters.appendTextFile
 import com.voxd31.editor.exporters.exportSceneMesh
@@ -35,6 +37,7 @@ import com.voxd31.editor.ui.VoxcraftUiOverlay
 import com.voxd31.gdxui.Cube
 import com.voxd31.gdxui.Vox3Event
 import com.kotcrab.vis.ui.VisUI
+import java.lang.StringBuilder
 import kotlin.math.floor
 
 
@@ -189,28 +192,6 @@ class Voxd31Editor @JvmOverloads constructor(
         setCameraMode(CameraMode.ORBIT)
 
         tools.add(EditorTool.SelectEditor(scene, feedback, selected, this::queryCubesInScreenRect))
-        tools.add(EditorTool.makeTwoInputEditor("Select", onFeedback = { s:Vector3,e:Vector3 ->
-            val cc=Color()
-            cc.fromHsv(120f,0.8f,0.8f)
-            cc.a=0.5f
-            if(s!=e)selected.clear()
-            feedback.clear()
-            feedback.addCube(s,cc)
-            voxelRangeShell(s,e){ p->
-                feedback.addCube(p,cc)
-            }
-            voxelRangeVolume(s,e){
-                p ->
-                val c = scene.cubeAt(p)
-                if(c!=null){
-                    selected.addCube(c.position, c.color)
-                }
-            }
-        }, onEnd = { s:Vector3,e:Vector3 ->
-            val a=Vector3i.fromFloats(s.x,s.y,s.z)
-            val b=Vector3i.fromFloats(e.x,e.y,e.z)
-            listOf("//select ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z}")
-        }))
         tools.add(EditorTool.makeTwoInputEditor("Move", onFeedback = { s:Vector3,e:Vector3 ->
             feedback.clear()
             val cc=Color()
@@ -527,20 +508,30 @@ class Voxd31Editor @JvmOverloads constructor(
             override fun keyDown(keycode: Int): Boolean = activeCameraInputProcessor.keyDown(keycode)
             override fun keyUp(keycode: Int): Boolean = activeCameraInputProcessor.keyUp(keycode)
             override fun keyTyped(character: Char): Boolean = activeCameraInputProcessor.keyTyped(character)
-            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean =
+            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
                 activeCameraInputProcessor.touchDown(screenX, screenY, pointer, button)
+                return false
+            }
 
-            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean =
+            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
                 activeCameraInputProcessor.touchUp(screenX, screenY, pointer, button)
+                return false
+            }
 
-            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean =
+            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
                 activeCameraInputProcessor.touchDragged(screenX, screenY, pointer)
+                return false
+            }
 
-            override fun mouseMoved(screenX: Int, screenY: Int): Boolean =
+            override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
                 activeCameraInputProcessor.mouseMoved(screenX, screenY)
+                return false
+            }
 
-            override fun scrolled(amountX: Float, amountY: Float): Boolean =
+            override fun scrolled(amountX: Float, amountY: Float): Boolean {
                 activeCameraInputProcessor.scrolled(amountX, amountY)
+                return false
+            }
         }
         inputProcessors = InputMultiplexer(uiOverlay.stage, activeCameraProcessor, inputEventDispatcher)
 
@@ -875,6 +866,44 @@ class Voxd31Editor @JvmOverloads constructor(
         return "$path.$extension"
     }
 
+    private data class ExportChoice(
+        val label: String,
+        val extensions: Set<String>,
+        val defaultExtension: String,
+        val kind: Kind
+    ) {
+        enum class Kind {
+            MESH,
+            PNG,
+            SVG
+        }
+    }
+
+    private fun exportChoices(): List<ExportChoice> {
+        val meshChoices = meshExportOptions.map { option ->
+            ExportChoice(
+                label = option.label,
+                extensions = option.extensions.toSet(),
+                defaultExtension = option.defaultExtension,
+                kind = ExportChoice.Kind.MESH
+            )
+        }
+        return meshChoices + listOf(
+            ExportChoice(
+                label = "PNG Screenshot (*.png)",
+                extensions = setOf("png"),
+                defaultExtension = "png",
+                kind = ExportChoice.Kind.PNG
+            ),
+            ExportChoice(
+                label = "SVG View (*.svg)",
+                extensions = setOf("svg"),
+                defaultExtension = "svg",
+                kind = ExportChoice.Kind.SVG
+            )
+        )
+    }
+
     private fun updateWindowTitle() {
         Gdx.graphics.setTitle(
             "voxcraft   version : ${versionInfo.buildVersion}   file : [${displayFileName(filename)}]"
@@ -966,39 +995,147 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun exportMeshDialog() {
-        if (scene.cubes.isEmpty()) {
-            setStatusMessage("Export failed: the model is empty.")
-            return
-        }
         if (!fileDialogService.isSupported()) {
             setStatusMessage("Export dialog is unavailable in this runtime.")
             return
         }
-        val requested = fileDialogService.saveFile(
-            title = "Export Mesh",
-            directoryHint = directoryHint(filename),
-            defaultFileName = "${baseName(filename)}.obj",
-            allowedExtensions = meshExportOptions.flatMap { it.extensions }.toSet()
+        val choices = exportChoices()
+        val selectedLabel = fileDialogService.chooseOption(
+            title = "Export",
+            message = "Choose the export format before opening the save dialog.",
+            options = choices.map { it.label },
+            defaultOption = choices.firstOrNull()?.label
         ) ?: run {
             setStatusMessage("Export canceled.")
             return
         }
-        var targetPath = requested
-        var extension = extensionOf(targetPath)
-        if (extension.isEmpty()) {
-            targetPath = ensureExtension(targetPath, "obj")
-            extension = "obj"
-        }
-        val option = meshExportOptionForExtension(extension) ?: run {
-            setStatusMessage("Export failed: unsupported extension .$extension")
+        val choice = choices.firstOrNull { it.label == selectedLabel } ?: run {
+            setStatusMessage("Export failed: unknown export format.")
             return
         }
+        if (choice.kind == ExportChoice.Kind.MESH && scene.cubes.isEmpty()) {
+            setStatusMessage("Export failed: the model is empty.")
+            return
+        }
+        val requested = fileDialogService.saveFile(
+            title = "Export - ${choice.label}",
+            directoryHint = directoryHint(filename),
+            defaultFileName = "${baseName(filename)}.${choice.defaultExtension}",
+            allowedExtensions = choice.extensions
+        ) ?: run {
+            setStatusMessage("Export canceled.")
+            return
+        }
+
+        val targetPath = ensureExtension(requested, choice.defaultExtension)
+        when (choice.kind) {
+            ExportChoice.Kind.MESH -> {
+                val option = meshExportOptionForExtension(choice.defaultExtension) ?: run {
+                    setStatusMessage("Export failed: unsupported extension .${choice.defaultExtension}")
+                    return
+                }
+                try {
+                    val bytes = exportSceneMesh(scene, option.format, modelSettings)
+                    resolveWritableHandle(targetPath).writeBytes(bytes, false)
+                    setStatusMessage("Exported ${displayFileName(targetPath)}")
+                } catch (t: Throwable) {
+                    setStatusMessage("Export failed: ${t.message ?: t.javaClass.simpleName}")
+                }
+            }
+
+            ExportChoice.Kind.PNG -> exportPngScreenshot(targetPath)
+            ExportChoice.Kind.SVG -> exportSvgView(targetPath)
+        }
+    }
+
+    private fun exportPngScreenshot(path: String) {
+        val pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, Gdx.graphics.width, Gdx.graphics.height)
         try {
-            val bytes = exportSceneMesh(scene, option.format, modelSettings)
-            resolveWritableHandle(targetPath).writeBytes(bytes, false)
-            setStatusMessage("Exported ${displayFileName(targetPath)}")
+            flipPixmapVertical(pixmap)
+            PixmapIO.writePNG(resolveWritableHandle(path), pixmap)
+            setStatusMessage("Exported ${displayFileName(path)}")
         } catch (t: Throwable) {
-            setStatusMessage("Export failed: ${t.message ?: t.javaClass.simpleName}")
+            setStatusMessage("PNG export failed: ${t.message ?: t.javaClass.simpleName}")
+        } finally {
+            pixmap.dispose()
+        }
+    }
+
+    private fun flipPixmapVertical(pixmap: Pixmap) {
+        val bytesPerLine = pixmap.width * 4
+        val pixels = pixmap.pixels
+        val top = ByteArray(bytesPerLine)
+        val bottom = ByteArray(bytesPerLine)
+        for (y in 0 until pixmap.height / 2) {
+            val topPos = y * bytesPerLine
+            val bottomPos = (pixmap.height - 1 - y) * bytesPerLine
+            pixels.position(topPos)
+            pixels.get(top)
+            pixels.position(bottomPos)
+            pixels.get(bottom)
+            pixels.position(topPos)
+            pixels.put(bottom)
+            pixels.position(bottomPos)
+            pixels.put(top)
+        }
+        pixels.position(0)
+    }
+
+    private fun exportSvgView(path: String) {
+        val width = Gdx.graphics.width.toFloat().coerceAtLeast(1f)
+        val height = Gdx.graphics.height.toFloat().coerceAtLeast(1f)
+        data class SvgTriangle(val depth: Float, val fill: String, val points: String)
+        val triangles = mutableListOf<SvgTriangle>()
+        val edgeA = Vector3()
+        val edgeB = Vector3()
+        val normal = Vector3()
+        scene.collectVisibleTriangles { a, b, c, colorKey ->
+            edgeA.set(b).sub(a)
+            edgeB.set(c).sub(a)
+            normal.set(edgeA).crs(edgeB)
+            if (normal.len2() <= 1e-8f) {
+                return@collectVisibleTriangles
+            }
+            normal.nor()
+            if (normal.dot(activeCamera.direction) >= 0f) {
+                return@collectVisibleTriangles
+            }
+            val pa = activeCamera.project(Vector3(a))
+            val pb = activeCamera.project(Vector3(b))
+            val pc = activeCamera.project(Vector3(c))
+            if ((pa.z !in 0f..1f) && (pb.z !in 0f..1f) && (pc.z !in 0f..1f)) {
+                return@collectVisibleTriangles
+            }
+            val color = Color()
+            Color.rgba8888ToColor(color, colorKey)
+            val alpha = color.a.coerceIn(0f, 1f)
+            val fill = "rgba(${(color.r * 255f).toInt()},${(color.g * 255f).toInt()},${(color.b * 255f).toInt()},$alpha)"
+            val points = listOf(pa, pb, pc).joinToString(" ") { point ->
+                "${point.x},${height - point.y}"
+            }
+            triangles += SvgTriangle(
+                depth = (pa.z + pb.z + pc.z) / 3f,
+                fill = fill,
+                points = points
+            )
+        }
+
+        val svg = StringBuilder()
+        svg.append("""<svg xmlns="http://www.w3.org/2000/svg" width="${width.toInt()}" height="${height.toInt()}" viewBox="0 0 ${width.toInt()} ${height.toInt()}">""")
+        svg.append('\n')
+        svg.append("""  <rect width="100%" height="100%" fill="rgb(153,191,229)"/>""")
+        svg.append('\n')
+        triangles.sortedByDescending { it.depth }.forEach { triangle ->
+            svg.append("""  <polygon points="${triangle.points}" fill="${triangle.fill}" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>""")
+            svg.append('\n')
+        }
+        svg.append("</svg>\n")
+
+        try {
+            resolveWritableHandle(path).writeString(svg.toString(), false, "UTF-8")
+            setStatusMessage("Exported ${displayFileName(path)}")
+        } catch (t: Throwable) {
+            setStatusMessage("SVG export failed: ${t.message ?: t.javaClass.simpleName}")
         }
     }
 

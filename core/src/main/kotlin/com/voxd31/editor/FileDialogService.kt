@@ -3,6 +3,13 @@ package com.voxd31.editor
 interface FileDialogService {
     fun isSupported(): Boolean
 
+    fun chooseOption(
+        title: String,
+        message: String,
+        options: List<String>,
+        defaultOption: String? = null
+    ): String?
+
     fun openFile(
         title: String,
         directoryHint: String? = null,
@@ -20,6 +27,13 @@ interface FileDialogService {
 
 object NoopFileDialogService : FileDialogService {
     override fun isSupported(): Boolean = false
+
+    override fun chooseOption(
+        title: String,
+        message: String,
+        options: List<String>,
+        defaultOption: String?
+    ): String? = null
 
     override fun openFile(
         title: String,

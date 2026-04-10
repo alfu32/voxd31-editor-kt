@@ -217,6 +217,15 @@ open class EditorTool(
                     if (event.button != Input.Buttons.LEFT) {
                         return
                     }
+                    val releasePoint = event.modelVoxel?.cpy() ?: event.modelNextVoxel?.cpy()
+                    val start = volumeSelectionStart
+                    if (start != null && !draggingWindow && releasePoint != null) {
+                        applyVolumeSelection(start, releasePoint)
+                        volumeSelectionStart = null
+                        feedback.clear()
+                        pointerDown = false
+                        return
+                    }
                     val sceneCube = isSceneCube(event)
                     if (draggingWindow) {
                         selected.clear()
@@ -262,17 +271,9 @@ open class EditorTool(
                         return
                     }
 
-                    val releasePoint = event.modelVoxel?.cpy() ?: event.modelNextVoxel?.cpy()
                     if (pointerDownOnGround && releasePoint != null) {
-                        val start = volumeSelectionStart
-                        if (start == null) {
-                            volumeSelectionStart = releasePoint
-                            updateHoverFeedback(event)
-                        } else {
-                            applyVolumeSelection(start, releasePoint)
-                            volumeSelectionStart = null
-                            feedback.clear()
-                        }
+                        volumeSelectionStart = releasePoint
+                        updateHoverFeedback(event)
                     } else {
                         volumeSelectionStart = null
                         feedback.clear()
