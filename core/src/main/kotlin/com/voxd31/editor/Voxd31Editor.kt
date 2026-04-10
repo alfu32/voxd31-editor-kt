@@ -43,7 +43,11 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private val cameraTarget = Vector3()
     private val shadowBounds = BoundingBox()
     private val shadowBoundsCenter = Vector3()
-    private val shadowDirection = Vector3()
+    private val shadowBoundsDimensions = Vector3()
+    private val shadowLightDirection = Vector3(-0.5f, -1.8f, -1.2f).nor()
+    private val minimumShadowBoundsRadius = 17.320509f
+    private var shadowModelBoundsRadius = minimumShadowBoundsRadius
+    private var shadowModelBoundsValid = false
     private var orthoDistance = 18f
     private var activeOrthoView = OrthographicView.TOP
     private lateinit var orbitCamera: PerspectiveCamera
@@ -58,7 +62,7 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     private lateinit var modelBatch: ModelBatch
     private lateinit var shadowBatch: ModelBatch
     private lateinit var environment: Environment
-    private lateinit var shadowLight: DirectionalShadowLight
+    private lateinit var shadowLight: ResizableDirectionalShadowLight
     private lateinit var scene: SceneController
     private lateinit var selected: SceneController
     private lateinit var guides: SceneController
@@ -120,18 +124,22 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         shadowBatch = ModelBatch(DepthShaderProvider())
 
         environment = Environment()
-        shadowLight = DirectionalShadowLight(
+        shadowLight = ResizableDirectionalShadowLight(
             8192, 8192,
             96f, 96f, 1f,
             360f
         ).apply {
-            set(0.5f, 0.5f, 0.5f, -0.5f, -1.8f, -1.2f)
+            set(0.5f, 0.5f, 0.5f, shadowLightDirection.x, shadowLightDirection.y, shadowLightDirection.z)
             setColor(Color(0f,0f,0f,0.5f))
             environment.add(this)
             environment.shadowMap = this
             update(camera)
         }
-        environment.add(DirectionalLight().set(0.5f, 0.5f, 0.5f, -0.5f, -1.8f, -1.2f).setColor(Color(0.5f,0.5f,0.5f,0.7f)))
+        environment.add(
+            DirectionalLight()
+                .set(0.5f, 0.5f, 0.5f, shadowLightDirection.x, shadowLightDirection.y, shadowLightDirection.z)
+                .setColor(Color(0.5f,0.5f,0.5f,0.7f))
+        )
         environment.add(DirectionalLight().set(0.1f, 0.1f, 0.1f, 1.2f, 1.8f, 0.5f).setColor(Color(0.1f,0.1f,0.1f,0.2f)))
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.5f,0.5f,0.5f, 0.7f)) // Reduced ambient light
         environment.set(ColorAttribute(ColorAttribute.Specular, 0.5f,0.5f,0.9f, 0.7f)) // Reduced ambient light
@@ -930,36 +938,45 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
     }
 
     private fun renderShadowPass() {
-        shadowLight.begin(resolveShadowCenter(), resolveShadowDirection())
+        updateShadowModelBoundsFromScene()
+        updateShadowCameraFromModelBounds()
+        val shadowCenter = if (shadowModelBoundsValid) shadowBoundsCenter else Vector3.Zero
+        shadowLight.begin(shadowCenter, shadowLight.direction)
         shadowBatch.begin(shadowLight.camera)
         shadowBatch.render(scene.shadowInstances())
-        shadowBatch.render(feedback.shadowInstances(), environment)
-        shadowBatch.render(ground)
         shadowBatch.end()
         shadowLight.end()
     }
 
-    private fun resolveShadowCenter(): Vector3 {
-        val renderCubes = scene.cubes.values + feedback.cubes.values
-        if (renderCubes.isEmpty()) {
-            return shadowBoundsCenter.set(cameraTarget)
+    private fun updateShadowModelBoundsFromScene() {
+        if (scene.cubes.isEmpty()) {
+            shadowBoundsCenter.setZero()
+            shadowModelBoundsRadius = minimumShadowBoundsRadius
+            shadowModelBoundsValid = false
+            return
         }
+
         shadowBounds.inf()
-        renderCubes.forEach { cube ->
+        scene.cubes.values.forEach { cube ->
             shadowBounds.ext(cube.getBoundingBox())
         }
-        shadowBounds.ext(Vector3(-GNDSZ, groundPlaneY, -GNDSZ))
-        shadowBounds.ext(Vector3(GNDSZ, groundPlaneY, GNDSZ))
         shadowBounds.getCenter(shadowBoundsCenter)
-        return shadowBoundsCenter
+        shadowBounds.getDimensions(shadowBoundsDimensions)
+        shadowModelBoundsRadius = (shadowBoundsDimensions.len() * 0.5f).coerceAtLeast(minimumShadowBoundsRadius)
+        shadowModelBoundsValid = true
     }
 
-    private fun resolveShadowDirection(): Vector3 {
-        shadowDirection.set(shadowLight.direction)
-        if (shadowDirection.len2() <= 1e-6f) {
-            shadowDirection.set(-0.5f, -1.8f, -1.2f)
+    private fun updateShadowCameraFromModelBounds() {
+        val radius = if (shadowModelBoundsValid) {
+            shadowModelBoundsRadius.coerceAtLeast(minimumShadowBoundsRadius)
+        } else {
+            minimumShadowBoundsRadius
         }
-        return shadowDirection.nor()
+        val diameter = radius * 2f
+        val paddedSize = (diameter * 1.15f).coerceAtLeast(minimumShadowBoundsRadius * 2f)
+        val near = 0.5f
+        val far = (near + diameter * 4f).coerceAtLeast(64f)
+        shadowLight.setShadowVolume(paddedSize, paddedSize, near, far)
     }
 
     private fun drawCameraTarget() {
@@ -1024,6 +1041,33 @@ class Voxd31Editor(val filename:String="default.vxdi") : ApplicationAdapter() {
         }
         shapeRenderer.color = Color.BLUE // Set the color of the grid lines
         shapeRenderer.line(anchor.x,  -gridSize.toFloat(),anchor.z, anchor.x, gridSize.toFloat(), anchor.z)
+    }
+
+    private class ResizableDirectionalShadowLight(
+        shadowMapWidth: Int,
+        shadowMapHeight: Int,
+        viewportWidth: Float,
+        viewportHeight: Float,
+        near: Float,
+        far: Float
+    ) : DirectionalShadowLight(
+        shadowMapWidth,
+        shadowMapHeight,
+        viewportWidth,
+        viewportHeight,
+        near,
+        far
+    ) {
+        fun setShadowVolume(viewportWidth: Float, viewportHeight: Float, near: Float, far: Float) {
+            val ortho = camera as? OrthographicCamera ?: return
+            ortho.viewportWidth = viewportWidth
+            ortho.viewportHeight = viewportHeight
+            ortho.near = near
+            ortho.far = far
+            halfHeight = viewportHeight * 0.5f
+            halfDepth = near + (far - near) * 0.5f
+            ortho.update()
+        }
     }
 
     override fun dispose() {

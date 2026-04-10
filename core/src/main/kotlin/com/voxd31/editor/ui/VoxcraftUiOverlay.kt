@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -12,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.kotcrab.vis.ui.widget.VisLabel
@@ -21,6 +21,8 @@ import com.kotcrab.vis.ui.widget.VisSelectBox
 import com.kotcrab.vis.ui.widget.VisTable
 import com.kotcrab.vis.ui.widget.VisTextButton
 import com.kotcrab.vis.ui.widget.VisWindow
+import com.kotcrab.vis.ui.widget.color.ColorPicker
+import com.kotcrab.vis.ui.widget.color.ColorPickerListener
 import com.voxd31.editor.CameraMode
 import com.voxd31.editor.OrthographicView
 
@@ -57,16 +59,24 @@ class VoxcraftUiOverlay(
     private val root = Table()
     private val whiteTexture: Texture = createWhiteTexture()
     private val toolGroup = ButtonGroup<VisTextButton>()
-    private val toolButtons = mutableListOf<VisTextButton>()
+    private val toolButtons = linkedMapOf<Int, VisTextButton>()
     private val cameraButtons = linkedMapOf<CameraMode, VisTextButton>()
     private val addModeSelect = VisSelectBox<String>()
-    private val currentColorPreview = ColorChip(whiteTexture) { currentColorProvider() }
-    private val colorSwatches = mutableListOf<ColorChip>()
+    private val modificationToolsContent = VisTable(true)
+    private val constructionToolsContent = VisTable(true)
+    private val currentColorPreview = ColorChip(whiteTexture) { currentColorProvider() }.apply {
+        addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                showColorPicker()
+            }
+        })
+    }
     private val fileLabel = VisLabel("")
     private val cameraLabel = VisLabel("")
     private val toolLabel = VisLabel("")
     private val countsLabel = VisLabel("")
     private val cursorLabel = VisLabel("")
+    private var colorPicker: ColorPicker? = null
     private var syncing = false
 
     init {
@@ -80,17 +90,19 @@ class VoxcraftUiOverlay(
         stage.addActor(root)
 
         val topBar = buildTopBar()
-        val toolsWindow = buildToolsWindow()
-        val colorsWindow = buildColorsWindow()
+        val toolsColumn = VisTable(true).apply {
+            add(buildToolsWindow("Modification", modificationToolsContent)).width(220f).growX().top().left()
+            row()
+            add(buildToolsWindow("Construction", constructionToolsContent)).width(220f).grow().top().left()
+        }
         val statusWindow = buildStatusWindow()
 
-        root.add(topBar).growX().colspan(3).pad(8f, 8f, 4f, 8f)
+        root.add(topBar).growX().colspan(2).pad(8f, 8f, 4f, 8f)
         root.row()
-        root.add(toolsWindow).width(220f).top().left().padLeft(8f).padBottom(8f)
+        root.add(toolsColumn).width(220f).top().left().padLeft(8f).padBottom(8f)
         root.add().expand()
-        root.add(colorsWindow).width(320f).top().right().padRight(8f).padBottom(8f)
         root.row()
-        root.add(statusWindow).growX().colspan(3).pad(0f, 8f, 8f, 8f)
+        root.add(statusWindow).growX().colspan(2).pad(0f, 8f, 8f, 8f)
 
         rebuildToolButtons()
         syncFromState()
@@ -145,6 +157,8 @@ class VoxcraftUiOverlay(
         clearGuidesButton.addListener(onChange { clearGuidesAction() })
         content.add(clearGuidesButton).padRight(12f)
 
+        content.add(currentColorPreview).size(32f).padRight(12f)
+
         content.add(VisLabel("Add")).padRight(4f)
         addModeSelect.setItems("addWithoutReplace", "addOrReplace", "replaceCube")
         addModeSelect.addListener(object : ChangeListener() {
@@ -188,33 +202,12 @@ class VoxcraftUiOverlay(
         return window
     }
 
-    private fun buildToolsWindow(): VisWindow {
-        val window = fixedWindow("Tools")
-        val content = VisTable(true)
+    private fun buildToolsWindow(title: String, content: VisTable): VisWindow {
+        val window = fixedWindow(title)
         val scroll = VisScrollPane(content)
         scroll.setFadeScrollBars(false)
         scroll.setScrollingDisabled(true, false)
-        window.add(scroll).grow().minHeight(320f)
-        window.userObject = content
-        return window
-    }
-
-    private fun buildColorsWindow(): VisWindow {
-        val window = fixedWindow("Palette")
-        val content = VisTable(true)
-
-        val previewRow = VisTable(true)
-        previewRow.add(VisLabel("Current")).left().padRight(8f)
-        previewRow.add(currentColorPreview).size(42f, 24f).left().padRight(8f)
-        content.add(previewRow).left().growX()
-        content.row()
-
-        addPaletteSection(content, "Primary", buildPaletteRows(primaryPalette(), 6))
-        addPaletteSection(content, "Transparent", buildPaletteRows(transparentPalette(), 6))
-        addPaletteSection(content, "Grayscale", buildPaletteRows(grayPalette(), 5))
-
-        window.add(content).grow().pad(6f)
-        window.pack()
+        window.add(scroll).grow().minHeight(if (title == "Modification") 180f else 320f)
         return window
     }
 
@@ -245,9 +238,8 @@ class VoxcraftUiOverlay(
     }
 
     private fun rebuildToolButtons() {
-        val toolsContent = root.findActor<VisWindow>("Tools")
-        val content = toolsContent.userObject as VisTable
-        content.clearChildren()
+        modificationToolsContent.clearChildren()
+        constructionToolsContent.clearChildren()
         toolButtons.clear()
         toolGroup.buttons.clear()
 
@@ -260,47 +252,67 @@ class VoxcraftUiOverlay(
                 }
             })
             toolGroup.add(button)
-            toolButtons += button
+            toolButtons[index] = button
+
+            val content = if (isModificationTool(toolName)) modificationToolsContent else constructionToolsContent
             content.add(button).growX().left().padBottom(4f)
             content.row()
         }
     }
 
-    private fun addPaletteSection(parent: VisTable, title: String, rows: List<List<Color>>) {
-        parent.add(VisLabel(title)).left().padTop(8f).padBottom(4f)
-        parent.row()
-        rows.forEach { row ->
-            val rowTable = VisTable(true)
-            row.forEach { color ->
-                val chip = ColorChip(whiteTexture) { color }.apply {
-                    addListener(object : ClickListener() {
-                        override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                            colorSelected(color.cpy())
+    private fun isModificationTool(toolName: String): Boolean {
+        return toolName.lowercase() in setOf("select2", "select", "move", "copy", "rotate", "copyrot")
+    }
+
+    private fun showColorPicker() {
+        if (colorPicker == null) {
+            colorPicker = ColorPicker("Color").apply {
+                setListener(object : ColorPickerListener {
+                    override fun changed(color: Color?) {
+                        if (color != null) {
+                            colorSelected(Color(color))
                         }
-                    })
-                }
-                colorSwatches += chip
-                rowTable.add(chip).size(28f).pad(1f)
+                    }
+
+                    override fun canceled(oldColor: Color?) {
+                        if (oldColor != null) {
+                            colorSelected(Color(oldColor))
+                        }
+                    }
+
+                    override fun reset(oldColor: Color?, newColor: Color?) {
+                        if (newColor != null) {
+                            colorSelected(Color(newColor))
+                        }
+                    }
+
+                    override fun finished(color: Color?) {
+                        if (color != null) {
+                            colorSelected(Color(color))
+                        }
+                    }
+                })
             }
-            parent.add(rowTable).left()
-            parent.row()
         }
+        val picker = colorPicker ?: return
+        picker.color = Color(currentColorProvider())
+        if (picker.stage == null) {
+            stage.addActor(picker)
+        }
+        picker.centerWindow()
+        picker.fadeIn()
     }
 
     private fun syncFromState() {
         syncing = true
         val snapshot = statusProvider()
-        val currentColor = currentColorProvider()
 
         addModeSelect.selected = addModeProvider()
         cameraButtons.forEach { (mode, button) ->
             button.isChecked = cameraModeProvider() == mode
         }
-        toolButtons.forEachIndexed { index, button ->
+        toolButtons.forEach { (index, button) ->
             button.isChecked = activeToolIndexProvider() == index
-        }
-        colorSwatches.forEach { swatch ->
-            swatch.selected = colorMatches(currentColor, swatch.colorProvider())
         }
         currentColorPreview.selected = false
 
@@ -322,42 +334,6 @@ class VoxcraftUiOverlay(
             isModal = false
             setKeepWithinParent(false)
         }
-    }
-
-    private fun buildPaletteRows(colors: List<Color>, rowSize: Int): List<List<Color>> {
-        return colors.chunked(rowSize)
-    }
-
-    private fun primaryPalette(): List<Color> {
-        return (0 until 36).map { index ->
-            Color().apply {
-                fromHsv(index * 10f, 1f, 1f)
-                a = 1f
-            }
-        }
-    }
-
-    private fun transparentPalette(): List<Color> {
-        return (0 until 24).map { index ->
-            Color().apply {
-                fromHsv(index * 15f, 0.9f, 1f)
-                a = 0.55f
-            }
-        }
-    }
-
-    private fun grayPalette(): List<Color> {
-        return (0..10).map { index ->
-            val value = index / 10f
-            Color(value, value, value, 1f)
-        }
-    }
-
-    private fun colorMatches(a: Color, b: Color): Boolean {
-        return kotlin.math.abs(a.r - b.r) < 0.01f &&
-            kotlin.math.abs(a.g - b.g) < 0.01f &&
-            kotlin.math.abs(a.b - b.b) < 0.01f &&
-            kotlin.math.abs(a.a - b.a) < 0.01f
     }
 
     private fun createWhiteTexture(): Texture {
@@ -393,7 +369,11 @@ class VoxcraftUiOverlay(
             batch.color = Color(base.r, base.g, base.b, base.a * parentAlpha)
             batch.draw(texture, x, y, width, height)
 
-            val outline = if (selected) Color(1f, 0.85f, 0.2f, parentAlpha) else Color(0f, 0f, 0f, 0.55f * parentAlpha)
+            val outline = if (selected) {
+                Color(1f, 0.85f, 0.2f, parentAlpha)
+            } else {
+                Color(0f, 0f, 0f, 0.55f * parentAlpha)
+            }
             batch.color = outline
             val thickness = if (selected) 3f else 1f
             batch.draw(texture, x, y, width, thickness)
