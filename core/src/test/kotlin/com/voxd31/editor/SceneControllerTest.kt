@@ -67,4 +67,12 @@ class SceneControllerTest {
         assertFalse(scene.hasPlanarTJunctions())
         assertTrue(scene.hasConsistentFaceWinding())
     }
+
+    @Test
+    fun renderOutputUsesUnitGridSubdivisionAfterMerge() {
+        scene.addCube(Vector3(0f, 0f, 0f), Color.RED)
+        scene.addCube(Vector3(1f, 0f, 0f), Color.RED)
+
+        assertTrue(scene.renderFacesUseUnitGridSubdivision())
+    }
 }

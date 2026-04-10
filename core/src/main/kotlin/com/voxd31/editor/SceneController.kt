@@ -178,8 +178,10 @@ class SceneController(val modelBuilder: ModelBuilder) {
         collectChunkCoords().sortedWith(compareBy<ChunkCoord>({ it.x }, { it.y }, { it.z })).forEach { chunk ->
             collectChunkFaces(chunk).forEach { (colorKey, faces) ->
                 faces.forEach { face ->
-                    consumer(face.corners[0], face.corners[1], face.corners[2], colorKey)
-                    consumer(face.corners[0], face.corners[2], face.corners[3], colorKey)
+                    forEachRenderableFace(face) { corners, _ ->
+                        consumer(corners[0], corners[1], corners[2], colorKey)
+                        consumer(corners[0], corners[2], corners[3], colorKey)
+                    }
                 }
             }
         }
@@ -226,6 +228,28 @@ class SceneController(val modelBuilder: ModelBuilder) {
             }
     }
 
+    internal fun renderFacesUseUnitGridSubdivision(): Boolean {
+        return collectChunkCoords().all { chunk ->
+            collectChunkFaces(chunk).values.flatten().all { face ->
+                val renderableFaces = mutableListOf<MergedFace>()
+                forEachRenderableFace(face) { corners, normal ->
+                    renderableFaces += MergedFace(corners, normal)
+                }
+                renderableFaces.all { renderFace ->
+                    val xs = renderFace.corners.map { it.x }
+                    val ys = renderFace.corners.map { it.y }
+                    val zs = renderFace.corners.map { it.z }
+                    val spans = listOf(
+                        (xs.maxOrNull() ?: 0f) - (xs.minOrNull() ?: 0f),
+                        (ys.maxOrNull() ?: 0f) - (ys.minOrNull() ?: 0f),
+                        (zs.maxOrNull() ?: 0f) - (zs.minOrNull() ?: 0f)
+                    ).filter { it > 1e-4f }
+                    spans.all { it <= 1.0001f }
+                }
+            }
+        }
+    }
+
     private fun invalidateRenderCache() {
         renderCacheDirty = true
     }
@@ -259,6 +283,116 @@ class SceneController(val modelBuilder: ModelBuilder) {
 
     private fun addFace(part: MeshPartBuilder, corners: Array<Vector3>, normal: Vector3) {
         part.rect(corners[0], corners[1], corners[2], corners[3], normal)
+    }
+
+    private fun forEachRenderableFace(
+        face: MergedFace,
+        consumer: (corners: Array<Vector3>, normal: Vector3) -> Unit
+    ) {
+        val normal = face.normal
+        val xs = face.corners.map { it.x }
+        val ys = face.corners.map { it.y }
+        val zs = face.corners.map { it.z }
+        val minX = xs.minOrNull() ?: return
+        val maxX = xs.maxOrNull() ?: return
+        val minY = ys.minOrNull() ?: return
+        val maxY = ys.maxOrNull() ?: return
+        val minZ = zs.minOrNull() ?: return
+        val maxZ = zs.maxOrNull() ?: return
+
+        when {
+            kotlin.math.abs(normal.x) > 0.5f -> {
+                val planeX = xs.first()
+                var y0 = minY
+                while (y0 < maxY - 1e-4f) {
+                    val y1 = minOf(y0 + 1f, maxY)
+                    var z0 = minZ
+                    while (z0 < maxZ - 1e-4f) {
+                        val z1 = minOf(z0 + 1f, maxZ)
+                        val corners = if (normal.x >= 0f) {
+                            arrayOf(
+                                Vector3(planeX, y0, z1),
+                                Vector3(planeX, y0, z0),
+                                Vector3(planeX, y1, z0),
+                                Vector3(planeX, y1, z1)
+                            )
+                        } else {
+                            arrayOf(
+                                Vector3(planeX, y0, z0),
+                                Vector3(planeX, y0, z1),
+                                Vector3(planeX, y1, z1),
+                                Vector3(planeX, y1, z0)
+                            )
+                        }
+                        consumer(corners, normal)
+                        z0 = z1
+                    }
+                    y0 = y1
+                }
+            }
+
+            kotlin.math.abs(normal.y) > 0.5f -> {
+                val planeY = ys.first()
+                var x0 = minX
+                while (x0 < maxX - 1e-4f) {
+                    val x1 = minOf(x0 + 1f, maxX)
+                    var z0 = minZ
+                    while (z0 < maxZ - 1e-4f) {
+                        val z1 = minOf(z0 + 1f, maxZ)
+                        val corners = if (normal.y >= 0f) {
+                            arrayOf(
+                                Vector3(x0, planeY, z0),
+                                Vector3(x0, planeY, z1),
+                                Vector3(x1, planeY, z1),
+                                Vector3(x1, planeY, z0)
+                            )
+                        } else {
+                            arrayOf(
+                                Vector3(x0, planeY, z1),
+                                Vector3(x0, planeY, z0),
+                                Vector3(x1, planeY, z0),
+                                Vector3(x1, planeY, z1)
+                            )
+                        }
+                        consumer(corners, normal)
+                        z0 = z1
+                    }
+                    x0 = x1
+                }
+            }
+
+            kotlin.math.abs(normal.z) > 0.5f -> {
+                val planeZ = zs.first()
+                var x0 = minX
+                while (x0 < maxX - 1e-4f) {
+                    val x1 = minOf(x0 + 1f, maxX)
+                    var y0 = minY
+                    while (y0 < maxY - 1e-4f) {
+                        val y1 = minOf(y0 + 1f, maxY)
+                        val corners = if (normal.z >= 0f) {
+                            arrayOf(
+                                Vector3(x0, y0, planeZ),
+                                Vector3(x1, y0, planeZ),
+                                Vector3(x1, y1, planeZ),
+                                Vector3(x0, y1, planeZ)
+                            )
+                        } else {
+                            arrayOf(
+                                Vector3(x1, y0, planeZ),
+                                Vector3(x0, y0, planeZ),
+                                Vector3(x0, y1, planeZ),
+                                Vector3(x1, y1, planeZ)
+                            )
+                        }
+                        consumer(corners, normal)
+                        y0 = y1
+                    }
+                    x0 = x1
+                }
+            }
+
+            else -> consumer(face.corners, normal)
+        }
     }
 
     private fun collectChunkCoords(): Set<ChunkCoord> {
@@ -642,7 +776,9 @@ class SceneController(val modelBuilder: ModelBuilder) {
                 material
             )
             faces.forEach { face ->
-                addFace(part, face.corners, face.normal)
+                forEachRenderableFace(face) { corners, normal ->
+                    addFace(part, corners, normal)
+                }
             }
         }
         return builder.end()
