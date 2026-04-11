@@ -142,4 +142,16 @@
 /fill -7 14 6 -7 14 6 minecraft:stone
 /fill -7 14 6 6 14 6 minecraft:stone
 /fill 6 14 6 6 14 6 minecraft:stone
-/fill 6 14 6 -7 14 6 minecraft:stone
+/fill 6 14 6 -7 14 6 minecraft:stone# Frame 14 0 -1 19 5 -7 ff0000ff
+/fill 14 0 -1 14 5 -1 minecraft:stone
+/fill 14 5 -1 19 5 -1 minecraft:stone
+/fill 19 5 -1 19 0 -1 minecraft:stone
+/fill 19 0 -1 14 0 -1 minecraft:stone
+/fill 14 0 -1 14 0 -7 minecraft:stone
+/fill 14 5 -1 14 5 -7 minecraft:stone
+/fill 19 5 -1 19 5 -7 minecraft:stone
+/fill 19 0 -1 19 0 -7 minecraft:stone
+/fill 14 0 -7 14 5 -7 minecraft:stone
+/fill 14 5 -7 19 5 -7 minecraft:stone
+/fill 19 5 -7 19 0 -7 minecraft:stone
+/fill 19 0 -7 14 0 -7 minecraft:stone
