@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import com.voxd31.editor.DefaultDocumentIoService
 import com.voxd31.editor.DocumentIoService
+import java.io.OutputStream
 import java.io.FileNotFoundException
 
 class AndroidDocumentIoService(
@@ -58,19 +59,23 @@ class AndroidDocumentIoService(
             return DefaultDocumentIoService.displayName(path)
         }
         val uri = Uri.parse(path)
-        return context.contentResolver.query(
-            uri,
-            arrayOf(OpenableColumns.DISPLAY_NAME),
-            null,
-            null,
-            null
-        )?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                cursor.getString(0)
-            } else {
+        return try {
+            context.contentResolver.query(
+                uri,
+                arrayOf(OpenableColumns.DISPLAY_NAME),
+                null,
+                null,
                 null
-            }
-        } ?: uri.lastPathSegment
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    cursor.getString(0)
+                } else {
+                    null
+                }
+            } ?: uri.lastPathSegment
+        } catch (_: Throwable) {
+            uri.lastPathSegment
+        }
     }
 
     override fun sidecarPath(path: String, suffix: String): String? {
@@ -83,10 +88,26 @@ class AndroidDocumentIoService(
     private fun openInputStream(path: String) = context.contentResolver.openInputStream(Uri.parse(path))
         ?: throw FileNotFoundException("Unable to open input stream for $path")
 
-    private fun openOutputStream(path: String) =
-        context.contentResolver.openOutputStream(Uri.parse(path), "wt")
-            ?: context.contentResolver.openOutputStream(Uri.parse(path))
+    private fun openOutputStream(path: String): OutputStream {
+        val uri = Uri.parse(path)
+        return openOutputStream(uri, "rwt")
+            ?: openOutputStream(uri, "wt")
+            ?: openOutputStream(uri, "w")
+            ?: openOutputStream(uri, null)
             ?: throw FileNotFoundException("Unable to open output stream for $path")
+    }
+
+    private fun openOutputStream(uri: Uri, mode: String?): OutputStream? {
+        return try {
+            if (mode == null) {
+                context.contentResolver.openOutputStream(uri)
+            } else {
+                context.contentResolver.openOutputStream(uri, mode)
+            }
+        } catch (_: Throwable) {
+            null
+        }
+    }
 
     private fun isContentDocumentPath(path: String): Boolean {
         val scheme = Uri.parse(path).scheme ?: return false

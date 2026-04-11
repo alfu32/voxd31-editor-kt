@@ -35,11 +35,12 @@ private class AndroidTouchInputProcessor(
     private var lastGestureY = 0
     private var lastAverageY = 0f
     private var scrollAccumulatorY = 0f
+    private var maxPointerCountInGesture = 0
     private var tapCandidatePointer = -1
     private var tapCandidateX = 0f
     private var tapCandidateY = 0f
 
-    private val debounceNanos = 85_000_000L
+    private val debounceNanos = 140_000_000L
     private val tapSlopSquared = 14f * 14f
     private val scrollPixelsPerWheelUnit = 48f
 
@@ -55,6 +56,7 @@ private class AndroidTouchInputProcessor(
 
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
         pointers.getOrPut(pointer) { PointerState() }.position.set(screenX.toFloat(), screenY.toFloat())
+        maxPointerCountInGesture = maxOf(maxPointerCountInGesture, pointers.size)
         if (pointers.size == 1) {
             tapCandidatePointer = pointer
             tapCandidateX = screenX.toFloat()
@@ -81,11 +83,21 @@ private class AndroidTouchInputProcessor(
             pointers.size == 1 &&
             pointer == tapCandidatePointer &&
             distanceSquared(screenX.toFloat(), screenY.toFloat(), tapCandidateX, tapCandidateY) <= tapSlopSquared
+        val modeBeforeRemoval = if (activeMode != GestureMode.NONE) activeMode else pendingMode
         pointers.remove(pointer)
+        if (pointers.size < minimumPointerCountForMode(modeBeforeRemoval)) {
+            finishActiveGesture(screenX, screenY)
+            pendingMode = GestureMode.NONE
+            pendingSinceNanos = 0L
+            maxPointerCountInGesture = pointers.size
+        }
         refreshGestureState(screenX, screenY)
         if (shouldEmitTap) {
             delegate.touchDown(screenX, screenY, 0, Input.Buttons.LEFT)
             delegate.touchUp(screenX, screenY, 0, Input.Buttons.LEFT)
+        }
+        if (pointers.isEmpty()) {
+            maxPointerCountInGesture = 0
         }
         clearTapCandidate()
         return true
@@ -96,11 +108,17 @@ private class AndroidTouchInputProcessor(
         finishActiveGesture(screenX, screenY)
         pendingMode = GestureMode.NONE
         clearTapCandidate()
+        maxPointerCountInGesture = pointers.size
         return true
     }
 
     private fun refreshGestureState(screenX: Int, screenY: Int) {
-        val desiredMode = desiredModeForPointerCount(pointers.size)
+        if (pointers.isEmpty()) {
+            maxPointerCountInGesture = 0
+        } else {
+            maxPointerCountInGesture = maxOf(maxPointerCountInGesture, pointers.size)
+        }
+        val desiredMode = desiredModeForPointerCount(maxPointerCountInGesture)
         val now = System.nanoTime()
         if (desiredMode != activeMode && activeMode != GestureMode.NONE) {
             finishActiveGesture(
@@ -219,6 +237,16 @@ private class AndroidTouchInputProcessor(
             2 -> GestureMode.ZOOM
             3 -> GestureMode.ORBIT
             else -> GestureMode.PAN
+        }
+    }
+
+    private fun minimumPointerCountForMode(mode: GestureMode): Int {
+        return when (mode) {
+            GestureMode.NONE -> 0
+            GestureMode.LEFT -> 1
+            GestureMode.ZOOM -> 2
+            GestureMode.ORBIT -> 3
+            GestureMode.PAN -> 4
         }
     }
 

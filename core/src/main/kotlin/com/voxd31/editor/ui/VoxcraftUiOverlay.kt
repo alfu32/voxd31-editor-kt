@@ -1,5 +1,6 @@
 package com.voxd31.editor.ui
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
@@ -42,12 +43,17 @@ class VoxcraftUiOverlay(
     private val openAction: () -> Unit,
     private val saveAction: () -> Unit,
     private val saveAsAction: () -> Unit,
-    private val exportMeshAction: () -> Unit,
+    private val exportChoicesProvider: () -> List<String>,
+    private val exportChoiceSelected: (String) -> Unit,
     private val modelSettingsProvider: () -> ModelSettings,
     private val modelSettingsChanged: (ModelSettings) -> Unit,
+    private val deleteSelectionAction: () -> Unit,
     private val clearSelectionAction: () -> Unit,
     private val clearGuidesAction: () -> Unit,
+    private val placeAxialGridAction: () -> Unit,
     private val resetToolAction: () -> Unit,
+    private val uiScaleProvider: () -> Float,
+    private val uiScaleChanged: (Float) -> Unit,
     private val statusProvider: () -> StatusSnapshot
 ) {
     data class StatusSnapshot(
@@ -62,7 +68,8 @@ class VoxcraftUiOverlay(
         val cursor: String
     )
 
-    val stage: Stage = Stage(ScreenViewport())
+    private val uiViewport = ScreenViewport()
+    val stage: Stage = Stage(uiViewport)
 
     private val root = Table()
     private val whiteTexture: Texture = createWhiteTexture()
@@ -70,6 +77,7 @@ class VoxcraftUiOverlay(
     private val toolButtons = linkedMapOf<Int, VisTextButton>()
     private val cameraButtons = linkedMapOf<CameraMode, VisTextButton>()
     private val addModeSelect = VisSelectBox<String>()
+    private val uiScaleSelect = VisSelectBox<String>()
     private val modificationToolsContent = VisTable(true)
     private val constructionToolsContent = VisTable(true)
     private val currentColorPreview = ColorChip(whiteTexture) { currentColorProvider() }.apply {
@@ -87,9 +95,11 @@ class VoxcraftUiOverlay(
     private val cursorLabel = VisLabel("")
     private var colorPicker: ColorPicker? = null
     private var modelSettingsDialog: VisWindow? = null
+    private var exportDialog: VisWindow? = null
     private var syncing = false
 
     init {
+        setUiScale(uiScaleProvider())
         toolGroup.setMinCheckCount(1)
         toolGroup.setMaxCheckCount(1)
         toolGroup.setUncheckLast(true)
@@ -128,7 +138,14 @@ class VoxcraftUiOverlay(
     }
 
     fun resize(width: Int, height: Int) {
-        stage.viewport.update(width, height, true)
+        uiViewport.update(width, height, true)
+    }
+
+    fun setUiScale(scale: Float) {
+        val normalized = normalizeUiScale(scale)
+        uiViewport.setUnitsPerPixel(1f / normalized)
+        uiViewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
+        root.invalidateHierarchy()
     }
 
     fun isPointerOverUi(screenX: Int, screenY: Int): Boolean {
@@ -164,7 +181,7 @@ class VoxcraftUiOverlay(
         content.add(saveAsButton).padRight(6f)
 
         val exportButton = VisTextButton("Export")
-        exportButton.addListener(onChange { exportMeshAction() })
+        exportButton.addListener(onChange { showExportDialog() })
         content.add(exportButton).padRight(6f)
 
         val modelButton = VisTextButton("Model")
@@ -175,13 +192,21 @@ class VoxcraftUiOverlay(
         resetButton.addListener(onChange { resetToolAction() })
         content.add(resetButton).padRight(6f)
 
+        val deleteButton = VisTextButton("Delete")
+        deleteButton.addListener(onChange { deleteSelectionAction() })
+        content.add(deleteButton).padRight(6f)
+
         val clearSelectionButton = VisTextButton("Clear Selection")
         clearSelectionButton.addListener(onChange { clearSelectionAction() })
         content.add(clearSelectionButton).padRight(6f)
 
         val clearGuidesButton = VisTextButton("Clear Guides")
         clearGuidesButton.addListener(onChange { clearGuidesAction() })
-        content.add(clearGuidesButton).padRight(12f)
+        content.add(clearGuidesButton).padRight(6f)
+
+        val axialGridButton = VisTextButton("Axial Grid")
+        axialGridButton.addListener(onChange { placeAxialGridAction() })
+        content.add(axialGridButton).padRight(12f)
 
         content.add(currentColorPreview).size(32f).padRight(12f)
 
@@ -195,6 +220,17 @@ class VoxcraftUiOverlay(
             }
         })
         content.add(addModeSelect).width(180f).padRight(12f)
+
+        content.add(VisLabel("UI")).padRight(4f)
+        uiScaleSelect.setItems("1x", "1.5x", "2x")
+        uiScaleSelect.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                if (!syncing) {
+                    uiScaleChanged(parseUiScaleLabel(uiScaleSelect.selected))
+                }
+            }
+        })
+        content.add(uiScaleSelect).width(80f).padRight(12f)
 
         content.add(VisLabel("Camera")).padRight(4f)
         val cameraGroup = ButtonGroup<VisTextButton>().apply {
@@ -226,6 +262,53 @@ class VoxcraftUiOverlay(
         window.add(content).growX().left().pad(6f)
         window.pack()
         return window
+    }
+
+    private fun showExportDialog() {
+        val choices = exportChoicesProvider()
+        exportDialog?.remove()
+        val dialog = fixedWindow("Export").also {
+            it.isModal = true
+            exportDialog = it
+        }
+
+        val content = VisTable(true)
+        if (choices.isEmpty()) {
+            content.add(VisLabel("No export formats are available.")).pad(10f)
+            val closeButton = VisTextButton("Close")
+            closeButton.addListener(onChange { dialog.remove() })
+            dialog.add(content).pad(10f)
+            dialog.row()
+            dialog.add(closeButton).pad(0f, 10f, 10f, 10f).right()
+        } else {
+            val select = VisSelectBox<String>()
+            select.setItems(*choices.toTypedArray())
+            content.add(VisLabel("Format")).left().padRight(8f)
+            content.add(select).width(280f).left()
+
+            val buttons = VisTable(true)
+            val exportButton = VisTextButton("Export")
+            exportButton.addListener(onChange {
+                val selected = select.selected
+                dialog.remove()
+                exportChoiceSelected(selected)
+            })
+            val cancelButton = VisTextButton("Cancel")
+            cancelButton.addListener(onChange { dialog.remove() })
+            buttons.add(exportButton).padRight(6f)
+            buttons.add(cancelButton)
+
+            dialog.add(content).pad(10f)
+            dialog.row()
+            dialog.add(buttons).pad(0f, 10f, 10f, 10f).right()
+        }
+
+        if (dialog.stage == null) {
+            stage.addActor(dialog)
+        }
+        dialog.pack()
+        dialog.centerWindow()
+        dialog.fadeIn()
     }
 
     private fun buildToolsWindow(title: String, content: VisTable): VisWindow {
@@ -386,6 +469,7 @@ class VoxcraftUiOverlay(
         val snapshot = statusProvider()
 
         addModeSelect.selected = addModeProvider()
+        uiScaleSelect.selected = uiScaleLabel(uiScaleProvider())
         cameraButtons.forEach { (mode, button) ->
             button.isChecked = cameraModeProvider() == mode
         }
@@ -412,6 +496,30 @@ class VoxcraftUiOverlay(
             isResizable = false
             isModal = false
             setKeepWithinParent(false)
+        }
+    }
+
+    private fun uiScaleLabel(scale: Float): String {
+        return when (normalizeUiScale(scale)) {
+            1.5f -> "1.5x"
+            2f -> "2x"
+            else -> "1x"
+        }
+    }
+
+    private fun parseUiScaleLabel(label: String?): Float {
+        return when (label) {
+            "1.5x" -> 1.5f
+            "2x" -> 2f
+            else -> 1f
+        }
+    }
+
+    private fun normalizeUiScale(scale: Float): Float {
+        return when {
+            scale >= 1.75f -> 2f
+            scale >= 1.25f -> 1.5f
+            else -> 1f
         }
     }
 

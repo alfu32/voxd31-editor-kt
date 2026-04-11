@@ -100,6 +100,7 @@ class Voxd31Editor @JvmOverloads constructor(
     private val groundCenter = Vector3()
     private var groundWidth = minimumGroundPlaneWidth
     private var groundDepth = minimumGroundPlaneDepth
+    private var uiScale = 1f
     private var showMergedFaceEdges = false
     private var showRenderableFaceEdges = false
     private val shadowSettings = ShadowSettings(
@@ -502,12 +503,17 @@ class Voxd31Editor @JvmOverloads constructor(
             openAction = { openModelDialog() },
             saveAction = { saveCurrentModel() },
             saveAsAction = { saveModelAsDialog() },
-            exportMeshAction = { exportMeshDialog() },
+            exportChoicesProvider = { exportChoices().map { it.label } },
+            exportChoiceSelected = { label -> exportDialogForChoice(label) },
             modelSettingsProvider = { modelSettings.copy() },
             modelSettingsChanged = { settings -> applyModelSettings(settings) },
+            deleteSelectionAction = { deleteSelection() },
             clearSelectionAction = { selected.clear() },
             clearGuidesAction = { guides.clear() },
+            placeAxialGridAction = { placeAxialGridAtCursor() },
             resetToolAction = { activeTool?.reset() },
+            uiScaleProvider = { uiScale },
+            uiScaleChanged = { scale -> setUiScale(scale) },
             statusProvider = { uiStatusSnapshot() }
         )
 
@@ -554,13 +560,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 Input.Keys.DEL,
                 Input.Keys.BACK,
                 Input.Keys.FORWARD_DEL -> {
-                    if(selected.cubes.size > 0) {
-                        selected.cubes.forEach{
-                            cube ->
-                            scene.removeCube(cube.value)
-                        }
-                        selected.clear()
-                    }
+                    deleteSelection()
                 }
                 Input.Keys.T -> {
                     if(tools.size > 0) {
@@ -583,17 +583,7 @@ class Voxd31Editor @JvmOverloads constructor(
                     }
                 }
                 Input.Keys.G -> {
-                    val mp = event.modelVoxel!!
-                    guides.addCube(Vector3(mp),Color.WHITE)
-
-                    for(i in 2 until 21) {
-                        guides.addCube(Vector3(mp).set(mp.x+i.toFloat(),mp.y,mp.z),Color.RED)
-                        guides.addCube(Vector3(mp).set(mp.x-i.toFloat(),mp.y,mp.z),Color.RED)
-                        guides.addCube(Vector3(mp).set(mp.x,mp.y+i.toFloat(),mp.z),Color.BLUE)
-                        guides.addCube(Vector3(mp).set(mp.x,mp.y-i.toFloat(),mp.z),Color.BLUE)
-                        guides.addCube(Vector3(mp).set(mp.x,mp.y,mp.z+i.toFloat()),Color.GREEN)
-                        guides.addCube(Vector3(mp).set(mp.x,mp.y,mp.z-i.toFloat()),Color.GREEN)
-                    }
+                    placeAxialGrid(event.modelVoxel)
                 }
                 Input.Keys.S -> {
                     saveCurrentModel()
@@ -955,6 +945,52 @@ class Voxd31Editor @JvmOverloads constructor(
         )
     }
 
+    private fun setUiScale(scale: Float) {
+        uiScale = when {
+            scale >= 1.75f -> 2f
+            scale >= 1.25f -> 1.5f
+            else -> 1f
+        }
+        uiOverlay.setUiScale(uiScale)
+        setStatusMessage("UI scale set to ${if (uiScale == 1f) "1" else uiScale}x")
+    }
+
+    private fun deleteSelection() {
+        if (selected.cubes.isEmpty()) {
+            setStatusMessage("Delete skipped: selection is empty.")
+            return
+        }
+        val cubesToDelete = selected.cubes.values.toList()
+        cubesToDelete.forEach { cube ->
+            scene.removeCube(cube)
+        }
+        selected.clear()
+        rebuildGroundPlane(force = true)
+        setStatusMessage("Deleted ${cubesToDelete.size} selected cube(s).")
+    }
+
+    private fun placeAxialGridAtCursor() {
+        placeAxialGrid(currentEvent.modelVoxel ?: currentEvent.modelNextVoxel)
+    }
+
+    private fun placeAxialGrid(point: Vector3?) {
+        val mp = point ?: run {
+            setStatusMessage("Axial grid skipped: no model point under cursor.")
+            return
+        }
+        guides.addCube(Vector3(mp), Color.WHITE)
+
+        for (i in 2 until 21) {
+            guides.addCube(Vector3(mp).set(mp.x + i.toFloat(), mp.y, mp.z), Color.RED)
+            guides.addCube(Vector3(mp).set(mp.x - i.toFloat(), mp.y, mp.z), Color.RED)
+            guides.addCube(Vector3(mp).set(mp.x, mp.y + i.toFloat(), mp.z), Color.BLUE)
+            guides.addCube(Vector3(mp).set(mp.x, mp.y - i.toFloat(), mp.z), Color.BLUE)
+            guides.addCube(Vector3(mp).set(mp.x, mp.y, mp.z + i.toFloat()), Color.GREEN)
+            guides.addCube(Vector3(mp).set(mp.x, mp.y, mp.z - i.toFloat()), Color.GREEN)
+        }
+        setStatusMessage("Placed axial grid at (${mp.x.toInt()}, ${mp.y.toInt()}, ${mp.z.toInt()}).")
+    }
+
     private fun loadModelFromDisk(path: String, announce: Boolean = true) {
         val exists = documentIoService.exists(path)
         val loaded = loadModelFromCsv(path, documentIoService)
@@ -984,12 +1020,51 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun saveCurrentModel(announce: Boolean = true) {
-        saveModelAsCsv(scene.cubes.values.toList(), filename, modelSettings, documentIoService)
-        rebuildGroundPlane(force = true)
-        updateWindowTitle()
-        if (announce) {
-            setStatusMessage("Saved ${displayFileName(filename)}")
+        try {
+            saveModelAsCsv(scene.cubes.values.toList(), filename, modelSettings, documentIoService)
+            rebuildGroundPlane(force = true)
+            updateWindowTitle()
+            if (announce) {
+                setStatusMessage("Saved ${displayFileName(filename)}")
+            }
+        } catch (t: Throwable) {
+            if (announce) {
+                setStatusMessage("Save failed: ${t.message ?: t.javaClass.simpleName}")
+            }
         }
+    }
+
+    private fun runNativeFileDialog(
+        errorPrefix: String,
+        dialogCall: () -> String?,
+        resultHandler: (String?) -> Unit
+    ) {
+        if (Gdx.app.type != Application.ApplicationType.Android) {
+            try {
+                resultHandler(dialogCall())
+            } catch (t: Throwable) {
+                setStatusMessage("$errorPrefix: ${t.message ?: t.javaClass.simpleName}")
+            }
+            return
+        }
+
+        Thread({
+            var result: String? = null
+            var error: Throwable? = null
+            try {
+                result = dialogCall()
+            } catch (t: Throwable) {
+                error = t
+            }
+            Gdx.app.postRunnable {
+                val failure = error
+                if (failure != null) {
+                    setStatusMessage("$errorPrefix: ${failure.message ?: failure.javaClass.simpleName}")
+                } else {
+                    resultHandler(result)
+                }
+            }
+        }, "voxcraft-file-dialog").start()
     }
 
     private fun openModelDialog() {
@@ -997,16 +1072,27 @@ class Voxd31Editor @JvmOverloads constructor(
             setStatusMessage("Open dialog is unavailable in this runtime.")
             return
         }
-        val path = fileDialogService.openFile(
-            title = "Open Voxcraft Model",
-            directoryHint = directoryHint(filename),
-            defaultFileName = displayFileName(filename),
-            allowedExtensions = setOf("vxdi")
-        ) ?: run {
-            setStatusMessage("Open canceled.")
-            return
+        runNativeFileDialog(
+            errorPrefix = "Open failed",
+            dialogCall = {
+                fileDialogService.openFile(
+                    title = "Open Voxcraft Model",
+                    directoryHint = directoryHint(filename),
+                    defaultFileName = displayFileName(filename),
+                    allowedExtensions = setOf("vxdi")
+                )
+            }
+        ) { path ->
+            if (path == null) {
+                setStatusMessage("Open canceled.")
+                return@runNativeFileDialog
+            }
+            try {
+                loadModelFromDisk(path)
+            } catch (t: Throwable) {
+                setStatusMessage("Open failed: ${t.message ?: t.javaClass.simpleName}")
+            }
         }
-        loadModelFromDisk(path)
     }
 
     private fun saveModelAsDialog() {
@@ -1014,35 +1100,40 @@ class Voxd31Editor @JvmOverloads constructor(
             setStatusMessage("Save As dialog is unavailable in this runtime.")
             return
         }
-        val requested = fileDialogService.saveFile(
-            title = "Save Voxcraft Model As",
-            directoryHint = directoryHint(filename),
-            defaultFileName = displayFileName(filename),
-            allowedExtensions = setOf("vxdi")
-        ) ?: run {
-            setStatusMessage("Save As canceled.")
-            return
+        runNativeFileDialog(
+            errorPrefix = "Save As failed",
+            dialogCall = {
+                fileDialogService.saveFile(
+                    title = "Save Voxcraft Model As",
+                    directoryHint = directoryHint(filename),
+                    defaultFileName = displayFileName(filename),
+                    allowedExtensions = setOf("vxdi")
+                )
+            }
+        ) { requested ->
+            if (requested == null) {
+                setStatusMessage("Save As canceled.")
+                return@runNativeFileDialog
+            }
+            val targetPath = ensureExtension(requested, "vxdi")
+            try {
+                saveModelAsCsv(scene.cubes.values.toList(), targetPath, modelSettings, documentIoService)
+                filename = targetPath
+                rebuildGroundPlane(force = true)
+                updateWindowTitle()
+                setStatusMessage("Saved ${displayFileName(filename)}")
+            } catch (t: Throwable) {
+                setStatusMessage("Save As failed: ${t.message ?: t.javaClass.simpleName}")
+            }
         }
-        filename = ensureExtension(requested, "vxdi")
-        saveCurrentModel()
     }
 
-    private fun exportMeshDialog() {
+    private fun exportDialogForChoice(selectedLabel: String) {
         if (!fileDialogService.isSupported()) {
             setStatusMessage("Export dialog is unavailable in this runtime.")
             return
         }
-        val choices = exportChoices()
-        val selectedLabel = fileDialogService.chooseOption(
-            title = "Export",
-            message = "Choose the export format before opening the save dialog.",
-            options = choices.map { it.label },
-            defaultOption = choices.firstOrNull()?.label
-        ) ?: run {
-            setStatusMessage("Export canceled.")
-            return
-        }
-        val choice = choices.firstOrNull { it.label == selectedLabel } ?: run {
+        val choice = exportChoices().firstOrNull { it.label == selectedLabel } ?: run {
             setStatusMessage("Export failed: unknown export format.")
             return
         }
@@ -1050,17 +1141,26 @@ class Voxd31Editor @JvmOverloads constructor(
             setStatusMessage("Export failed: the model is empty.")
             return
         }
-        val requested = fileDialogService.saveFile(
-            title = "Export - ${choice.label}",
-            directoryHint = directoryHint(filename),
-            defaultFileName = "${baseName(filename)}.${choice.defaultExtension}",
-            allowedExtensions = choice.extensions
-        ) ?: run {
-            setStatusMessage("Export canceled.")
-            return
+        runNativeFileDialog(
+            errorPrefix = "Export failed",
+            dialogCall = {
+                fileDialogService.saveFile(
+                    title = "Export - ${choice.label}",
+                    directoryHint = directoryHint(filename),
+                    defaultFileName = "${baseName(filename)}.${choice.defaultExtension}",
+                    allowedExtensions = choice.extensions
+                )
+            }
+        ) { requested ->
+            if (requested == null) {
+                setStatusMessage("Export canceled.")
+                return@runNativeFileDialog
+            }
+            exportToPath(choice, ensureExtension(requested, choice.defaultExtension))
         }
+    }
 
-        val targetPath = ensureExtension(requested, choice.defaultExtension)
+    private fun exportToPath(choice: ExportChoice, targetPath: String) {
         when (choice.kind) {
             ExportChoice.Kind.MESH -> {
                 val option = meshExportOptionForExtension(choice.defaultExtension) ?: run {
@@ -1082,7 +1182,12 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun exportPngScreenshot(path: String) {
-        val pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, Gdx.graphics.width, Gdx.graphics.height)
+        val pixmap = try {
+            ScreenUtils.getFrameBufferPixmap(0, 0, Gdx.graphics.width, Gdx.graphics.height)
+        } catch (t: Throwable) {
+            setStatusMessage("PNG export failed: ${t.message ?: t.javaClass.simpleName}")
+            return
+        }
         try {
             flipPixmapVertical(pixmap)
             val output = java.io.ByteArrayOutputStream()
@@ -1283,10 +1388,6 @@ class Voxd31Editor @JvmOverloads constructor(
         val sceneHit = scene.sceneIntersectCubesRay(ray)
         if (sceneHit.hit) {
             candidates += sceneHit.point.cpy()
-        }
-        val guideHit = guides.sceneIntersectGuidesRay(ray)
-        if (guideHit.hit) {
-            candidates += guideHit.point.cpy()
         }
         val groundHit = Vector3()
         if (Intersector.intersectRayPlane(ray, Plane(Vector3.Y, 0f), groundHit)) {
