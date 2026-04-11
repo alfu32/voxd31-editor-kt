@@ -5,7 +5,7 @@ import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.math.Vector2
 import com.voxd31.editor.InputProcessorDecorator
-import kotlin.math.abs
+import com.voxd31.editor.TouchGestureButtons
 import kotlin.math.roundToInt
 
 class AndroidTouchInputDecorator : InputProcessorDecorator {
@@ -20,9 +20,9 @@ private class AndroidTouchInputProcessor(
     private enum class GestureMode(val syntheticButton: Int?) {
         NONE(null),
         LEFT(Input.Buttons.LEFT),
-        ZOOM(null),
-        ORBIT(Input.Buttons.RIGHT),
-        PAN(Input.Buttons.MIDDLE)
+        TWO_FINGER_VERTICAL(TouchGestureButtons.TWO_FINGER_VERTICAL_DRAG),
+        ORBIT(TouchGestureButtons.THREE_FINGER_ORBIT),
+        PAN(TouchGestureButtons.FOUR_FINGER_PAN)
     }
 
     private data class PointerState(val position: Vector2 = Vector2())
@@ -33,8 +33,6 @@ private class AndroidTouchInputProcessor(
     private var pendingSinceNanos = 0L
     private var lastGestureX = 0
     private var lastGestureY = 0
-    private var lastAverageY = 0f
-    private var scrollAccumulatorY = 0f
     private var maxPointerCountInGesture = 0
     private var tapCandidatePointer = -1
     private var tapCandidateX = 0f
@@ -42,7 +40,6 @@ private class AndroidTouchInputProcessor(
 
     private val debounceNanos = 140_000_000L
     private val tapSlopSquared = 14f * 14f
-    private val scrollPixelsPerWheelUnit = 48f
 
     override fun keyDown(keycode: Int): Boolean = delegate.keyDown(keycode)
 
@@ -121,11 +118,18 @@ private class AndroidTouchInputProcessor(
         val desiredMode = desiredModeForPointerCount(maxPointerCountInGesture)
         val now = System.nanoTime()
         if (desiredMode != activeMode && activeMode != GestureMode.NONE) {
+            val previousMode = activeMode
             finishActiveGesture(
                 screenX,
                 screenY,
                 preferLastAnchor = activeMode == GestureMode.LEFT && pointers.size > 1
             )
+            if (minimumPointerCountForMode(desiredMode) > minimumPointerCountForMode(previousMode)) {
+                activateGesture(desiredMode, screenX, screenY)
+                pendingMode = GestureMode.NONE
+                pendingSinceNanos = 0L
+                return
+            }
         }
         if (desiredMode == GestureMode.NONE) {
             pendingMode = GestureMode.NONE
@@ -140,10 +144,6 @@ private class AndroidTouchInputProcessor(
         if (desiredMode != pendingMode) {
             pendingMode = desiredMode
             pendingSinceNanos = now
-            if (desiredMode == GestureMode.ZOOM) {
-                lastAverageY = currentAverageY()
-                scrollAccumulatorY = 0f
-            }
             return
         }
         if (now - pendingSinceNanos >= debounceNanos) {
@@ -158,16 +158,7 @@ private class AndroidTouchInputProcessor(
         val anchor = currentAnchor(fallbackX, fallbackY)
         lastGestureX = anchor.x
         lastGestureY = anchor.y
-        when (mode) {
-            GestureMode.LEFT -> delegate.touchDown(anchor.x, anchor.y, 0, Input.Buttons.LEFT)
-            GestureMode.ZOOM -> {
-                lastAverageY = currentAverageY()
-                scrollAccumulatorY = 0f
-            }
-            GestureMode.ORBIT -> delegate.touchDown(anchor.x, anchor.y, 0, Input.Buttons.RIGHT)
-            GestureMode.PAN -> delegate.touchDown(anchor.x, anchor.y, 0, Input.Buttons.MIDDLE)
-            GestureMode.NONE -> Unit
-        }
+        mode.syntheticButton?.let { button -> delegate.touchDown(anchor.x, anchor.y, 0, button) }
     }
 
     private fun finishActiveGesture(fallbackX: Int, fallbackY: Int, preferLastAnchor: Boolean = false) {
@@ -179,19 +170,13 @@ private class AndroidTouchInputProcessor(
         } else {
             currentAnchor(fallbackX, fallbackY)
         }
-        when (activeMode) {
-            GestureMode.LEFT -> delegate.touchUp(anchor.x, anchor.y, 0, Input.Buttons.LEFT)
-            GestureMode.ORBIT -> delegate.touchUp(anchor.x, anchor.y, 0, Input.Buttons.RIGHT)
-            GestureMode.PAN -> delegate.touchUp(anchor.x, anchor.y, 0, Input.Buttons.MIDDLE)
-            GestureMode.ZOOM, GestureMode.NONE -> Unit
-        }
+        activeMode.syntheticButton?.let { button -> delegate.touchUp(anchor.x, anchor.y, 0, button) }
         activeMode = GestureMode.NONE
-        scrollAccumulatorY = 0f
     }
 
     private fun handleActiveGestureMotion() {
         when (activeMode) {
-            GestureMode.LEFT, GestureMode.ORBIT, GestureMode.PAN -> {
+            GestureMode.LEFT, GestureMode.TWO_FINGER_VERTICAL, GestureMode.ORBIT, GestureMode.PAN -> {
                 val anchor = currentAnchor(lastGestureX, lastGestureY)
                 if (anchor.x == lastGestureX && anchor.y == lastGestureY) {
                     return
@@ -200,25 +185,8 @@ private class AndroidTouchInputProcessor(
                 lastGestureY = anchor.y
                 delegate.touchDragged(anchor.x, anchor.y, 0)
             }
-            GestureMode.ZOOM -> {
-                val averageY = currentAverageY()
-                val deltaY = averageY - lastAverageY
-                lastAverageY = averageY
-                scrollAccumulatorY += deltaY
-                if (abs(scrollAccumulatorY) >= 2f) {
-                    delegate.scrolled(0f, scrollAccumulatorY / scrollPixelsPerWheelUnit)
-                    scrollAccumulatorY = 0f
-                }
-            }
             GestureMode.NONE -> Unit
         }
-    }
-
-    private fun currentAverageY(): Float {
-        if (pointers.isEmpty()) {
-            return lastAverageY
-        }
-        return pointers.values.sumOf { it.position.y.toDouble() }.toFloat() / pointers.size.toFloat()
     }
 
     private fun currentAnchor(fallbackX: Int, fallbackY: Int): Anchor {
@@ -234,7 +202,7 @@ private class AndroidTouchInputProcessor(
         return when (pointerCount) {
             0 -> GestureMode.NONE
             1 -> GestureMode.LEFT
-            2 -> GestureMode.ZOOM
+            2 -> GestureMode.TWO_FINGER_VERTICAL
             3 -> GestureMode.ORBIT
             else -> GestureMode.PAN
         }
@@ -244,7 +212,7 @@ private class AndroidTouchInputProcessor(
         return when (mode) {
             GestureMode.NONE -> 0
             GestureMode.LEFT -> 1
-            GestureMode.ZOOM -> 2
+            GestureMode.TWO_FINGER_VERTICAL -> 2
             GestureMode.ORBIT -> 3
             GestureMode.PAN -> 4
         }

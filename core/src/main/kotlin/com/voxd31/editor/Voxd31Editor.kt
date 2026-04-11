@@ -103,6 +103,13 @@ class Voxd31Editor @JvmOverloads constructor(
     private var uiScale = 1f
     private var showMergedFaceEdges = false
     private var showRenderableFaceEdges = false
+    private var activeTouchGesture: TouchGesture? = null
+    private var activeTouchGestureProcessor: InputProcessor? = null
+    private var activeTouchGestureCameraMode = CameraMode.ORBIT
+    private var touchGestureStartY = 0
+    private var touchGestureLastY = 0
+    private val touchGestureDirectionThreshold = 8
+    private val touchGestureScrollPixelsPerWheelUnit = 48f
     private val shadowSettings = ShadowSettings(
         shadowBias = 2500f,
         shadowNormalBias = 5620f,
@@ -528,16 +535,25 @@ class Voxd31Editor @JvmOverloads constructor(
             override fun keyUp(keycode: Int): Boolean = activeCameraInputProcessor.keyUp(keycode)
             override fun keyTyped(character: Char): Boolean = activeCameraInputProcessor.keyTyped(character)
             override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                touchGestureForButton(button)?.let { gesture ->
+                    return beginTouchGesture(gesture, screenX, screenY)
+                }
                 activeCameraInputProcessor.touchDown(screenX, screenY, pointer, button)
                 return false
             }
 
             override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                if (touchGestureForButton(button) != null) {
+                    return finishTouchGesture(screenX, screenY)
+                }
                 activeCameraInputProcessor.touchUp(screenX, screenY, pointer, button)
                 return false
             }
 
             override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+                if (activeTouchGesture != null) {
+                    return dragTouchGesture(screenX, screenY)
+                }
                 activeCameraInputProcessor.touchDragged(screenX, screenY, pointer)
                 return false
             }
@@ -698,6 +714,87 @@ class Voxd31Editor @JvmOverloads constructor(
             throw IllegalStateException("Required web asset not found (internal): $path")
         }
         return file
+    }
+
+    private enum class TouchGesture(val cameraButton: Int?) {
+        TWO_FINGER_VERTICAL(null),
+        THREE_FINGER_ORBIT(Input.Buttons.RIGHT),
+        FOUR_FINGER_PAN(Input.Buttons.MIDDLE)
+    }
+
+    private fun touchGestureForButton(button: Int): TouchGesture? {
+        return when (button) {
+            TouchGestureButtons.TWO_FINGER_VERTICAL_DRAG -> TouchGesture.TWO_FINGER_VERTICAL
+            TouchGestureButtons.THREE_FINGER_ORBIT -> TouchGesture.THREE_FINGER_ORBIT
+            TouchGestureButtons.FOUR_FINGER_PAN -> TouchGesture.FOUR_FINGER_PAN
+            else -> null
+        }
+    }
+
+    private fun beginTouchGesture(gesture: TouchGesture, screenX: Int, screenY: Int): Boolean {
+        if (activeTouchGesture != null) {
+            finishTouchGesture(screenX, screenY)
+        }
+        activeTouchGesture = gesture
+        activeTouchGestureProcessor = activeCameraInputProcessor
+        activeTouchGestureCameraMode = activeCameraMode
+        touchGestureStartY = screenY
+        touchGestureLastY = screenY
+        val gestureProcessor = activeTouchGestureProcessor ?: activeCameraInputProcessor
+        return when (gesture) {
+            TouchGesture.TWO_FINGER_VERTICAL -> {
+                walkthroughCameraController.setTouchAdvanceDirection(0)
+                true
+            }
+            TouchGesture.THREE_FINGER_ORBIT,
+            TouchGesture.FOUR_FINGER_PAN -> {
+                gestureProcessor.touchDown(screenX, screenY, 0, gesture.cameraButton ?: return true)
+                true
+            }
+        }
+    }
+
+    private fun dragTouchGesture(screenX: Int, screenY: Int): Boolean {
+        return when (activeTouchGesture) {
+            TouchGesture.TWO_FINGER_VERTICAL -> {
+                if (activeTouchGestureCameraMode == CameraMode.WALKTHROUGH) {
+                    val dyFromStart = screenY - touchGestureStartY
+                    val direction = when {
+                        dyFromStart > touchGestureDirectionThreshold -> 1
+                        dyFromStart < -touchGestureDirectionThreshold -> -1
+                        else -> 0
+                    }
+                    walkthroughCameraController.setTouchAdvanceDirection(direction)
+                } else {
+                    val dy = screenY - touchGestureLastY
+                    touchGestureLastY = screenY
+                    if (dy != 0) {
+                        (activeTouchGestureProcessor ?: activeCameraInputProcessor)
+                            .scrolled(0f, dy.toFloat() / touchGestureScrollPixelsPerWheelUnit)
+                    }
+                }
+                true
+            }
+            TouchGesture.THREE_FINGER_ORBIT,
+            TouchGesture.FOUR_FINGER_PAN -> {
+                (activeTouchGestureProcessor ?: activeCameraInputProcessor).touchDragged(screenX, screenY, 0)
+                true
+            }
+            null -> false
+        }
+    }
+
+    private fun finishTouchGesture(screenX: Int, screenY: Int): Boolean {
+        val gesture = activeTouchGesture ?: return false
+        if (gesture == TouchGesture.TWO_FINGER_VERTICAL) {
+            walkthroughCameraController.setTouchAdvanceDirection(0)
+        } else {
+            (activeTouchGestureProcessor ?: activeCameraInputProcessor)
+                .touchUp(screenX, screenY, 0, gesture.cameraButton ?: return true)
+        }
+        activeTouchGesture = null
+        activeTouchGestureProcessor = null
+        return true
     }
 
     private fun configureOrthoViewport(width: Int, height: Int) {
