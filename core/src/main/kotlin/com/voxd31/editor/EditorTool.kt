@@ -8,6 +8,13 @@ import com.badlogic.gdx.math.Vector3
 import com.voxd31.gdxui.Vox3Event
 import kotlin.math.atan2
 
+class ToolOperator(
+    val label: String,
+    val action: () -> Unit,
+    val active: () -> Boolean = { false },
+    val enabled: () -> Boolean = { true }
+)
+
 open class EditorTool(
     var name: String,
     var onClick: (self: EditorTool,event: Vox3Event) -> Boolean,
@@ -15,15 +22,34 @@ open class EditorTool(
 ) {
     public var commands= mutableListOf<String>()
     companion object {
+        private enum class ApplyMode { ADD, REMOVE }
+
+        private fun acceptsToolClick(event: Vox3Event): Boolean {
+            return !event.ctrl &&
+                !event.shift &&
+                event.keyDown != Input.Keys.CONTROL_LEFT &&
+                event.keyDown != Input.Keys.CONTROL_RIGHT &&
+                event.keyDown != Input.Keys.SHIFT_LEFT &&
+                event.keyDown != Input.Keys.SHIFT_RIGHT
+        }
+
+        private fun isRemoveMode(event: Vox3Event, mode: ApplyMode): Boolean {
+            return mode == ApplyMode.REMOVE ||
+                event.alt ||
+                event.keyDown == Input.Keys.ALT_LEFT ||
+                event.keyDown == Input.Keys.ALT_RIGHT
+        }
+
         fun VoxelEditor(scene: SceneController, feedback: SceneController):EditorTool{
             val a = Color(1f,1f,0f,0.5f)
-            val b = Color(1f,0.5f,0f,0.5f)
+            val removePreview = Color(1f, 0.1f, 0.1f, 0.55f)
+            var mode = ApplyMode.ADD
             return object:EditorTool(
                 name = "voxel",
                 onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                    if (acceptsToolClick(event)) {
                         val a=Vector3i.fromFloats(event.target!!.position.x,event.target!!.position.y,event.target!!.position.z)
-                        if (event.keyDown == Input.Keys.ALT_LEFT) {
+                        if (isRemoveMode(event, mode)) {
                             scene.removeCube(
                                 event.target!!
                             )
@@ -40,12 +66,27 @@ open class EditorTool(
                 },
                 onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
                     feedback.clear()
-                    feedback.addCube(event.modelVoxel!!, a)
-                    feedback.addCube(event.modelNextVoxel!!,  scene.currentColor)
+                    if (isRemoveMode(event, mode)) {
+                        feedback.addCube(event.modelVoxel!!, removePreview)
+                    } else {
+                        feedback.addCube(event.modelVoxel!!, a)
+                        feedback.addCube(event.modelNextVoxel!!,  scene.currentColor)
+                    }
                     //currentEvent = event
                     return true
                 }
-            ){}
+            ){
+                override fun toolOperators(): List<ToolOperator> = listOf(
+                    ToolOperator("Add", { mode = ApplyMode.ADD }, { mode == ApplyMode.ADD }),
+                    ToolOperator("Remove", { mode = ApplyMode.REMOVE }, { mode == ApplyMode.REMOVE }),
+                    ToolOperator("Reset", { reset() })
+                )
+
+                override fun reset() {
+                    mode = ApplyMode.ADD
+                    feedback.clear()
+                }
+            }
         }
         fun VoidEditor(scene: SceneController, feedback: SceneController):EditorTool{
             val a = Color(1f,1f,0f,0.5f)
@@ -313,6 +354,14 @@ open class EditorTool(
                     volumeSelectionStart = null
                     feedback.clear()
                 }
+
+                override fun toolOperators(): List<ToolOperator> = listOf(
+                    ToolOperator("Clear Selection", {
+                        selected.clear()
+                        reset()
+                    }),
+                    ToolOperator("Reset", { reset() })
+                )
             }
         }
         fun makeTwoInputEditor(
@@ -327,7 +376,7 @@ open class EditorTool(
             return object:EditorTool(
                 name = name,
                 onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                    if (acceptsToolClick(event)) {
                         when(state){
                             0 -> {
                                 points[0]=event.modelNextVoxel!!.cpy()
@@ -372,10 +421,11 @@ open class EditorTool(
             val b = Color(1f,0.5f,0f,0.5f)
             val points= mutableListOf(Vector3(),Vector3())
             var state=0
+            var mode = ApplyMode.ADD
             return object:EditorTool(
                 name = name,
                 onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                    if (acceptsToolClick(event)) {
                         when(state){
                             0 -> {
                                 points[0]=event.modelNextVoxel!!.cpy()
@@ -383,7 +433,7 @@ open class EditorTool(
                             }
                             1 -> {
                                 points[1]=event.modelNextVoxel!!.cpy()
-                                if (event.keyDown == Input.Keys.ALT_LEFT) {
+                                if (isRemoveMode(event, mode)) {
                                     rasterizer(points[0],points[1]){
                                         scene.removeCube(it)
                                     }
@@ -405,11 +455,11 @@ open class EditorTool(
                     when(state){
                         0 ->{
                             feedback.addCube(event.modelVoxel!!, a)
-                            feedback.addCube(event.modelNextVoxel!!,  scene.currentColor)
+                            feedback.addCube(event.modelNextVoxel!!, if (mode == ApplyMode.REMOVE) Color.RED else scene.currentColor)
                         }
                         1->{
                             rasterizer(points[0],event.modelNextVoxel!!){
-                                feedback.addCube(it, scene.currentColor)
+                                feedback.addCube(it, if (mode == ApplyMode.REMOVE) Color.RED else scene.currentColor)
                             }
                         }
                     }
@@ -419,8 +469,15 @@ open class EditorTool(
             ){
                 override fun reset() {
                     state=0
+                    mode=ApplyMode.ADD
+                    feedback.clear()
                 }
 
+                override fun toolOperators(): List<ToolOperator> = listOf(
+                    ToolOperator("Add", { mode = ApplyMode.ADD }, { mode == ApplyMode.ADD }),
+                    ToolOperator("Remove", { mode = ApplyMode.REMOVE }, { mode == ApplyMode.REMOVE }),
+                    ToolOperator("Reset", { reset() })
+                )
             }
         }
         fun makeThreeInputEditor(
@@ -433,7 +490,7 @@ open class EditorTool(
             return object:EditorTool(
                 name = name,
                 onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                    if (acceptsToolClick(event)) {
                         when(state){
                             0 -> {
                                 points[0]=event.modelNextVoxel!!.cpy()
@@ -482,10 +539,11 @@ open class EditorTool(
             val b = Color(1f,0.5f,0f,0.5f)
             val points= mutableListOf(Vector3(),Vector3(),Vector3())
             var state=0
+            var mode = ApplyMode.ADD
             return object:EditorTool(
                 name = "plane",
                 onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                    if (acceptsToolClick(event)) {
                         when(state){
                             0 -> {
                                 points[0]=event.modelNextVoxel!!.cpy()
@@ -497,7 +555,7 @@ open class EditorTool(
                             }
                             2 -> {
                                 points[2]=event.modelNextVoxel!!.cpy()
-                                if (event.keyDown == Input.Keys.ALT_LEFT) {
+                                if (isRemoveMode(event, mode)) {
                                     voxelRangePlane(points[0],points[1],points[2]){
                                         scene.removeCube(it)
                                     }
@@ -526,16 +584,16 @@ open class EditorTool(
                     when(state){
                         0 ->{
                             feedback.addCube(event.modelVoxel!!, a)
-                            feedback.addCube(event.modelNextVoxel!!, scene.currentColor)
+                            feedback.addCube(event.modelNextVoxel!!, if (mode == ApplyMode.REMOVE) Color.RED else scene.currentColor)
                         }
                         1->{
                             voxelRangeSegment(points[0],event.modelNextVoxel!!){
-                                feedback.addCube(it, scene.currentColor)
+                                feedback.addCube(it, if (mode == ApplyMode.REMOVE) Color.RED else scene.currentColor)
                             }
                         }
                         2->{
                             voxelRangePlane(points[0],points[1],event.modelNextVoxel!!){
-                                feedback.addCube(it, scene.currentColor)
+                                feedback.addCube(it, if (mode == ApplyMode.REMOVE) Color.RED else scene.currentColor)
                             }
                         }
                     }
@@ -545,7 +603,15 @@ open class EditorTool(
             ){
                 override fun reset() {
                     state=0
+                    mode=ApplyMode.ADD
+                    feedback.clear()
                 }
+
+                override fun toolOperators(): List<ToolOperator> = listOf(
+                    ToolOperator("Add", { mode = ApplyMode.ADD }, { mode == ApplyMode.ADD }),
+                    ToolOperator("Remove", { mode = ApplyMode.REMOVE }, { mode == ApplyMode.REMOVE }),
+                    ToolOperator("Reset", { reset() })
+                )
             }
         }
         fun ArcEditor(scene: SceneController, feedback: SceneController):EditorTool{
@@ -554,10 +620,11 @@ open class EditorTool(
             val b = Color(1f,0.5f,0f,0.5f)
             val points= mutableListOf(Vector3(),Vector3(),Vector3())
             var state=0
+            var mode = ApplyMode.ADD
             return object:EditorTool(
                 name = "Arc",
                 onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
-                    if (event.keyDown != Input.Keys.CONTROL_LEFT && event.keyDown != Input.Keys.SHIFT_LEFT) {
+                    if (acceptsToolClick(event)) {
                         when(state){
                             0 -> {
                                 points[0]=event.modelNextVoxel!!.cpy()
@@ -569,7 +636,7 @@ open class EditorTool(
                             }
                             2 -> {
                                 points[2]=event.modelNextVoxel!!.cpy()
-                                if (event.keyDown == Input.Keys.ALT_LEFT) {
+                                if (isRemoveMode(event, mode)) {
                                     voxelGen!!(points[0],points[1],points[2]){
                                         scene.removeCube(it)
                                     }
@@ -599,7 +666,7 @@ open class EditorTool(
                     when(state){
                         0 ->{
                             feedback.addCube(event.modelVoxel!!, a)
-                            feedback.addCube(event.modelNextVoxel!!, scene.currentColor)
+                            feedback.addCube(event.modelNextVoxel!!, if (mode == ApplyMode.REMOVE) Color.RED else scene.currentColor)
                         }
                         1->{
                             if(voxelGen == null) {
@@ -617,7 +684,7 @@ open class EditorTool(
                         }
                         2->{
                             voxelGen!!(points[0],points[1],event.modelNextVoxel!!){
-                                feedback.addCube(it, scene.currentColor)
+                                feedback.addCube(it, if (mode == ApplyMode.REMOVE) Color.RED else scene.currentColor)
                             }
                             voxelRangeSegment(points[0],points[1]){
                                 feedback.addCube(it, Color.YELLOW)
@@ -636,6 +703,43 @@ open class EditorTool(
             ){
                 override fun reset() {
                     state=0
+                    mode=ApplyMode.ADD
+                    voxelGen=null
+                    feedback.clear()
+                }
+
+                override fun toolOperators(): List<ToolOperator> = listOf(
+                    ToolOperator("Add", { mode = ApplyMode.ADD }, { mode == ApplyMode.ADD }),
+                    ToolOperator("Remove", { mode = ApplyMode.REMOVE }, { mode == ApplyMode.REMOVE }),
+                    ToolOperator("Reset", { reset() })
+                )
+            }
+        }
+
+        fun PointHelperEditor(
+            name: String,
+            feedback: SceneController,
+            previewColor: Color,
+            onPlace: (Vector3) -> Unit
+        ): EditorTool {
+            fun eventPoint(event: Vox3Event): Vector3? = event.modelVoxel ?: event.modelNextVoxel
+
+            return object : EditorTool(
+                name = name,
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
+                    val point = eventPoint(event) ?: return true
+                    onPlace(Vector3(point))
+                    feedback.clear()
+                    return true
+                },
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
+                    feedback.clear()
+                    eventPoint(event)?.let { feedback.addCube(it, previewColor) }
+                    return true
+                }
+            ) {
+                override fun reset() {
+                    feedback.clear()
                 }
             }
         }
@@ -660,4 +764,8 @@ open class EditorTool(
     }
 
     open fun reset(){}
+
+    open fun toolOperators(): List<ToolOperator> = listOf(
+        ToolOperator("Reset", { reset() })
+    )
 }

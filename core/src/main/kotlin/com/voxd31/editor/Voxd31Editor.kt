@@ -392,6 +392,8 @@ class Voxd31Editor @JvmOverloads constructor(
             listOf("//rotate ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${c.x} ${c.y} ${c.z}")
         }))
         tools.add(EditorTool.VoxelEditor(scene,feedback))
+        tools.add(EditorTool.PointHelperEditor("Axial Grid", feedback, Color.WHITE, this::placeAxialGrid))
+        tools.add(EditorTool.PointHelperEditor("Planar Grid", feedback, Color.LIGHT_GRAY, this::placePlanarGrid))
         tools.add(EditorTool.makeTwoInputEditor("Segment",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
 
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
@@ -500,6 +502,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 activeTool = tools[activeToolIndex]
                 activeTool?.reset()
             },
+            toolOperatorsProvider = { activeTool?.toolOperators().orEmpty() },
             currentColorProvider = { scene.currentColor },
             colorSelected = { color -> scene.currentColor = color },
             addModeProvider = { scene.addMode },
@@ -517,7 +520,6 @@ class Voxd31Editor @JvmOverloads constructor(
             deleteSelectionAction = { deleteSelection() },
             clearSelectionAction = { selected.clear() },
             clearGuidesAction = { guides.clear() },
-            placeAxialGridAction = { placeAxialGridAtCursor() },
             resetToolAction = { activeTool?.reset() },
             uiScaleProvider = { uiScale },
             uiScaleChanged = { scale -> setUiScale(scale) },
@@ -1066,10 +1068,6 @@ class Voxd31Editor @JvmOverloads constructor(
         setStatusMessage("Deleted ${cubesToDelete.size} selected cube(s).")
     }
 
-    private fun placeAxialGridAtCursor() {
-        placeAxialGrid(currentEvent.modelVoxel ?: currentEvent.modelNextVoxel)
-    }
-
     private fun placeAxialGrid(point: Vector3?) {
         val mp = point ?: run {
             setStatusMessage("Axial grid skipped: no model point under cursor.")
@@ -1086,6 +1084,35 @@ class Voxd31Editor @JvmOverloads constructor(
             guides.addCube(Vector3(mp).set(mp.x, mp.y, mp.z - i.toFloat()), Color.GREEN)
         }
         setStatusMessage("Placed axial grid at (${mp.x.toInt()}, ${mp.y.toInt()}, ${mp.z.toInt()}).")
+    }
+
+    private fun placePlanarGrid(point: Vector3?) {
+        val mp = point ?: run {
+            setStatusMessage("Planar grid skipped: no model point under cursor.")
+            return
+        }
+        val spacing = modelSettings.gridSize.coerceAtLeast(1)
+        val radius = spacing * 10
+        val secondary = Color(0.65f, 0.65f, 0.65f, 0.75f)
+        val xAxis = Color(1f, 0.2f, 0.2f, 0.85f)
+        val zAxis = Color(0.2f, 1f, 0.2f, 0.85f)
+
+        guides.addOrReplaceCube(Vector3(mp), Color.WHITE)
+        for (offset in -radius..radius step spacing) {
+            for (pos in -radius..radius step spacing) {
+                guides.addOrReplaceCube(
+                    Vector3(mp.x + pos.toFloat(), mp.y, mp.z + offset.toFloat()),
+                    if (offset == 0) xAxis else secondary
+                )
+                guides.addOrReplaceCube(
+                    Vector3(mp.x + offset.toFloat(), mp.y, mp.z + pos.toFloat()),
+                    if (offset == 0) zAxis else secondary
+                )
+            }
+        }
+        setStatusMessage(
+            "Placed planar grid at (${mp.x.toInt()}, ${mp.y.toInt()}, ${mp.z.toInt()}) with spacing $spacing."
+        )
     }
 
     private fun loadModelFromDisk(path: String, announce: Boolean = true) {

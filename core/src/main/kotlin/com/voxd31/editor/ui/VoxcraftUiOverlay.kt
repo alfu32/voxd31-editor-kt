@@ -28,11 +28,13 @@ import com.kotcrab.vis.ui.widget.color.ColorPickerListener
 import com.voxd31.editor.CameraMode
 import com.voxd31.editor.ModelSettings
 import com.voxd31.editor.OrthographicView
+import com.voxd31.editor.ToolOperator
 
 class VoxcraftUiOverlay(
     private val toolNamesProvider: () -> List<String>,
     private val activeToolIndexProvider: () -> Int,
     private val toolSelected: (Int) -> Unit,
+    private val toolOperatorsProvider: () -> List<ToolOperator>,
     private val currentColorProvider: () -> Color,
     private val colorSelected: (Color) -> Unit,
     private val addModeProvider: () -> String,
@@ -50,7 +52,6 @@ class VoxcraftUiOverlay(
     private val deleteSelectionAction: () -> Unit,
     private val clearSelectionAction: () -> Unit,
     private val clearGuidesAction: () -> Unit,
-    private val placeAxialGridAction: () -> Unit,
     private val resetToolAction: () -> Unit,
     private val uiScaleProvider: () -> Float,
     private val uiScaleChanged: (Float) -> Unit,
@@ -80,6 +81,7 @@ class VoxcraftUiOverlay(
     private val uiScaleSelect = VisSelectBox<String>()
     private val modificationToolsContent = VisTable(true)
     private val constructionToolsContent = VisTable(true)
+    private val toolOperatorsContent = VisTable(true)
     private val currentColorPreview = ColorChip(whiteTexture) { currentColorProvider() }.apply {
         addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
@@ -96,6 +98,7 @@ class VoxcraftUiOverlay(
     private var colorPicker: ColorPicker? = null
     private var modelSettingsDialog: VisWindow? = null
     private var exportDialog: VisWindow? = null
+    private var toolOperatorsSignature = ""
     private var syncing = false
 
     init {
@@ -115,14 +118,16 @@ class VoxcraftUiOverlay(
             row()
             add(buildToolsWindow("Construction", constructionToolsContent)).width(220f).grow().top().left()
         }
+        val toolOperatorsWindow = buildToolOperatorsWindow()
         val statusWindow = buildStatusWindow()
 
-        root.add(topBar).growX().colspan(2).pad(8f, 8f, 4f, 8f)
+        root.add(topBar).growX().colspan(3).pad(8f, 8f, 4f, 8f)
         root.row()
         root.add(toolsColumn).width(220f).top().left().padLeft(8f).padBottom(8f)
         root.add().expand()
+        root.add(toolOperatorsWindow).top().right().padRight(8f).padTop(4f)
         root.row()
-        root.add(statusWindow).growX().colspan(2).pad(0f, 8f, 8f, 8f)
+        root.add(statusWindow).growX().colspan(3).pad(0f, 8f, 8f, 8f)
 
         rebuildToolButtons()
         syncFromState()
@@ -203,10 +208,6 @@ class VoxcraftUiOverlay(
         val clearGuidesButton = VisTextButton("Clear Guides")
         clearGuidesButton.addListener(onChange { clearGuidesAction() })
         content.add(clearGuidesButton).padRight(6f)
-
-        val axialGridButton = VisTextButton("Axial Grid")
-        axialGridButton.addListener(onChange { placeAxialGridAction() })
-        content.add(axialGridButton).padRight(12f)
 
         content.add(currentColorPreview).size(32f).padRight(12f)
 
@@ -317,6 +318,15 @@ class VoxcraftUiOverlay(
         scroll.setFadeScrollBars(false)
         scroll.setScrollingDisabled(true, false)
         window.add(scroll).grow().minHeight(if (title == "Modification") 180f else 320f)
+        return window
+    }
+
+    private fun buildToolOperatorsWindow(): VisWindow {
+        val window = fixedWindow("In-Tool Operators")
+        val scroll = VisScrollPane(toolOperatorsContent)
+        scroll.setFadeScrollBars(false)
+        scroll.setScrollingDisabled(true, false)
+        window.add(scroll).width(220f).minHeight(80f).pad(6f)
         return window
     }
 
@@ -486,7 +496,50 @@ class VoxcraftUiOverlay(
         )
         messageLabel.setText("Message: ${snapshot.message}")
         cursorLabel.setText(snapshot.cursor)
+        rebuildToolOperatorsIfNeeded(snapshot.activeTool)
         syncing = false
+    }
+
+    private fun rebuildToolOperatorsIfNeeded(toolName: String) {
+        val operators = toolOperatorsProvider()
+        val signature = buildString {
+            append(toolName)
+            operators.forEach { operator ->
+                append('|')
+                append(operator.label)
+                append(':')
+                append(operator.active())
+                append(':')
+                append(operator.enabled())
+            }
+        }
+        if (signature == toolOperatorsSignature) {
+            return
+        }
+        toolOperatorsSignature = signature
+        toolOperatorsContent.clearChildren()
+
+        val activeToolName = VisTextButton(toolName.ifBlank { "-" }, "toggle")
+        activeToolName.isDisabled = true
+        activeToolName.label.setWrap(true)
+        toolOperatorsContent.add(activeToolName).growX().left().padBottom(6f)
+        toolOperatorsContent.row()
+
+        operators.forEach { operator ->
+            val label = if (operator.active()) "* ${operator.label}" else operator.label
+            val button = VisTextButton(label)
+            button.isDisabled = !operator.enabled()
+            button.label.setWrap(true)
+            button.addListener(onChange {
+                if (operator.enabled()) {
+                    operator.action()
+                    toolOperatorsSignature = ""
+                }
+            })
+            toolOperatorsContent.add(button).growX().left().padBottom(4f)
+            toolOperatorsContent.row()
+        }
+        toolOperatorsContent.invalidateHierarchy()
     }
 
     private fun fixedWindow(title: String): VisWindow {
