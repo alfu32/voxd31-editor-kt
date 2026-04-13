@@ -49,8 +49,7 @@ class AndroidLauncher : AndroidApplication() {
             Voxd31Editor(
                 modelFile.absolutePath,
                 fileDialogService,
-                AndroidDocumentIoService(this),
-                AndroidTouchInputDecorator()
+                AndroidDocumentIoService(this)
             ),
             cfg
         )

@@ -25,8 +25,6 @@ class WalkthroughCameraController(
     private var movingBackward = false
     private var movingLeft = false
     private var movingRight = false
-    private var touchMovingForward = false
-    private var touchMovingBackward = false
     private var raisingHeight = false
     private var loweringHeight = false
     private var looking = false
@@ -66,10 +64,10 @@ class WalkthroughCameraController(
         forward.nor()
         right.set(forward).crs(up).nor()
 
-        if (movingForward || touchMovingForward) {
+        if (movingForward) {
             move.add(forward)
         }
-        if (movingBackward || touchMovingBackward) {
+        if (movingBackward) {
             move.sub(forward)
         }
         if (movingRight) {
@@ -169,11 +167,6 @@ class WalkthroughCameraController(
         }
         looking = false
         return true
-    }
-
-    fun setTouchAdvanceDirection(direction: Int) {
-        touchMovingForward = direction > 0
-        touchMovingBackward = direction < 0
     }
 
     private fun updateDirectionFromAngles() {
