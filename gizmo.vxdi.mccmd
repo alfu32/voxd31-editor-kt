@@ -156,4 +156,5 @@
 /fill 19 5 -7 19 0 -7 minecraft:stone
 /fill 19 0 -7 14 0 -7 minecraft:stone//move 12 0 5 12 -1 13
 //move 8 9 -7 8 10 -7
-//move 8 1 5 8 1 -5
+//move 8 1 5 8 1 -5//move 9 0 14 9 0 6
+//move 9 0 -17 9 0 -7

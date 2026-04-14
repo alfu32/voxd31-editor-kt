@@ -25,6 +25,7 @@ import com.kotcrab.vis.ui.widget.VisTextField
 import com.kotcrab.vis.ui.widget.VisWindow
 import com.kotcrab.vis.ui.widget.color.ColorPicker
 import com.kotcrab.vis.ui.widget.color.ColorPickerListener
+import com.voxd31.editor.CameraInteractionMode
 import com.voxd31.editor.CameraMode
 import com.voxd31.editor.ModelSettings
 import com.voxd31.editor.OrthographicView
@@ -41,6 +42,8 @@ class VoxcraftUiOverlay(
     private val addModeChanged: (String) -> Unit,
     private val cameraModeProvider: () -> CameraMode,
     private val cameraModeChanged: (CameraMode) -> Unit,
+    private val cameraInteractionModeProvider: () -> CameraInteractionMode,
+    private val cameraInteractionModeChanged: (CameraInteractionMode) -> Unit,
     private val orthographicViewChanged: (OrthographicView) -> Unit,
     private val openAction: () -> Unit,
     private val saveAction: () -> Unit,
@@ -77,6 +80,7 @@ class VoxcraftUiOverlay(
     private val toolGroup = ButtonGroup<VisTextButton>()
     private val toolButtons = linkedMapOf<Int, VisTextButton>()
     private val cameraButtons = linkedMapOf<CameraMode, VisTextButton>()
+    private val cameraInteractionButtons = linkedMapOf<CameraInteractionMode, VisTextButton>()
     private val addModeSelect = VisSelectBox<String>()
     private val uiScaleSelect = VisSelectBox<String>()
     private val modificationToolsContent = VisTable(true)
@@ -244,6 +248,20 @@ class VoxcraftUiOverlay(
             button.addListener(onChange { cameraModeChanged(mode) })
             cameraButtons[mode] = button
             cameraGroup.add(button)
+            content.add(button).padRight(4f)
+        }
+
+        content.add(VisLabel("Drag")).padLeft(8f).padRight(4f)
+        val cameraInteractionGroup = ButtonGroup<VisTextButton>().apply {
+            setMinCheckCount(1)
+            setMaxCheckCount(1)
+            setUncheckLast(true)
+        }
+        CameraInteractionMode.entries.forEach { mode ->
+            val button = VisTextButton(mode.displayName, "toggle")
+            button.addListener(onChange { cameraInteractionModeChanged(mode) })
+            cameraInteractionButtons[mode] = button
+            cameraInteractionGroup.add(button)
             content.add(button).padRight(4f)
         }
 
@@ -482,6 +500,9 @@ class VoxcraftUiOverlay(
         uiScaleSelect.selected = uiScaleLabel(uiScaleProvider())
         cameraButtons.forEach { (mode, button) ->
             button.isChecked = cameraModeProvider() == mode
+        }
+        cameraInteractionButtons.forEach { (mode, button) ->
+            button.isChecked = cameraInteractionModeProvider() == mode
         }
         toolButtons.forEach { (index, button) ->
             button.isChecked = activeToolIndexProvider() == index

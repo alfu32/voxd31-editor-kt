@@ -76,6 +76,13 @@ class Voxd31Editor @JvmOverloads constructor(
     private lateinit var walkthroughCameraController: WalkthroughCameraController
     private lateinit var orthoCameraController: OrthographicCameraController
     private var activeCameraMode = CameraMode.ORBIT
+    private var cameraInteractionMode = CameraInteractionMode.TOOL
+    private var cameraInteractionDragMode = CameraInteractionMode.TOOL
+    private var cameraInteractionDragActive = false
+    private var cameraInteractionDragButton = -1
+    private var cameraInteractionLastX = 0
+    private var cameraInteractionLastY = 0
+    private val cameraInteractionZoomPixelsPerWheelStep = 48f
     private lateinit var modelBatch: ModelBatch
     private lateinit var shadowBatch: ModelBatch
     private lateinit var environment: Environment
@@ -502,6 +509,8 @@ class Voxd31Editor @JvmOverloads constructor(
             addModeChanged = { mode -> scene.addMode = mode },
             cameraModeProvider = { activeCameraMode },
             cameraModeChanged = { mode -> setCameraMode(mode) },
+            cameraInteractionModeProvider = { cameraInteractionMode },
+            cameraInteractionModeChanged = { mode -> setCameraInteractionMode(mode) },
             orthographicViewChanged = { view -> setOrthographicView(view) },
             openAction = { openModelDialog() },
             saveAction = { saveCurrentModel() },
@@ -530,16 +539,33 @@ class Voxd31Editor @JvmOverloads constructor(
             override fun keyUp(keycode: Int): Boolean = activeCameraInputProcessor.keyUp(keycode)
             override fun keyTyped(character: Char): Boolean = activeCameraInputProcessor.keyTyped(character)
             override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                if (beginCameraInteractionDrag(screenX, screenY, pointer, button)) {
+                    return true
+                }
                 activeCameraInputProcessor.touchDown(screenX, screenY, pointer, button)
                 return false
             }
 
             override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                if (endCameraInteractionDrag(screenX, screenY, pointer, button)) {
+                    return true
+                }
                 activeCameraInputProcessor.touchUp(screenX, screenY, pointer, button)
                 return false
             }
 
+            override fun touchCancelled(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                if (endCameraInteractionDrag(screenX, screenY, pointer, button)) {
+                    return true
+                }
+                activeCameraInputProcessor.touchCancelled(screenX, screenY, pointer, button)
+                return false
+            }
+
             override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+                if (continueCameraInteractionDrag(screenX, screenY, pointer)) {
+                    return true
+                }
                 activeCameraInputProcessor.touchDragged(screenX, screenY, pointer)
                 return false
             }
@@ -741,6 +767,96 @@ class Voxd31Editor @JvmOverloads constructor(
             }
         }
         activeCameraMode = mode
+    }
+
+    private fun setCameraInteractionMode(mode: CameraInteractionMode) {
+        if (cameraInteractionMode == mode) {
+            return
+        }
+        cancelCameraInteractionDrag()
+        cameraInteractionMode = mode
+        setStatusMessage("Camera interaction: ${mode.displayName}")
+    }
+
+    private fun beginCameraInteractionDrag(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        if (cameraInteractionMode == CameraInteractionMode.TOOL || pointer != 0 || button != Input.Buttons.LEFT) {
+            return false
+        }
+
+        cameraInteractionDragActive = true
+        cameraInteractionDragMode = cameraInteractionMode
+        cameraInteractionDragButton = cameraButtonForInteractionMode(cameraInteractionDragMode)
+        cameraInteractionLastX = screenX
+        cameraInteractionLastY = screenY
+
+        if (cameraInteractionDragButton >= 0) {
+            activeCameraInputProcessor.touchDown(screenX, screenY, pointer, cameraInteractionDragButton)
+        }
+        return true
+    }
+
+    private fun continueCameraInteractionDrag(screenX: Int, screenY: Int, pointer: Int): Boolean {
+        if (!cameraInteractionDragActive || pointer != 0) {
+            return false
+        }
+
+        when (cameraInteractionDragMode) {
+            CameraInteractionMode.ROTATE,
+            CameraInteractionMode.PAN -> {
+                activeCameraInputProcessor.touchDragged(screenX, screenY, pointer)
+            }
+
+            CameraInteractionMode.ZOOM -> {
+                val dy = screenY - cameraInteractionLastY
+                if (dy != 0) {
+                    activeCameraInputProcessor.scrolled(0f, dy.toFloat() / cameraInteractionZoomPixelsPerWheelStep)
+                }
+            }
+
+            CameraInteractionMode.TOOL -> Unit
+        }
+        cameraInteractionLastX = screenX
+        cameraInteractionLastY = screenY
+        return true
+    }
+
+    private fun endCameraInteractionDrag(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        if (!cameraInteractionDragActive || pointer != 0 || button != Input.Buttons.LEFT) {
+            return false
+        }
+
+        val cameraButton = cameraInteractionDragButton
+        if (cameraButton >= 0) {
+            activeCameraInputProcessor.touchUp(screenX, screenY, pointer, cameraButton)
+        }
+        cameraInteractionDragActive = false
+        cameraInteractionDragMode = CameraInteractionMode.TOOL
+        cameraInteractionDragButton = -1
+        cameraInteractionLastX = screenX
+        cameraInteractionLastY = screenY
+        return true
+    }
+
+    private fun cancelCameraInteractionDrag() {
+        if (!cameraInteractionDragActive) {
+            return
+        }
+        val cameraButton = cameraInteractionDragButton
+        if (cameraButton >= 0 && ::activeCameraInputProcessor.isInitialized) {
+            activeCameraInputProcessor.touchUp(cameraInteractionLastX, cameraInteractionLastY, 0, cameraButton)
+        }
+        cameraInteractionDragActive = false
+        cameraInteractionDragMode = CameraInteractionMode.TOOL
+        cameraInteractionDragButton = -1
+    }
+
+    private fun cameraButtonForInteractionMode(mode: CameraInteractionMode): Int {
+        return when (mode) {
+            CameraInteractionMode.ROTATE -> Input.Buttons.RIGHT
+            CameraInteractionMode.PAN -> Input.Buttons.MIDDLE
+            CameraInteractionMode.ZOOM,
+            CameraInteractionMode.TOOL -> -1
+        }
     }
 
     private fun setOrthographicView(view: OrthographicView) {

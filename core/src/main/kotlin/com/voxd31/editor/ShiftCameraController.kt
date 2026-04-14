@@ -98,7 +98,7 @@ class ShiftCameraController(
     }
 
     override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-        if (button == Input.Buttons.RIGHT) {
+        if (button == Input.Buttons.RIGHT || button == panButton) {
             val shouldSnapTarget = orbitRotating && orbitRotateMoved && !translating
             translating = false
             orbitRotating = false

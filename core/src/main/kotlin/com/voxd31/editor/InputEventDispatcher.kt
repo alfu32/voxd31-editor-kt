@@ -1,5 +1,6 @@
 package com.voxd31.editor
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.graphics.Camera
@@ -206,11 +207,13 @@ class InputEventDispatcher(
         currentEvent.screen = screenToUi(x, y)
         currentEvent.screenRaw = Vector2(x.toFloat(), y.toFloat())
 
-        // Implement the conversion from screen coordinates to world coordinates
         val ray = camera3D.getPickRay(
-            x.toFloat(), y.toFloat(),
-            x/camera3D.viewportWidth, y/camera3D.viewportHeight,
-            camera3D.viewportWidth,camera3D.viewportHeight,
+            x.toFloat(),
+            y.toFloat(),
+            0f,
+            0f,
+            Gdx.graphics.width.toFloat(),
+            Gdx.graphics.height.toFloat(),
         )
         val points = mutableListOf<ModelIntersection>()
         val sceneIntersect = scene.sceneIntersectCubesRay(ray)
