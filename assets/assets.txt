@@ -4,7 +4,16 @@ badlogic.jpg
 default.fnt
 default.png
 default.vxdi
+logo.0.svg
+logo.1.png
+logo.1.svg
+logo.1.x071.png
+logo.1.x1080.png
+logo.1.x150.png
+logo.1.x300.png
+logo.png
 logo.svg
+logo.voxd
 shaders/voxcraft-default.fragment.glsl
 shaders/voxcraft-default.vertex.glsl
 uiskin (1).json

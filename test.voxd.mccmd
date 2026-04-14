@@ -1041,4 +1041,636 @@
 # Volume 29 16 10 31 1 -18 a3a3a3ff
 /fill 29 16 10 31 1 -18 minecraft:stone
 # Volume 29 16 9 31 1 -18 292929ff
-/fill 29 16 9 31 1 -18 minecraft:stone
+/fill 29 16 9 31 1 -18 minecraft:stone# Circle 16 68 44 17 68 45 adfaffff
+/fill 16 68 44 17 68 45 minecraft:stone
+/fill 17 69 45 16 67 44 air replace
+ 
+# Circle 16 68 39 12 59 44 adfaffff
+/fill 16 68 39 12 59 44 minecraft:stone
+/fill 17 69 40 11 58 43 air replace
+ //move -37 0 78 27 0 85
+//move 26 0 83 25 0 83
+//move 26 0 83 25 0 83
+//move 55 0 88 54 0 88
+//move 57 0 92 56 0 92
+//move 56 0 6 56 22 8
+//move 57 0 7 57 22 7
+//move 57 0 7 57 22 7
+//move 57 0 7 57 22 7
+//move 57 0 7 57 22 7
+//move 58 0 112 58 0 -29
+//move -46 35 -18 -46 0 -18
+//move 0 0 0 0 0 0
+//move 0 0 0 0 0 0
+//move -56 7 -57 -56 13 -57
+//move -56 13 -57 -56 7 -57
+//move -25 0 -104 -25 0 -94
+//move -41 0 -95 -32 0 -95
+//move 21 0 -77 37 0 -77
+//copy 54 0 74 -21 0 75
+//rotate -46 0 85 -46 0 69 -46 0 97
+//rotate -46 0 74 -46 0 85 -33 0 74
+//rotate -36 0 77 -46 0 77 -36 0 121
+//rotate 26 0 83 26 10 83 32 14 83
+//rotate 26 0 83 26 0 61 55 0 118
+# Circle 25 0 84 26.019224 51ff00ff
+# Circle 25 0 85 27.073973 51ff00ff
+# Circle 25 0 85 31.06445 00ffa6ff
+# Circle 25 0 84 32.0 00ffa6ff
+# Circle 24 0 85 32.031235 00ffa6ff
+# Circle 25 0 85 34.058773 004cffff
+# Circle 24 0 84 29.017237 5900ffff
+# Circle 25 0 84 30.016663 ff00ddff
+# Plane 18 0 -60 -4 0 -60 18 20 -40  ffffffff
+/setblock -4 0 -60 minecraft:stone
+/setblock -4 1 -59 minecraft:stone
+/setblock -4 2 -58 minecraft:stone
+/setblock -4 3 -57 minecraft:stone
+/setblock -4 4 -56 minecraft:stone
+/setblock -4 5 -55 minecraft:stone
+/setblock -4 6 -54 minecraft:stone
+/setblock -4 7 -53 minecraft:stone
+/setblock -4 8 -52 minecraft:stone
+/setblock -4 9 -51 minecraft:stone
+/setblock -4 10 -50 minecraft:stone
+/setblock -4 11 -49 minecraft:stone
+/setblock -4 12 -48 minecraft:stone
+/setblock -4 13 -47 minecraft:stone
+/setblock -4 14 -46 minecraft:stone
+/setblock -4 15 -45 minecraft:stone
+/setblock -4 16 -44 minecraft:stone
+/setblock -4 17 -43 minecraft:stone
+/setblock -4 18 -42 minecraft:stone
+/setblock -4 19 -41 minecraft:stone
+/setblock -4 20 -40 minecraft:stone
+/setblock -3 0 -60 minecraft:stone
+/setblock -3 1 -59 minecraft:stone
+/setblock -3 2 -58 minecraft:stone
+/setblock -3 3 -57 minecraft:stone
+/setblock -3 4 -56 minecraft:stone
+/setblock -3 5 -55 minecraft:stone
+/setblock -3 6 -54 minecraft:stone
+/setblock -3 7 -53 minecraft:stone
+/setblock -3 8 -52 minecraft:stone
+/setblock -3 9 -51 minecraft:stone
+/setblock -3 10 -50 minecraft:stone
+/setblock -3 11 -49 minecraft:stone
+/setblock -3 12 -48 minecraft:stone
+/setblock -3 13 -47 minecraft:stone
+/setblock -3 14 -46 minecraft:stone
+/setblock -3 15 -45 minecraft:stone
+/setblock -3 16 -44 minecraft:stone
+/setblock -3 17 -43 minecraft:stone
+/setblock -3 18 -42 minecraft:stone
+/setblock -3 19 -41 minecraft:stone
+/setblock -3 20 -40 minecraft:stone
+/setblock -2 0 -60 minecraft:stone
+/setblock -2 1 -59 minecraft:stone
+/setblock -2 2 -58 minecraft:stone
+/setblock -2 3 -57 minecraft:stone
+/setblock -2 4 -56 minecraft:stone
+/setblock -2 5 -55 minecraft:stone
+/setblock -2 6 -54 minecraft:stone
+/setblock -2 7 -53 minecraft:stone
+/setblock -2 8 -52 minecraft:stone
+/setblock -2 9 -51 minecraft:stone
+/setblock -2 10 -50 minecraft:stone
+/setblock -2 11 -49 minecraft:stone
+/setblock -2 12 -48 minecraft:stone
+/setblock -2 13 -47 minecraft:stone
+/setblock -2 14 -46 minecraft:stone
+/setblock -2 15 -45 minecraft:stone
+/setblock -2 16 -44 minecraft:stone
+/setblock -2 17 -43 minecraft:stone
+/setblock -2 18 -42 minecraft:stone
+/setblock -2 19 -41 minecraft:stone
+/setblock -2 20 -40 minecraft:stone
+/setblock -1 0 -60 minecraft:stone
+/setblock -1 1 -59 minecraft:stone
+/setblock -1 2 -58 minecraft:stone
+/setblock -1 3 -57 minecraft:stone
+/setblock -1 4 -56 minecraft:stone
+/setblock -1 5 -55 minecraft:stone
+/setblock -1 6 -54 minecraft:stone
+/setblock -1 7 -53 minecraft:stone
+/setblock -1 8 -52 minecraft:stone
+/setblock -1 9 -51 minecraft:stone
+/setblock -1 10 -50 minecraft:stone
+/setblock -1 11 -49 minecraft:stone
+/setblock -1 12 -48 minecraft:stone
+/setblock -1 13 -47 minecraft:stone
+/setblock -1 14 -46 minecraft:stone
+/setblock -1 15 -45 minecraft:stone
+/setblock -1 16 -44 minecraft:stone
+/setblock -1 17 -43 minecraft:stone
+/setblock -1 18 -42 minecraft:stone
+/setblock -1 19 -41 minecraft:stone
+/setblock -1 20 -40 minecraft:stone
+/setblock 0 0 -60 minecraft:stone
+/setblock 0 1 -59 minecraft:stone
+/setblock 0 2 -58 minecraft:stone
+/setblock 0 3 -57 minecraft:stone
+/setblock 0 4 -56 minecraft:stone
+/setblock 0 5 -55 minecraft:stone
+/setblock 0 6 -54 minecraft:stone
+/setblock 0 7 -53 minecraft:stone
+/setblock 0 8 -52 minecraft:stone
+/setblock 0 9 -51 minecraft:stone
+/setblock 0 10 -50 minecraft:stone
+/setblock 0 11 -49 minecraft:stone
+/setblock 0 12 -48 minecraft:stone
+/setblock 0 13 -47 minecraft:stone
+/setblock 0 14 -46 minecraft:stone
+/setblock 0 15 -45 minecraft:stone
+/setblock 0 16 -44 minecraft:stone
+/setblock 0 17 -43 minecraft:stone
+/setblock 0 18 -42 minecraft:stone
+/setblock 0 19 -41 minecraft:stone
+/setblock 0 20 -40 minecraft:stone
+/setblock 1 0 -60 minecraft:stone
+/setblock 1 1 -59 minecraft:stone
+/setblock 1 2 -58 minecraft:stone
+/setblock 1 3 -57 minecraft:stone
+/setblock 1 4 -56 minecraft:stone
+/setblock 1 5 -55 minecraft:stone
+/setblock 1 6 -54 minecraft:stone
+/setblock 1 7 -53 minecraft:stone
+/setblock 1 8 -52 minecraft:stone
+/setblock 1 9 -51 minecraft:stone
+/setblock 1 10 -50 minecraft:stone
+/setblock 1 11 -49 minecraft:stone
+/setblock 1 12 -48 minecraft:stone
+/setblock 1 13 -47 minecraft:stone
+/setblock 1 14 -46 minecraft:stone
+/setblock 1 15 -45 minecraft:stone
+/setblock 1 16 -44 minecraft:stone
+/setblock 1 17 -43 minecraft:stone
+/setblock 1 18 -42 minecraft:stone
+/setblock 1 19 -41 minecraft:stone
+/setblock 1 20 -40 minecraft:stone
+/setblock 2 0 -60 minecraft:stone
+/setblock 2 1 -59 minecraft:stone
+/setblock 2 2 -58 minecraft:stone
+/setblock 2 3 -57 minecraft:stone
+/setblock 2 4 -56 minecraft:stone
+/setblock 2 5 -55 minecraft:stone
+/setblock 2 6 -54 minecraft:stone
+/setblock 2 7 -53 minecraft:stone
+/setblock 2 8 -52 minecraft:stone
+/setblock 2 9 -51 minecraft:stone
+/setblock 2 10 -50 minecraft:stone
+/setblock 2 11 -49 minecraft:stone
+/setblock 2 12 -48 minecraft:stone
+/setblock 2 13 -47 minecraft:stone
+/setblock 2 14 -46 minecraft:stone
+/setblock 2 15 -45 minecraft:stone
+/setblock 2 16 -44 minecraft:stone
+/setblock 2 17 -43 minecraft:stone
+/setblock 2 18 -42 minecraft:stone
+/setblock 2 19 -41 minecraft:stone
+/setblock 2 20 -40 minecraft:stone
+/setblock 3 0 -60 minecraft:stone
+/setblock 3 1 -59 minecraft:stone
+/setblock 3 2 -58 minecraft:stone
+/setblock 3 3 -57 minecraft:stone
+/setblock 3 4 -56 minecraft:stone
+/setblock 3 5 -55 minecraft:stone
+/setblock 3 6 -54 minecraft:stone
+/setblock 3 7 -53 minecraft:stone
+/setblock 3 8 -52 minecraft:stone
+/setblock 3 9 -51 minecraft:stone
+/setblock 3 10 -50 minecraft:stone
+/setblock 3 11 -49 minecraft:stone
+/setblock 3 12 -48 minecraft:stone
+/setblock 3 13 -47 minecraft:stone
+/setblock 3 14 -46 minecraft:stone
+/setblock 3 15 -45 minecraft:stone
+/setblock 3 16 -44 minecraft:stone
+/setblock 3 17 -43 minecraft:stone
+/setblock 3 18 -42 minecraft:stone
+/setblock 3 19 -41 minecraft:stone
+/setblock 3 20 -40 minecraft:stone
+/setblock 4 0 -60 minecraft:stone
+/setblock 4 1 -59 minecraft:stone
+/setblock 4 2 -58 minecraft:stone
+/setblock 4 3 -57 minecraft:stone
+/setblock 4 4 -56 minecraft:stone
+/setblock 4 5 -55 minecraft:stone
+/setblock 4 6 -54 minecraft:stone
+/setblock 4 7 -53 minecraft:stone
+/setblock 4 8 -52 minecraft:stone
+/setblock 4 9 -51 minecraft:stone
+/setblock 4 10 -50 minecraft:stone
+/setblock 4 11 -49 minecraft:stone
+/setblock 4 12 -48 minecraft:stone
+/setblock 4 13 -47 minecraft:stone
+/setblock 4 14 -46 minecraft:stone
+/setblock 4 15 -45 minecraft:stone
+/setblock 4 16 -44 minecraft:stone
+/setblock 4 17 -43 minecraft:stone
+/setblock 4 18 -42 minecraft:stone
+/setblock 4 19 -41 minecraft:stone
+/setblock 4 20 -40 minecraft:stone
+/setblock 5 0 -60 minecraft:stone
+/setblock 5 1 -59 minecraft:stone
+/setblock 5 2 -58 minecraft:stone
+/setblock 5 3 -57 minecraft:stone
+/setblock 5 4 -56 minecraft:stone
+/setblock 5 5 -55 minecraft:stone
+/setblock 5 6 -54 minecraft:stone
+/setblock 5 7 -53 minecraft:stone
+/setblock 5 8 -52 minecraft:stone
+/setblock 5 9 -51 minecraft:stone
+/setblock 5 10 -50 minecraft:stone
+/setblock 5 11 -49 minecraft:stone
+/setblock 5 12 -48 minecraft:stone
+/setblock 5 13 -47 minecraft:stone
+/setblock 5 14 -46 minecraft:stone
+/setblock 5 15 -45 minecraft:stone
+/setblock 5 16 -44 minecraft:stone
+/setblock 5 17 -43 minecraft:stone
+/setblock 5 18 -42 minecraft:stone
+/setblock 5 19 -41 minecraft:stone
+/setblock 5 20 -40 minecraft:stone
+/setblock 6 0 -60 minecraft:stone
+/setblock 6 1 -59 minecraft:stone
+/setblock 6 2 -58 minecraft:stone
+/setblock 6 3 -57 minecraft:stone
+/setblock 6 4 -56 minecraft:stone
+/setblock 6 5 -55 minecraft:stone
+/setblock 6 6 -54 minecraft:stone
+/setblock 6 7 -53 minecraft:stone
+/setblock 6 8 -52 minecraft:stone
+/setblock 6 9 -51 minecraft:stone
+/setblock 6 10 -50 minecraft:stone
+/setblock 6 11 -49 minecraft:stone
+/setblock 6 12 -48 minecraft:stone
+/setblock 6 13 -47 minecraft:stone
+/setblock 6 14 -46 minecraft:stone
+/setblock 6 15 -45 minecraft:stone
+/setblock 6 16 -44 minecraft:stone
+/setblock 6 17 -43 minecraft:stone
+/setblock 6 18 -42 minecraft:stone
+/setblock 6 19 -41 minecraft:stone
+/setblock 6 20 -40 minecraft:stone
+/setblock 7 0 -60 minecraft:stone
+/setblock 7 1 -59 minecraft:stone
+/setblock 7 2 -58 minecraft:stone
+/setblock 7 3 -57 minecraft:stone
+/setblock 7 4 -56 minecraft:stone
+/setblock 7 5 -55 minecraft:stone
+/setblock 7 6 -54 minecraft:stone
+/setblock 7 7 -53 minecraft:stone
+/setblock 7 8 -52 minecraft:stone
+/setblock 7 9 -51 minecraft:stone
+/setblock 7 10 -50 minecraft:stone
+/setblock 7 11 -49 minecraft:stone
+/setblock 7 12 -48 minecraft:stone
+/setblock 7 13 -47 minecraft:stone
+/setblock 7 14 -46 minecraft:stone
+/setblock 7 15 -45 minecraft:stone
+/setblock 7 16 -44 minecraft:stone
+/setblock 7 17 -43 minecraft:stone
+/setblock 7 18 -42 minecraft:stone
+/setblock 7 19 -41 minecraft:stone
+/setblock 7 20 -40 minecraft:stone
+/setblock 8 0 -60 minecraft:stone
+/setblock 8 1 -59 minecraft:stone
+/setblock 8 2 -58 minecraft:stone
+/setblock 8 3 -57 minecraft:stone
+/setblock 8 4 -56 minecraft:stone
+/setblock 8 5 -55 minecraft:stone
+/setblock 8 6 -54 minecraft:stone
+/setblock 8 7 -53 minecraft:stone
+/setblock 8 8 -52 minecraft:stone
+/setblock 8 9 -51 minecraft:stone
+/setblock 8 10 -50 minecraft:stone
+/setblock 8 11 -49 minecraft:stone
+/setblock 8 12 -48 minecraft:stone
+/setblock 8 13 -47 minecraft:stone
+/setblock 8 14 -46 minecraft:stone
+/setblock 8 15 -45 minecraft:stone
+/setblock 8 16 -44 minecraft:stone
+/setblock 8 17 -43 minecraft:stone
+/setblock 8 18 -42 minecraft:stone
+/setblock 8 19 -41 minecraft:stone
+/setblock 8 20 -40 minecraft:stone
+/setblock 9 0 -60 minecraft:stone
+/setblock 9 1 -59 minecraft:stone
+/setblock 9 2 -58 minecraft:stone
+/setblock 9 3 -57 minecraft:stone
+/setblock 9 4 -56 minecraft:stone
+/setblock 9 5 -55 minecraft:stone
+/setblock 9 6 -54 minecraft:stone
+/setblock 9 7 -53 minecraft:stone
+/setblock 9 8 -52 minecraft:stone
+/setblock 9 9 -51 minecraft:stone
+/setblock 9 10 -50 minecraft:stone
+/setblock 9 11 -49 minecraft:stone
+/setblock 9 12 -48 minecraft:stone
+/setblock 9 13 -47 minecraft:stone
+/setblock 9 14 -46 minecraft:stone
+/setblock 9 15 -45 minecraft:stone
+/setblock 9 16 -44 minecraft:stone
+/setblock 9 17 -43 minecraft:stone
+/setblock 9 18 -42 minecraft:stone
+/setblock 9 19 -41 minecraft:stone
+/setblock 9 20 -40 minecraft:stone
+/setblock 10 0 -60 minecraft:stone
+/setblock 10 1 -59 minecraft:stone
+/setblock 10 2 -58 minecraft:stone
+/setblock 10 3 -57 minecraft:stone
+/setblock 10 4 -56 minecraft:stone
+/setblock 10 5 -55 minecraft:stone
+/setblock 10 6 -54 minecraft:stone
+/setblock 10 7 -53 minecraft:stone
+/setblock 10 8 -52 minecraft:stone
+/setblock 10 9 -51 minecraft:stone
+/setblock 10 10 -50 minecraft:stone
+/setblock 10 11 -49 minecraft:stone
+/setblock 10 12 -48 minecraft:stone
+/setblock 10 13 -47 minecraft:stone
+/setblock 10 14 -46 minecraft:stone
+/setblock 10 15 -45 minecraft:stone
+/setblock 10 16 -44 minecraft:stone
+/setblock 10 17 -43 minecraft:stone
+/setblock 10 18 -42 minecraft:stone
+/setblock 10 19 -41 minecraft:stone
+/setblock 10 20 -40 minecraft:stone
+/setblock 11 0 -60 minecraft:stone
+/setblock 11 1 -59 minecraft:stone
+/setblock 11 2 -58 minecraft:stone
+/setblock 11 3 -57 minecraft:stone
+/setblock 11 4 -56 minecraft:stone
+/setblock 11 5 -55 minecraft:stone
+/setblock 11 6 -54 minecraft:stone
+/setblock 11 7 -53 minecraft:stone
+/setblock 11 8 -52 minecraft:stone
+/setblock 11 9 -51 minecraft:stone
+/setblock 11 10 -50 minecraft:stone
+/setblock 11 11 -49 minecraft:stone
+/setblock 11 12 -48 minecraft:stone
+/setblock 11 13 -47 minecraft:stone
+/setblock 11 14 -46 minecraft:stone
+/setblock 11 15 -45 minecraft:stone
+/setblock 11 16 -44 minecraft:stone
+/setblock 11 17 -43 minecraft:stone
+/setblock 11 18 -42 minecraft:stone
+/setblock 11 19 -41 minecraft:stone
+/setblock 11 20 -40 minecraft:stone
+/setblock 12 0 -60 minecraft:stone
+/setblock 12 1 -59 minecraft:stone
+/setblock 12 2 -58 minecraft:stone
+/setblock 12 3 -57 minecraft:stone
+/setblock 12 4 -56 minecraft:stone
+/setblock 12 5 -55 minecraft:stone
+/setblock 12 6 -54 minecraft:stone
+/setblock 12 7 -53 minecraft:stone
+/setblock 12 8 -52 minecraft:stone
+/setblock 12 9 -51 minecraft:stone
+/setblock 12 10 -50 minecraft:stone
+/setblock 12 11 -49 minecraft:stone
+/setblock 12 12 -48 minecraft:stone
+/setblock 12 13 -47 minecraft:stone
+/setblock 12 14 -46 minecraft:stone
+/setblock 12 15 -45 minecraft:stone
+/setblock 12 16 -44 minecraft:stone
+/setblock 12 17 -43 minecraft:stone
+/setblock 12 18 -42 minecraft:stone
+/setblock 12 19 -41 minecraft:stone
+/setblock 12 20 -40 minecraft:stone
+/setblock 13 0 -60 minecraft:stone
+/setblock 13 1 -59 minecraft:stone
+/setblock 13 2 -58 minecraft:stone
+/setblock 13 3 -57 minecraft:stone
+/setblock 13 4 -56 minecraft:stone
+/setblock 13 5 -55 minecraft:stone
+/setblock 13 6 -54 minecraft:stone
+/setblock 13 7 -53 minecraft:stone
+/setblock 13 8 -52 minecraft:stone
+/setblock 13 9 -51 minecraft:stone
+/setblock 13 10 -50 minecraft:stone
+/setblock 13 11 -49 minecraft:stone
+/setblock 13 12 -48 minecraft:stone
+/setblock 13 13 -47 minecraft:stone
+/setblock 13 14 -46 minecraft:stone
+/setblock 13 15 -45 minecraft:stone
+/setblock 13 16 -44 minecraft:stone
+/setblock 13 17 -43 minecraft:stone
+/setblock 13 18 -42 minecraft:stone
+/setblock 13 19 -41 minecraft:stone
+/setblock 13 20 -40 minecraft:stone
+/setblock 14 0 -60 minecraft:stone
+/setblock 14 1 -59 minecraft:stone
+/setblock 14 2 -58 minecraft:stone
+/setblock 14 3 -57 minecraft:stone
+/setblock 14 4 -56 minecraft:stone
+/setblock 14 5 -55 minecraft:stone
+/setblock 14 6 -54 minecraft:stone
+/setblock 14 7 -53 minecraft:stone
+/setblock 14 8 -52 minecraft:stone
+/setblock 14 9 -51 minecraft:stone
+/setblock 14 10 -50 minecraft:stone
+/setblock 14 11 -49 minecraft:stone
+/setblock 14 12 -48 minecraft:stone
+/setblock 14 13 -47 minecraft:stone
+/setblock 14 14 -46 minecraft:stone
+/setblock 14 15 -45 minecraft:stone
+/setblock 14 16 -44 minecraft:stone
+/setblock 14 17 -43 minecraft:stone
+/setblock 14 18 -42 minecraft:stone
+/setblock 14 19 -41 minecraft:stone
+/setblock 14 20 -40 minecraft:stone
+/setblock 15 0 -60 minecraft:stone
+/setblock 15 1 -59 minecraft:stone
+/setblock 15 2 -58 minecraft:stone
+/setblock 15 3 -57 minecraft:stone
+/setblock 15 4 -56 minecraft:stone
+/setblock 15 5 -55 minecraft:stone
+/setblock 15 6 -54 minecraft:stone
+/setblock 15 7 -53 minecraft:stone
+/setblock 15 8 -52 minecraft:stone
+/setblock 15 9 -51 minecraft:stone
+/setblock 15 10 -50 minecraft:stone
+/setblock 15 11 -49 minecraft:stone
+/setblock 15 12 -48 minecraft:stone
+/setblock 15 13 -47 minecraft:stone
+/setblock 15 14 -46 minecraft:stone
+/setblock 15 15 -45 minecraft:stone
+/setblock 15 16 -44 minecraft:stone
+/setblock 15 17 -43 minecraft:stone
+/setblock 15 18 -42 minecraft:stone
+/setblock 15 19 -41 minecraft:stone
+/setblock 15 20 -40 minecraft:stone
+/setblock 16 0 -60 minecraft:stone
+/setblock 16 1 -59 minecraft:stone
+/setblock 16 2 -58 minecraft:stone
+/setblock 16 3 -57 minecraft:stone
+/setblock 16 4 -56 minecraft:stone
+/setblock 16 5 -55 minecraft:stone
+/setblock 16 6 -54 minecraft:stone
+/setblock 16 7 -53 minecraft:stone
+/setblock 16 8 -52 minecraft:stone
+/setblock 16 9 -51 minecraft:stone
+/setblock 16 10 -50 minecraft:stone
+/setblock 16 11 -49 minecraft:stone
+/setblock 16 12 -48 minecraft:stone
+/setblock 16 13 -47 minecraft:stone
+/setblock 16 14 -46 minecraft:stone
+/setblock 16 15 -45 minecraft:stone
+/setblock 16 16 -44 minecraft:stone
+/setblock 16 17 -43 minecraft:stone
+/setblock 16 18 -42 minecraft:stone
+/setblock 16 19 -41 minecraft:stone
+/setblock 16 20 -40 minecraft:stone
+/setblock 17 0 -60 minecraft:stone
+/setblock 17 1 -59 minecraft:stone
+/setblock 17 2 -58 minecraft:stone
+/setblock 17 3 -57 minecraft:stone
+/setblock 17 4 -56 minecraft:stone
+/setblock 17 5 -55 minecraft:stone
+/setblock 17 6 -54 minecraft:stone
+/setblock 17 7 -53 minecraft:stone
+/setblock 17 8 -52 minecraft:stone
+/setblock 17 9 -51 minecraft:stone
+/setblock 17 10 -50 minecraft:stone
+/setblock 17 11 -49 minecraft:stone
+/setblock 17 12 -48 minecraft:stone
+/setblock 17 13 -47 minecraft:stone
+/setblock 17 14 -46 minecraft:stone
+/setblock 17 15 -45 minecraft:stone
+/setblock 17 16 -44 minecraft:stone
+/setblock 17 17 -43 minecraft:stone
+/setblock 17 18 -42 minecraft:stone
+/setblock 17 19 -41 minecraft:stone
+/setblock 17 20 -40 minecraft:stone
+/setblock 18 0 -60 minecraft:stone
+/setblock 18 1 -59 minecraft:stone
+/setblock 18 2 -58 minecraft:stone
+/setblock 18 3 -57 minecraft:stone
+/setblock 18 4 -56 minecraft:stone
+/setblock 18 5 -55 minecraft:stone
+/setblock 18 6 -54 minecraft:stone
+/setblock 18 7 -53 minecraft:stone
+/setblock 18 8 -52 minecraft:stone
+/setblock 18 9 -51 minecraft:stone
+/setblock 18 10 -50 minecraft:stone
+/setblock 18 11 -49 minecraft:stone
+/setblock 18 12 -48 minecraft:stone
+/setblock 18 13 -47 minecraft:stone
+/setblock 18 14 -46 minecraft:stone
+/setblock 18 15 -45 minecraft:stone
+/setblock 18 16 -44 minecraft:stone
+/setblock 18 17 -43 minecraft:stone
+/setblock 18 18 -42 minecraft:stone
+/setblock 18 19 -41 minecraft:stone
+/setblock 18 20 -40 minecraft:stone
+# Circle 24 0 84 17 0 101 ffe600ff
+/fill 24 0 84 17 0 101 minecraft:stone
+/fill 25 1 85 16 -1 100 air replace
+ 
+# Frame -33 13 -35 -55 0 -57 ff00ddff
+/fill -33 13 -35 -33 0 -35 minecraft:stone
+/fill -33 0 -35 -55 0 -35 minecraft:stone
+/fill -55 0 -35 -55 13 -35 minecraft:stone
+/fill -55 13 -35 -33 13 -35 minecraft:stone
+/fill -33 13 -35 -33 13 -57 minecraft:stone
+/fill -33 0 -35 -33 0 -57 minecraft:stone
+/fill -55 0 -35 -55 0 -57 minecraft:stone
+/fill -55 13 -35 -55 13 -57 minecraft:stone
+/fill -33 13 -57 -33 0 -57 minecraft:stone
+/fill -33 0 -57 -55 0 -57 minecraft:stone
+/fill -55 0 -57 -55 13 -57 minecraft:stone
+/fill -55 13 -57 -33 13 -57 minecraft:stone
+# Frame -54 13 -36 -34 13 -56 ff00ddff
+/fill -54 13 -36 -54 13 -36 minecraft:stone
+/fill -54 13 -36 -34 13 -36 minecraft:stone
+/fill -34 13 -36 -34 13 -36 minecraft:stone
+/fill -34 13 -36 -54 13 -36 minecraft:stone
+/fill -54 13 -36 -54 13 -56 minecraft:stone
+/fill -54 13 -36 -54 13 -56 minecraft:stone
+/fill -34 13 -36 -34 13 -56 minecraft:stone
+/fill -34 13 -36 -34 13 -56 minecraft:stone
+/fill -54 13 -56 -54 13 -56 minecraft:stone
+/fill -54 13 -56 -34 13 -56 minecraft:stone
+/fill -34 13 -56 -34 13 -56 minecraft:stone
+/fill -34 13 -56 -54 13 -56 minecraft:stone
+# Frame -53 13 -37 -35 13 -55 ff00ddff
+/fill -53 13 -37 -53 13 -37 minecraft:stone
+/fill -53 13 -37 -35 13 -37 minecraft:stone
+/fill -35 13 -37 -35 13 -37 minecraft:stone
+/fill -35 13 -37 -53 13 -37 minecraft:stone
+/fill -53 13 -37 -53 13 -55 minecraft:stone
+/fill -53 13 -37 -53 13 -55 minecraft:stone
+/fill -35 13 -37 -35 13 -55 minecraft:stone
+/fill -35 13 -37 -35 13 -55 minecraft:stone
+/fill -53 13 -55 -53 13 -55 minecraft:stone
+/fill -53 13 -55 -35 13 -55 minecraft:stone
+/fill -35 13 -55 -35 13 -55 minecraft:stone
+/fill -35 13 -55 -53 13 -55 minecraft:stone
+# Frame -54 0 -36 -34 0 -56 ff00ddff
+/fill -54 0 -36 -54 0 -36 minecraft:stone
+/fill -54 0 -36 -34 0 -36 minecraft:stone
+/fill -34 0 -36 -34 0 -36 minecraft:stone
+/fill -34 0 -36 -54 0 -36 minecraft:stone
+/fill -54 0 -36 -54 0 -56 minecraft:stone
+/fill -54 0 -36 -54 0 -56 minecraft:stone
+/fill -34 0 -36 -34 0 -56 minecraft:stone
+/fill -34 0 -36 -34 0 -56 minecraft:stone
+/fill -54 0 -56 -54 0 -56 minecraft:stone
+/fill -54 0 -56 -34 0 -56 minecraft:stone
+/fill -34 0 -56 -34 0 -56 minecraft:stone
+/fill -34 0 -56 -54 0 -56 minecraft:stone
+# Frame -53 0 -37 -35 0 -55 ff00ddff
+/fill -53 0 -37 -53 0 -37 minecraft:stone
+/fill -53 0 -37 -35 0 -37 minecraft:stone
+/fill -35 0 -37 -35 0 -37 minecraft:stone
+/fill -35 0 -37 -53 0 -37 minecraft:stone
+/fill -53 0 -37 -53 0 -55 minecraft:stone
+/fill -53 0 -37 -53 0 -55 minecraft:stone
+/fill -35 0 -37 -35 0 -55 minecraft:stone
+/fill -35 0 -37 -35 0 -55 minecraft:stone
+/fill -53 0 -55 -53 0 -55 minecraft:stone
+/fill -53 0 -55 -35 0 -55 minecraft:stone
+/fill -35 0 -55 -35 0 -55 minecraft:stone
+/fill -35 0 -55 -53 0 -55 minecraft:stone
+# Frame -36 0 -54 -52 0 -38 ff00ddff
+/fill -36 0 -54 -36 0 -54 minecraft:stone
+/fill -36 0 -54 -52 0 -54 minecraft:stone
+/fill -52 0 -54 -52 0 -54 minecraft:stone
+/fill -52 0 -54 -36 0 -54 minecraft:stone
+/fill -36 0 -54 -36 0 -38 minecraft:stone
+/fill -36 0 -54 -36 0 -38 minecraft:stone
+/fill -52 0 -54 -52 0 -38 minecraft:stone
+/fill -52 0 -54 -52 0 -38 minecraft:stone
+/fill -36 0 -38 -36 0 -38 minecraft:stone
+/fill -36 0 -38 -52 0 -38 minecraft:stone
+/fill -52 0 -38 -52 0 -38 minecraft:stone
+/fill -52 0 -38 -36 0 -38 minecraft:stone
+# Frame -36 13 -38 -52 1 -54 ff00ddff
+/fill -36 13 -38 -36 1 -38 minecraft:stone
+/fill -36 1 -38 -52 1 -38 minecraft:stone
+/fill -52 1 -38 -52 13 -38 minecraft:stone
+/fill -52 13 -38 -36 13 -38 minecraft:stone
+/fill -36 13 -38 -36 13 -54 minecraft:stone
+/fill -36 1 -38 -36 1 -54 minecraft:stone
+/fill -52 1 -38 -52 1 -54 minecraft:stone
+/fill -52 13 -38 -52 13 -54 minecraft:stone
+/fill -36 13 -54 -36 1 -54 minecraft:stone
+/fill -36 1 -54 -52 1 -54 minecraft:stone
+/fill -52 1 -54 -52 13 -54 minecraft:stone
+/fill -52 13 -54 -36 13 -54 minecraft:stone
+# Shell 20 0 -115 3 20 -95 ffffffff
+/fill 20 0 -115 3 20 -95 minecraft:stone
+/fill 21 1 -114 2 19 -96 air replace
+ 
+# Volume -47 0 -50 -32 0 -39 ff00ddff
+/fill -47 0 -50 -32 0 -39 minecraft:stone
+# Volume -51 0 -40 -39 0 -53 d9ff00ff
+/fill -51 0 -40 -39 0 -53 minecraft:stone
+# Volume -51 0 -39 -37 0 -53 d9ff00ff
+/fill -51 0 -39 -37 0 -53 minecraft:stone
+# Volume -37 13 -39 -51 13 -53 d9ff0056
+/fill -37 13 -39 -51 13 -53 minecraft:stone
+# Volume -37 19 -54 -51 19 -38 d9ff00c4
+/fill -37 19 -54 -51 19 -38 minecraft:stone

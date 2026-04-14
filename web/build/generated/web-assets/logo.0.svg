@@ -1,0 +1,3436 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1024"
+   height="1024"
+   viewBox="0 0 1024 1024"
+   version="1.1"
+   id="svg884"
+   sodipodi:docname="logo.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs888">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient6204">
+      <stop
+         style="stop-color:#99bfe5;stop-opacity:1;"
+         offset="0"
+         id="stop6200" />
+      <stop
+         style="stop-color:#99bfe5;stop-opacity:0;"
+         offset="1"
+         id="stop6202" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient6204"
+       id="linearGradient6206"
+       x1="816"
+       y1="96"
+       x2="112"
+       y2="96"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview886"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     showgrid="true"
+     inkscape:zoom="0.30872483"
+     inkscape:cx="332.01087"
+     inkscape:cy="1044.6196"
+     inkscape:window-width="1876"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="1107"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg884"
+     inkscape:snap-grids="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid5373"
+       spacingx="4"
+       spacingy="4"
+       empspacing="4" />
+  </sodipodi:namedview>
+  <path
+     style="fill:#b79b00;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+     d="M 1024,0 0,1024 h 1024 z"
+     id="path5476" />
+  <g
+     id="g5338"
+     transform="translate(-26,6)">
+    <polygon
+       points="925.8589,482.893 925.67456,463.20294 906.9453,496.10126 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon4"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="944.9919,495.76593 945.0991,476.0625 925.8589,482.893 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon6"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="944.46747,450.29187 944.5661,430.0193 925.67456,463.20294 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon8"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="945.0991,476.0625 925.67456,463.20294 925.8589,482.893 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon10"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="945.0991,476.0625 963.88,462.87506 944.46747,450.29187 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon12"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="925.67456,463.20294 945.0991,476.0625 944.46747,450.29187 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon14"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="906.46875,476.39758 925.67456,463.20294 906.6572,450.61285 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon16"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="887.4482,463.53088 906.46875,476.39758 906.6572,450.61285 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon18"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="925.67456,463.20294 925.48456,442.9057 906.6572,450.61285 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon20"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="925.67456,463.20294 906.46875,476.39758 906.9453,496.10126 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon22"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="925.48456,442.9057 906.1792,430.33966 906.6572,450.61285 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon24"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="906.9453,496.10126 906.46875,476.39758 887.61816,509.59845 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon26"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="944.5661,430.0193 925.48456,442.9057 925.67456,463.20294 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon28"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="964.5326,508.91315 964.9441,489.20038 944.9919,495.76593 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon30"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="964.9441,489.20038 945.0991,476.0625 944.9919,495.76593 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon32"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="964.9441,489.20038 983.70807,475.7276 963.88,462.87506 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon34"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="945.0991,476.0625 964.9441,489.20038 963.88,462.87506 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon36"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="886.83636,489.88525 906.46875,476.39758 887.4482,463.53088 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon38"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="867.8171,476.7328 886.83636,489.88525 887.4482,463.53088 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon40"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="944.5661,430.0193 944.6677,409.11914 925.48456,442.9057 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon42"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="906.46875,476.39758 886.83636,489.88525 887.61816,509.59845 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon44"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="887.61816,509.59845 886.83636,489.88525 867.8634,523.3941 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon46"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="925.48456,442.9057 925.28864,421.97302 906.1792,430.33966 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon48"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="984.49426,522.3436 985.2232,502.6258 964.5326,508.91315 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon50"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="925.28864,421.97302 905.6864,409.4386 906.1792,430.33966 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon52"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="985.2232,502.6258 964.9441,489.20038 964.5326,508.91315 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon54"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="985.2232,502.6258 1003.9652,488.85822 983.70807,475.7276 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon56"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="964.9441,489.20038 985.2232,502.6258 983.70807,475.7276 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon58"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="944.6677,409.11914 925.28864,421.97302 925.48456,442.9057 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon60"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="866.7629,503.67603 886.83636,489.88525 867.8171,476.7328 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon62"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="847.74976,490.22797 866.7629,503.67603 867.8171,476.7328 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon64"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="886.83636,489.88525 866.7629,503.67603 867.8634,523.3941 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon66"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="867.8634,523.3941 866.7629,503.67603 847.667,537.4983 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon68"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="944.6677,409.11914 944.7726,387.56152 925.28864,421.97302 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon70"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1004.8906,536.0665 1005.951,516.3481 984.49426,522.3436 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon72"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1005.951,516.3481 985.2232,502.6258 984.49426,522.3436 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon74"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1005.951,516.3481 1024.6654,502.276 1003.9652,488.85822 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon76"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="985.2232,502.6258 1005.951,516.3481 1003.9652,488.85822 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon78"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="925.28864,421.97302 925.0864,400.37457 905.6864,409.4386 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon80"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="846.2335,517.78 866.7629,503.67603 847.74976,490.22797 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon82"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="827.23157,504.0265 846.2335,517.78 847.74976,490.22797 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon84"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="925.0864,400.37457 905.17816,387.87994 905.6864,409.4386 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon86"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="866.7629,503.67603 846.2335,517.78 847.667,537.4983 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon88"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="944.7726,387.56152 925.0864,400.37457 925.28864,421.97302 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon90"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="847.667,537.4983 846.2335,517.78 827.01385,551.9214 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon92"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1025.7361,550.0916 1027.1423,530.37744 1004.8906,536.0665 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon94"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1027.1423,530.37744 1005.951,516.3481 1004.8906,536.0665 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon96"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1027.1423,530.37744 1045.8234,515.99066 1024.6654,502.276 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon98"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1005.951,516.3481 1027.1423,530.37744 1024.6654,502.276 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon100"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="944.7726,387.56152 944.88074,365.31525 925.0864,400.37457 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon102"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="825.23236,532.2081 846.2335,517.78 827.23157,504.0265 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon104"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="806.2472,518.13855 825.23236,532.2081 827.23157,504.0265 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon106"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="846.2335,517.78 825.23236,532.2081 827.01385,551.9214 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon108"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="925.0864,400.37457 924.87775,378.07788 905.17816,387.87994 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon110"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="827.01385,551.9214 825.23236,532.2081 805.88824,566.67444 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon112"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="924.87775,378.07788 904.6536,365.63232 905.17816,387.87994 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon114"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1047.0455,564.42883 1048.8132,544.7241 1025.7361,550.0916 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon116"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1048.8132,544.7241 1027.1423,530.37744 1025.7361,550.0916 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon118"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="944.88074,365.31525 924.87775,378.07788 925.0864,400.37457 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon120"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1048.8132,544.7241 1067.4545,530.0119 1045.8234,515.99066 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon122"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1027.1423,530.37744 1048.8132,544.7241 1045.8234,515.99066 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon124"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="803.7429,546.9717 825.23236,532.2081 806.2472,518.13855 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon126"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="784.78033,532.57495 803.7429,546.9717 806.2472,518.13855 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon128"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="825.23236,532.2081 803.7429,546.9717 805.88824,566.67444 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon130"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="944.88074,365.31525 944.99243,342.3465 924.87775,378.07788 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon132"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="805.88824,566.67444 803.7429,546.9717 784.2738,581.7689 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon134"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1068.8348,579.08887 1070.9799,559.39905 1047.0455,564.42883 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon136"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1070.9799,559.39905 1048.8132,544.7241 1047.0455,564.42883 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon138"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="924.87775,378.07788 924.6622,355.04877 904.6536,365.63232 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon140"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1070.9799,559.39905 1089.5748,544.3503 1067.4545,530.0119 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon142"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1048.8132,544.7241 1070.9799,559.39905 1067.4545,530.0119 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon144"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="924.6622,355.04877 904.11206,342.66205 904.6536,365.63232 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon146"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="781.74817,562.0824 803.7429,546.9717 784.78033,532.57495 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon148"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="762.81433,547.347 781.74817,562.0824 784.78033,532.57495 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon150"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="944.99243,342.3465 924.6622,355.04877 924.87775,378.07788 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon152"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="803.7429,546.9717 781.74817,562.0824 784.2738,581.7689 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon154"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="784.2738,581.7689 781.74817,562.0824 762.1533,597.2167 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon156"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1091.1201,594.0827 1093.6595,574.41364 1068.8348,579.08887 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon158"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1093.6595,574.41364 1070.9799,559.39905 1068.8348,579.08887 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon160"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="944.99243,342.3465 945.10785,318.61963 924.6622,355.04877 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon162"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1093.6595,574.41364 1112.2013,559.0166 1089.5748,544.3503 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon164"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1070.9799,559.39905 1093.6595,574.41364 1089.5748,544.3503 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon166"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="759.2299,577.55273 781.74817,562.0824 762.81433,547.347 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon168"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="740.33167,562.46655 759.2299,577.55273 762.81433,547.347 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon170"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="924.6622,355.04877 924.4394,331.25043 904.11206,342.66205 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon172"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1132.1323,593.692 1135.3511,574.02234 1113.9186,609.4219 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon174"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="781.74817,562.0824 759.2299,577.55273 762.1533,597.2167 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon176"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="924.4394,331.25043 903.55255,318.9334 904.11206,342.66205 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon178"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="945.10785,318.61963 924.4394,331.25043 924.6622,355.04877 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon180"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="739.509,613.0304 736.1693,593.3956 720.9237,597.6095 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon182"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="736.1693,593.3956 717.3137,577.94617 720.9237,597.6095 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon184"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1135.3511,574.02234 1116.8704,589.7799 1113.9186,609.4219 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon186"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1113.9186,609.4219 1116.8704,589.7799 1095.2694,625.5277 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon188"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="945.10785,318.61963 945.2272,294.09656 924.4394,331.25043 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon190"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="924.4394,331.25043 924.2091,306.64374 903.55255,318.9334 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon192"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1135.3511,574.02234 1138.6785,553.68945 1116.8704,589.7799 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon194"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="924.2091,306.64374 902.97437,294.40814 903.55255,318.9334 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon196"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="758.5285,628.8115 755.4729,609.2123 739.509,613.0304 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon198"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1097.9403,605.92053 1116.8704,589.7799 1093.6595,574.41364 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon200"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="759.2299,577.55273 756.2077,557.2238 736.1693,593.3956 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon202"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1074.6724,590.18066 1097.9403,605.92053 1093.6595,574.41364 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon204"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="755.4729,609.2123 736.1693,593.3956 739.509,613.0304 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon206"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1116.8704,589.7799 1119.923,569.4675 1093.6595,574.41364 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon208"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#000000;fill-opacity:1" />
+    <polygon
+       points="1116.8704,589.7799 1097.9403,605.92053 1095.2694,625.5277 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon210"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="945.2272,294.09656 924.2091,306.64374 924.4394,331.25043 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon212"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="755.4729,609.2123 778.5718,592.9929 759.2299,577.55273 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon214"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="736.1693,593.3956 755.4729,609.2123 759.2299,577.55273 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon216"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1119.923,569.4675 1096.2848,554.0812 1093.6595,574.41364 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon218"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="736.1693,593.3956 732.71545,573.08887 717.3137,577.94617 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon220"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1095.2694,625.5277 1097.9403,605.92053 1076.169,642.0232 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon222"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="732.71545,573.08887 713.5817,557.61774 717.3137,577.94617 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon224"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1138.6785,553.68945 1119.923,569.4675 1116.8704,589.7799 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon226"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="945.2272,294.09656 945.35046,268.73633 924.2091,306.64374 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon228"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="756.2077,557.2238 732.71545,573.08887 736.1693,593.3956 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon230"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="777.9975,644.96576 775.2407,625.4092 758.5285,628.8115 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon232"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1078.5444,622.4584 1097.9403,605.92053 1074.6724,590.18066 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon234"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1055.2235,606.33105 1078.5444,622.4584 1074.6724,590.18066 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon236"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="775.2407,625.4092 755.4729,609.2123 758.5285,628.8115 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon238"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="924.2091,306.64374 923.9708,281.18665 902.97437,294.40814 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon240"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="775.2407,625.4092 798.3731,608.7999 778.5718,592.9929 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon242"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="755.4729,609.2123 775.2407,625.4092 778.5718,592.9929 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon244"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1138.6785,553.68945 1142.1199,532.6591 1119.923,569.4675 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon246"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1097.9403,605.92053 1078.5444,622.4584 1076.169,642.0232 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon248"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="923.9708,281.18665 902.3764,269.0454 902.97437,294.40814 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon250"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1076.169,642.0232 1078.5444,622.4584 1056.6007,658.92285 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon252"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="756.2077,557.2238 753.0815,536.1958 732.71545,573.08887 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon254"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1119.923,569.4675 1123.0814,548.4498 1096.2848,554.0812 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon256"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="945.35046,268.73633 923.9708,281.18665 924.2091,306.64374 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon258"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1123.0814,548.4498 1098.9999,533.05115 1096.2848,554.0812 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon260"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="732.71545,573.08887 729.14124,552.075 713.5817,557.61774 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon262"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="797.9323,661.50635 795.48956,642.00024 777.9975,644.96576 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon264"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="729.14124,552.075 709.72125,536.58997 713.5817,557.61774 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon266"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1142.1199,532.6591 1123.0814,548.4498 1119.923,569.4675 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon268"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1058.6653,639.4083 1078.5444,622.4584 1055.2235,606.33105 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon270"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1035.2958,622.87915 1058.6653,639.4083 1055.2235,606.33105 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon272"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="795.48956,642.00024 775.2407,625.4092 777.9975,644.96576 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon274"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="795.48956,642.00024 818.6504,624.9868 798.3731,608.7999 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon276"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="775.2407,625.4092 795.48956,642.00024 798.3731,608.7999 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon278"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="945.35046,268.73633 945.4781,242.49542 923.9708,281.18665 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon280"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1078.5444,622.4584 1058.6653,639.4083 1056.6007,658.92285 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon282"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="753.0815,536.1958 729.14124,552.075 732.71545,573.08887 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon284"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1056.6007,658.92285 1058.6653,639.4083 1036.5474,676.24146 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon286"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="923.9708,281.18665 923.7242,254.83435 902.3764,269.0454 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon288"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1142.1199,532.6591 1145.6813,510.89496 1123.0814,548.4498 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon290"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="923.7242,254.83435 901.7577,242.8017 902.3764,269.0454 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon292"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="753.0815,536.1958 749.8458,514.4318 729.14124,552.075 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon294"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="818.34973,678.4475 816.23737,659.0001 797.9323,661.50635 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon296"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1123.0814,548.4498 1126.3517,526.6894 1098.9999,533.05115 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon298"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="945.4781,242.49542 923.7242,254.83435 923.9708,281.18665 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon300"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1038.2844,656.786 1058.6653,639.4083 1035.2958,622.87915 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon302"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="816.23737,659.0001 795.48956,642.00024 797.9323,661.50635 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon304"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1014.8713,639.83966 1038.2844,656.786 1035.2958,622.87915 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon306"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1126.3517,526.6894 1101.81,511.287 1098.9999,533.05115 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon308"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="816.23737,659.0001 839.42096,641.5676 818.6504,624.9868 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon310"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="795.48956,642.00024 816.23737,659.0001 818.6504,624.9868 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon312"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="729.14124,552.075 725.4403,530.31647 709.72125,536.58997 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon314"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1058.6653,639.4083 1038.2844,656.786 1036.5474,676.24146 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon316"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="725.4403,530.31647 705.72565,514.8261 709.72125,536.58997 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon318"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1145.6813,510.89496 1126.3517,526.6894 1123.0814,548.4498 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon320"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1036.5474,676.24146 1038.2844,656.786 1015.9905,693.9948 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon322"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="945.4781,242.49542 945.6102,215.32715 923.7242,254.83435 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon324"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="749.8458,514.4318 725.4403,530.31647 729.14124,552.075 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon326"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="839.26746,695.8037 837.5027,676.4241 818.34973,678.4475 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon328"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="923.7242,254.83435 923.4686,227.53894 901.7577,242.8017 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon330"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1145.6813,510.89496 1149.3693,488.3578 1126.3517,526.6894 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon332"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="837.5027,676.4241 816.23737,659.0001 818.34973,678.4475 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon334"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1017.3827,674.6077 1038.2844,656.786 1014.8713,639.83966 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon336"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="993.9313,657.2283 1017.3827,674.6077 1014.8713,639.83966 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon338"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="923.4686,227.53894 901.11707,215.63019 901.7577,242.8017 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon340"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="837.5027,676.4241 860.7031,658.5567 839.42096,641.5676 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon342"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="816.23737,659.0001 837.5027,676.4241 839.42096,641.5676 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon344"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1038.2844,656.786 1017.3827,674.6077 1015.9905,693.9948 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon346"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="749.8458,514.4318 746.49493,491.89276 725.4403,530.31647 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon348"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1126.3517,526.6894 1129.7394,504.14618 1101.81,511.287 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon350"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="945.6102,215.32715 923.4686,227.53894 923.7242,254.83435 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon352"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1015.9905,693.9948 1017.3827,674.6077 994.91095,712.1996 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon354"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1129.7394,504.14618 1104.7198,488.74957 1101.81,511.287 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon356"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="725.4403,530.31647 721.60596,507.77283 705.72565,514.8261 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon358"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="721.60596,507.77283 701.58777,492.2868 705.72565,514.8261 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon360"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1149.3693,488.3578 1129.7394,504.14618 1126.3517,526.6894 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon362"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="860.7042,713.5906 859.3052,694.2881 839.26746,695.8037 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon364"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="859.3052,694.2881 837.5027,676.4241 839.26746,695.8037 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon366"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="995.94,692.89075 1017.3827,674.6077 993.9313,657.2283 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon368"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="746.49493,491.89276 721.60596,507.77283 725.4403,530.31647 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon370"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="972.45605,675.0614 995.94,692.89075 993.9313,657.2283 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon372"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="859.3052,694.2881 882.51605,675.9695 860.7031,658.5567 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon374"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="837.5027,676.4241 859.3052,694.2881 860.7031,658.5567 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon376"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1017.3827,674.6077 995.94,692.89075 994.91095,712.1996 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon378"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1149.3693,488.3578 1153.1906,465.0058 1129.7394,504.14618 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon380"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="994.91095,712.1996 995.94,692.89075 973.2885,730.8733 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon382"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="923.2038,199.24872 945.74713,187.18152 923.0065,175.71289 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon384"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="900.45337,187.48096 923.2038,199.24872 923.0065,175.71289 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon386"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="746.49493,491.89276 743.0226,468.53625 721.60596,507.77283 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon388"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1129.7394,504.14618 1133.2513,480.77716 1104.7198,488.74957 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon390"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="882.6795,731.82434 881.66534,712.60913 860.7042,713.5906 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon392"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1133.2513,480.77716 1107.735,465.39697 1104.7198,488.74957 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon394"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="881.66534,712.60913 859.3052,694.2881 860.7042,713.5906 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon396"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="721.60596,507.77283 717.6307,484.40094 701.58777,492.2868 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon398"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="923.4686,227.53894 923.2038,199.24872 900.7525,240.06769 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon400"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="973.93506,711.6533 995.94,692.89075 972.45605,675.0614 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon402"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="950.4247,693.3562 973.93506,711.6533 972.45605,675.0614 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon404"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="881.66534,712.60913 904.87976,693.822 882.51605,675.9695 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon406"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="859.3052,694.2881 881.66534,712.60913 882.51605,675.9695 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon408"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="717.6307,484.40094 697.2997,468.92987 701.58777,492.2868 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon410"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1153.1906,465.0058 1133.2513,480.77716 1129.7394,504.14618 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon412"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="995.94,692.89075 973.93506,711.6533 973.2885,730.8733 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon414"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="946.3856,239.7489 946.54034,211.3197 923.4686,227.53894 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon416"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="973.2885,730.8733 973.93506,711.6533 951.102,750.03406 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon418"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="743.0226,468.53625 717.6307,484.40094 721.60596,507.77283 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon420"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="946.54034,211.3197 923.2038,199.24872 923.4686,227.53894 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon422"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="946.54034,211.3197 969.0658,198.94171 945.74713,187.18152 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon424"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="923.2038,199.24872 946.54034,211.3197 945.74713,187.18152 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon426"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="900.06476,211.63489 923.2038,199.24872 900.45337,187.48096 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon428"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="877.31177,199.55597 900.06476,211.63489 900.45337,187.48096 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon430"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="905.2139,750.522 904.60504,731.405 882.6795,731.82434 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon432"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1153.1906,465.0058 1157.1527,440.79382 1133.2513,480.77716 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon434"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="923.2038,199.24872 900.06476,211.63489 900.7525,240.06769 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon436"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="904.60504,731.405 881.66534,712.60913 882.6795,731.82434 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon438"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="900.7525,240.06769 900.06476,211.63489 877.439,252.92584 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon440"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="743.0226,468.53625 739.42194,444.31714 717.6307,484.40094 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon442"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="951.34515,730.91455 973.93506,711.6533 950.4247,693.3562 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon444"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="927.8154,712.1311 951.34515,730.91455 950.4247,693.3562 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon446"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="904.60504,731.405 927.8154,712.1311 904.87976,693.822 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon448"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="881.66534,712.60913 904.60504,731.405 904.87976,693.822 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon450"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1133.2513,480.77716 1136.8943,456.53613 1107.735,465.39697 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon452"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="973.93506,711.6533 951.34515,730.91455 951.102,750.03406 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon454"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1136.8943,456.53613 1110.8611,441.18427 1107.735,465.39697 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon456"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="969.88947,252.27167 970.48566,223.70563 946.3856,239.7489 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon458"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="717.6307,484.40094 713.5066,460.15436 697.2997,468.92987 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon460"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="951.102,750.03406 951.34515,730.91455 928.329,769.7014 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon462"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="970.48566,223.70563 946.54034,211.3197 946.3856,239.7489 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon464"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="713.5066,460.15436 692.8532,444.7099 697.2997,468.92987 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon466"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="970.48566,223.70563 992.985,211.00464 969.0658,198.94171 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon468"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="946.54034,211.3197 970.48566,223.70563 969.0658,198.94171 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon470"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1157.1527,440.79382 1136.8943,456.53613 1133.2513,480.77716 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon472"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="876.30585,224.35284 900.06476,211.63489 877.31177,199.55597 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon474"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="853.55835,211.95032 876.30585,224.35284 877.31177,199.55597 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon476"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="928.329,769.7014 928.1471,750.69434 905.2139,750.522 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon478"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="900.06476,211.63489 876.30585,224.35284 877.439,252.92584 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon480"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="739.42194,444.31714 713.5066,460.15436 717.6307,484.40094 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon482"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="928.1471,750.69434 904.60504,731.405 905.2139,750.522 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon484"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="877.439,252.92584 876.30585,224.35284 853.50446,266.12653 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon486"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1157.1527,440.79382 1161.2633,415.67358 1136.8943,456.53613 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon488"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="951.34515,730.91455 928.1471,750.69434 928.329,769.7014 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon490"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="994.0033,265.11932 995.0643,236.41907 969.88947,252.27167 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon492"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="739.42194,444.31714 735.6858,419.1867 713.5066,460.15436 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon494"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="995.0643,236.41907 970.48566,223.70563 969.88947,252.27167 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon496"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="995.0643,236.41907 1017.5282,223.38232 992.985,211.00464 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon498"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1136.8943,456.53613 1140.6758,431.37335 1110.8611,441.18427 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon500"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="970.48566,223.70563 995.0643,236.41907 992.985,211.00464 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon502"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="851.90204,237.41602 876.30585,224.35284 853.55835,211.95032 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon504"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="829.1684,224.6767 851.90204,237.41602 853.55835,211.95032 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon506"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1140.6758,431.37335 1114.1046,416.06287 1110.8611,441.18427 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon508"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="713.5066,460.15436 709.22534,434.9829 692.8532,444.7099 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon510"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="876.30585,224.35284 851.90204,237.41602 853.50446,266.12653 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon512"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="951.34515,730.91455 951.59766,711.0716 928.1471,750.69434 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon514"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="709.22534,434.9829 688.2394,419.57837 692.8532,444.7099 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon516"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1161.2633,415.67358 1140.6758,431.37335 1136.8943,456.53613 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon518"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="853.50446,266.12653 851.90204,237.41602 828.9235,279.68365 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon520"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="928.1471,750.69434 927.9581,730.9584 904.60504,731.405 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon522"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="735.6858,419.1867 709.22534,434.9829 713.5066,460.15436 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon524"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1018.751,278.30463 1020.3013,249.47308 994.0033,265.11932 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon526"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="927.9581,730.9584 903.97327,711.56464 904.60504,731.405 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon528"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1020.3013,249.47308 995.0643,236.41907 994.0033,265.11932 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon530"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1020.3013,249.47308 1042.72,236.08716 1017.5282,223.38232 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon532"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="995.0643,236.41907 1020.3013,249.47308 1017.5282,223.38232 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon534"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1161.2633,415.67358 1165.5311,389.59296 1140.6758,431.37335 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon536"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="951.59766,711.0716 927.9581,730.9584 928.1471,750.69434 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon538"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="826.8265,250.83875 851.90204,237.41602 829.1684,224.6767 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon540"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="804.11615,237.74884 826.8265,250.83875 829.1684,224.6767 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon542"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="851.90204,237.41602 826.8265,250.83875 828.9235,279.68365 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon544"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="735.6858,419.1867 731.80646,393.09253 709.22534,434.9829 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon546"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1140.6758,431.37335 1144.6038,405.23517 1114.1046,416.06287 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon548"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="828.9235,279.68365 826.8265,250.83875 803.6698,293.612 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon550"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1144.6038,405.23517 1117.472,389.9807 1114.1046,416.06287 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon552"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="709.22534,434.9829 704.77747,408.8327 688.2394,419.57837 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon554"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="951.59766,711.0716 951.85974,690.4636 927.9581,730.9584 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon556"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1044.158,291.84137 1046.2238,262.88165 1018.751,278.30463 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon558"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="704.77747,408.8327 683.44855,393.48267 688.2394,419.57837 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon560"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1046.2238,262.88165 1020.3013,249.47308 1018.751,278.30463 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon562"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1165.5311,389.59296 1144.6038,405.23517 1140.6758,431.37335 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon564"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1046.2238,262.88165 1068.5865,249.13226 1042.72,236.08716 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon566"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1020.3013,249.47308 1046.2238,262.88165 1042.72,236.08716 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon568"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="927.9581,730.9584 927.7618,710.4508 903.97327,711.56464 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon570"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="731.80646,393.09253 704.77747,408.8327 709.22534,434.9829 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon572"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="801.0512,264.6361 826.8265,250.83875 804.11615,237.74884 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon574"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="778.3741,251.18079 801.0512,264.6361 804.11615,237.74884 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon576"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="927.7618,710.4508 903.31696,690.95905 903.97327,711.56464 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon578"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="826.8265,250.83875 801.0512,264.6361 803.6698,293.612 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon580"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1165.5311,389.59296 1169.9653,362.4958 1144.6038,405.23517 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon582"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="951.85974,690.4636 927.7618,710.4508 927.9581,730.9584 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon584"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="803.6698,293.612 801.0512,264.6361 777.7152,307.92676 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon586"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1070.2509,305.74347 1072.86,276.65936 1044.158,291.84137 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon588"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="731.80646,393.09253 727.7753,365.9781 704.77747,408.8327 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon590"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1144.6038,405.23517 1148.6869,378.0639 1117.472,389.9807 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon592"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1072.86,276.65936 1046.2238,262.88165 1044.158,291.84137 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon594"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1072.86,276.65936 1095.1554,262.5315 1068.5865,249.13226 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon596"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1046.2238,262.88165 1072.86,276.65936 1068.5865,249.13226 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon598"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1148.6869,378.0639 1120.9708,362.8816 1117.472,389.9807 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon600"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="704.77747,408.8327 700.15326,381.6455 683.44855,393.48267 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon602"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="951.85974,690.4636 952.13214,669.0454 927.7618,710.4508 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon604"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="774.54645,278.82385 801.0512,264.6361 778.3741,251.18079 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon606"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="751.9135,264.98773 774.54645,278.82385 778.3741,251.18079 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon608"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="700.15326,381.6455 678.47034,366.36627 683.44855,393.48267 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon610"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1169.9653,362.4958 1148.6869,378.0639 1144.6038,405.23517 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon612"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="801.0512,264.6361 774.54645,278.82385 777.7152,307.92676 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon614"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="927.7618,710.4508 927.5577,689.1255 903.31696,690.95905 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon616"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="777.7152,307.92676 774.54645,278.82385 751.0302,322.64447 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon618"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="727.7753,365.9781 700.15326,381.6455 704.77747,408.8327 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon620"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="927.5577,689.1255 902.635,669.543 903.31696,690.95905 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon622"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1097.058,320.026 1100.2395,290.82172 1070.2509,305.74347 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon624"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1100.2395,290.82172 1072.86,276.65936 1070.2509,305.74347 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon626"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1169.9653,362.4958 1174.5758,334.32147 1148.6869,378.0639 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon628"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="952.13214,669.0454 927.5577,689.1255 927.7618,710.4508 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon630"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1100.2395,290.82172 1122.4553,276.29956 1095.1554,262.5315 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon632"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1072.86,276.65936 1100.2395,290.82172 1095.1554,262.5315 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon634"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="727.7753,365.9781 723.58344,337.78217 700.15326,381.6455 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon636"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="747.28076,293.41895 774.54645,278.82385 751.9135,264.98773 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon638"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="724.7038,279.18555 747.28076,293.41895 751.9135,264.98773 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon640"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1148.6869,378.0639 1152.9349,349.7968 1120.9708,362.8816 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon642"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="774.54645,278.82385 747.28076,293.41895 751.0302,322.64447 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon644"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1152.9349,349.7968 1124.6089,334.7049 1120.9708,362.8816 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon646"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="700.15326,381.6455 695.342,353.3584 678.47034,366.36627 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon648"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="952.13214,669.0454 952.4155,646.7684 927.5577,689.1255 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon650"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="751.0302,322.64447 747.28076,293.41895 723.58344,337.78217 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon652"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="695.342,353.3584 673.2935,338.16815 678.47034,366.36627 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon654"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1124.6089,334.7049 1128.3944,305.385 1097.058,320.026 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon656"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1174.5758,334.32147 1152.9349,349.7968 1148.6869,378.0639 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon658"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1128.3944,305.385 1100.2395,290.82172 1097.058,320.026 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon660"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="927.5577,689.1255 927.3452,666.9325 902.635,669.543 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon662"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="723.58344,337.78217 695.342,353.3584 700.15326,381.6455 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon664"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1128.3944,305.385 1150.5172,290.45178 1122.4553,276.29956 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon666"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1100.2395,290.82172 1128.3944,305.385 1122.4553,276.29956 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon668"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="927.3452,666.9325 901.92554,647.2679 902.635,669.543 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon670"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="719.22107,308.43915 747.28076,293.41895 724.7038,279.18555 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon672"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="696.71265,293.79114 719.22107,308.43915 724.7038,279.18555 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon674"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1174.5758,334.32147 1179.3733,305.00446 1152.9349,349.7968 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon676"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="952.4155,646.7684 927.3452,666.9325 927.5577,689.1255 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon678"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="747.28076,293.41895 719.22107,308.43915 723.58344,337.78217 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon680"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="695.342,353.3584 690.33203,323.9032 673.2935,338.16815 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon682"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1157.3578,320.36652 1179.3733,305.00446 1150.5172,290.45178 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon684"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="952.4155,646.7684 952.7105,623.5796 927.3452,666.9325 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon686"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1128.3944,305.385 1157.3578,320.36652 1150.5172,290.45178 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon688"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="690.33203,323.9032 667.9059,308.82214 673.2935,338.16815 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon690"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1179.3733,305.00446 1157.3578,320.36652 1152.9349,349.7968 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon692"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="690.33203,323.9032 719.22107,308.43915 696.71265,293.79114 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon694"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="667.9059,308.82214 690.33203,323.9032 696.71265,293.79114 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon696"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="927.3452,666.9325 927.12396,643.81775 901.92554,647.2679 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon698"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1152.9349,349.7968 1157.3578,320.36652 1130.6604,365.7254 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon700"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="927.12396,643.81775 901.18713,624.0808 901.92554,647.2679 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon702"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="952.7105,623.5796 927.12396,643.81775 927.3452,666.9325 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon704"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="718.0218,368.98358 713.4137,339.42517 695.342,353.3584 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon706"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1134.6841,336.18774 1157.3578,320.36652 1128.3944,305.385 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon708"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1105.6196,320.7583 1134.6841,336.18774 1128.3944,305.385 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon710"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="713.4137,339.42517 690.33203,323.9032 695.342,353.3584 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon712"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1157.3578,320.36652 1134.6841,336.18774 1130.6604,365.7254 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon714"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="713.4137,339.42517 742.3778,323.5091 719.22107,308.43915 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon716"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="690.33203,323.9032 713.4137,339.42517 719.22107,308.43915 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon718"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1130.6604,365.7254 1134.6841,336.18774 1107.7238,382.12744 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon720"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="952.7105,623.5796 953.01776,599.422 927.12396,643.81775 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon722"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="927.12396,643.81775 926.8933,619.7227 901.18713,624.0808 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon724"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="926.8933,619.7227 900.4178,599.9246 901.18713,624.0808 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon726"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="741.3605,385.06268 737.1801,355.4076 718.0218,368.98358 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon728"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1111.3221,352.48932 1134.6841,336.18774 1105.6196,320.7583 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon730"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1082.1638,336.59143 1111.3221,352.48932 1105.6196,320.7583 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon732"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="737.1801,355.4076 713.4137,339.42517 718.0218,368.98358 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon734"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="737.1801,355.4076 766.2113,339.0194 742.3778,323.5091 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon736"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="713.4137,339.42517 737.1801,355.4076 742.3778,323.5091 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon738"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1134.6841,336.18774 1111.3221,352.48932 1107.7238,382.12744 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon740"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="953.01776,599.422 926.8933,619.7227 927.12396,643.81775 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon742"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1107.7238,382.12744 1111.3221,352.48932 1084.0952,399.02423 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon744"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="953.01776,599.422 953.33826,574.23364 926.8933,619.7227 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon746"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="765.38715,401.61578 761.6623,371.8714 741.3605,385.06268 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon748"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1087.2405,369.29315 1111.3221,352.48932 1082.1638,336.59143 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon750"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1057.9957,352.90527 1087.2405,369.29315 1082.1638,336.59143 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon752"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="761.6623,371.8714 737.1801,355.4076 741.3605,385.06268 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon754"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="761.6623,371.8714 790.7515,354.98975 766.2113,339.0194 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon756"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="926.8933,619.7227 926.65265,594.5835 900.4178,599.9246 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon758"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="737.1801,355.4076 761.6623,371.8714 766.2113,339.0194 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon760"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1111.3221,352.48932 1087.2405,369.29315 1084.0952,399.02423 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon762"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="926.65265,594.5835 899.61566,574.7373 900.4178,599.9246 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon764"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1084.0952,399.02423 1087.2405,369.29315 1059.7429,416.43866 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon766"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="953.33826,574.23364 926.65265,594.5835 926.8933,619.7227 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon768"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="790.1326,418.66412 786.89307,388.83856 765.38715,401.61578 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon770"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1062.4048,386.623 1087.2405,369.29315 1057.9957,352.90527 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon772"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="786.89307,388.83856 761.6623,371.8714 765.38715,401.61578 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon774"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1033.0825,369.72205 1062.4048,386.623 1057.9957,352.90527 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon776"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="786.89307,388.83856 816.0306,371.44086 790.7515,354.98975 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon778"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="761.6623,371.8714 786.89307,388.83856 790.7515,354.98975 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon780"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1087.2405,369.29315 1062.4048,386.623 1059.7429,416.43866 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon782"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="953.33826,574.23364 953.67255,547.947 926.65265,594.5835 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon784"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1059.7429,416.43866 1062.4048,386.623 1034.6329,434.3947 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon786"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="926.65265,594.5835 926.40137,568.3309 899.61566,574.7373 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon788"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="926.40137,568.3309 898.77856,548.45135 899.61566,574.7373 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon790"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="815.62976,436.2303 812.90717,406.33252 790.1326,418.66412 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon792"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="812.90717,406.33252 786.89307,388.83856 790.1326,418.66412 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon794"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="953.67255,547.947 926.40137,568.3309 926.65265,594.5835 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon796"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1036.7794,404.50397 1062.4048,386.623 1033.0825,369.72205 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon798"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1007.3891,387.06543 1036.7794,404.50397 1033.0825,369.72205 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon800"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="812.90717,406.33252 842.0822,388.3947 816.0306,371.44086 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon802"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="786.89307,388.83856 812.90717,406.33252 816.0306,371.44086 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon804"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1062.4048,386.623 1036.7794,404.50397 1034.6329,434.3947 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon806"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1034.6329,434.3947 1036.7794,404.50397 1008.7296,452.91827 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon808"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="953.67255,547.947 954.0218,520.4887 926.40137,568.3309 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon810"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="841.9133,454.33826 839.74176,424.37823 815.62976,436.2303 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon812"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="926.40137,568.3309 926.1387,540.88916 898.77856,548.45135 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon814"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="839.74176,424.37823 812.90717,406.33252 815.62976,436.2303 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon816"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1010.326,422.96265 1036.7794,404.50397 1007.3891,387.06543 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon818"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="980.8784,404.9605 1010.326,422.96265 1007.3891,387.06543 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon820"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="839.74176,424.37823 868.9424,405.87482 842.0822,388.3947 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon822"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="812.90717,406.33252 839.74176,424.37823 842.0822,388.3947 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon824"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="926.1387,540.88916 897.90405,520.99335 898.77856,548.45135 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon826"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="1036.7794,404.50397 1010.326,422.96265 1008.7296,452.91827 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon828"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="1008.7296,452.91827 1010.326,422.96265 981.99445,472.03656 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon830"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="954.0218,520.4887 926.1387,540.88916 926.40137,568.3309 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon832"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="869.0202,473.0135 867.43634,443.0022 841.9133,454.33826 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon834"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="867.43634,443.0022 839.74176,424.37823 841.9133,454.33826 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon836"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="954.0218,520.4887 954.38696,491.7787 926.1387,540.88916 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon838"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="983.0037,442.0277 1010.326,422.96265 980.8784,404.9605 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon840"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="953.51074,423.43414 983.0037,442.0277 980.8784,404.9605 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon842"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="867.43634,443.0022 896.6494,423.906 868.9424,405.87482 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon844"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="839.74176,424.37823 867.43634,443.0022 868.9424,405.87482 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon846"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="1010.326,422.96265 983.0037,442.0277 981.99445,472.03656 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon848"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="926.1387,540.88916 925.8638,512.17566 897.90405,520.99335 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon850"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="981.99445,472.03656 983.0037,442.0277 954.38696,491.7787 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon852"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="925.8638,512.17566 896.98975,492.28302 897.90405,520.99335 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon854"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="896.98975,492.28302 896.0327,462.23273 869.0202,473.0135 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon856"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="954.38696,491.7787 925.8638,512.17566 926.1387,540.88916 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon858"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="896.0327,462.23273 867.43634,443.0022 869.0202,473.0135 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon860"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="954.7693,461.72925 983.0037,442.0277 953.51074,423.43414 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon862"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="925.24396,442.51477 954.7693,461.72925 953.51074,423.43414 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon864"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="896.0327,462.23273 925.24396,442.51477 896.6494,423.906 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon866"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="867.43634,443.0022 896.0327,462.23273 896.6494,423.906 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon868"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="983.0037,442.0277 954.7693,461.72925 954.38696,491.7787 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon870"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="954.38696,491.7787 954.7693,461.72925 925.8638,512.17566 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon872"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+    <polygon
+       points="925.8638,512.17566 925.57587,482.0999 896.98975,492.28302 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon874"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="925.57587,482.0999 896.0327,462.23273 896.98975,492.28302 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon876"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)" />
+    <polygon
+       points="925.57587,482.0999 954.7693,461.72925 925.24396,442.51477 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon878"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="896.0327,462.23273 925.57587,482.0999 925.24396,442.51477 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon880"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#6aa1d9;fill-opacity:1" />
+    <polygon
+       points="954.7693,461.72925 925.57587,482.0999 925.8638,512.17566 "
+       fill="rgba(255,0,0,1.0)"
+       stroke="rgba(0,0,0,0.25)"
+       stroke-width="0.5"
+       id="polygon882"
+       transform="matrix(1.6242075,0,0,1.6242075,-980.62232,-257.38241)"
+       style="fill:#99bfe5;fill-opacity:1" />
+  </g>
+  <path
+     style="fill:url(#linearGradient6206);stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+     d="M 0,0 V 1024 L 1024,0 Z"
+     id="path5375" />
+</svg>
