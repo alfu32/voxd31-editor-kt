@@ -130,6 +130,19 @@ class Voxd31Editor @JvmOverloads constructor(
         tools.add(tool)
     }
 
+    private fun activateTool(index: Int, announce: Boolean = true) {
+        if (index !in tools.indices) {
+            return
+        }
+        activeTool?.reset()
+        activeToolIndex = index
+        activeTool = tools[activeToolIndex]
+        activeTool?.reset()
+        if (announce) {
+            setStatusMessage("Tool: ${activeTool?.name ?: "-"}")
+        }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     override fun create() {
         loadVisUi()
@@ -408,6 +421,7 @@ class Voxd31Editor @JvmOverloads constructor(
             }
             list
         })
+        tools.add(EditorTool.PolylineEditor(scene, feedback))
         tools.add(EditorTool.ArcEditor(scene,feedback))
         tools.add(EditorTool.makeTwoInputEditor("Circle",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
             voxelRangeCircle(s,e,op)
@@ -497,12 +511,8 @@ class Voxd31Editor @JvmOverloads constructor(
         uiOverlay = VoxcraftUiOverlay(
             toolNamesProvider = { tools.map { it.name } },
             activeToolIndexProvider = { activeToolIndex },
-            toolSelected = { index ->
-                activeToolIndex = index
-                activeTool = tools[activeToolIndex]
-                activeTool?.reset()
-            },
-            toolOperatorsProvider = { activeTool?.toolOperators().orEmpty() },
+            toolSelected = { index -> activateTool(index) },
+            toolOperatorsProvider = { contextualToolOperators() },
             currentColorProvider = { scene.currentColor },
             colorSelected = { color -> scene.currentColor = color },
             addModeProvider = { scene.addMode },
@@ -592,22 +602,12 @@ class Voxd31Editor @JvmOverloads constructor(
                 }
                 Input.Keys.T -> {
                     if(tools.size > 0) {
-                        activeToolIndex=(activeToolIndex + 1) % tools.size
-                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
-                        activeTool = tools[activeToolIndex]
-                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
-
-                        activeTool!!.reset()
+                        activateTool((activeToolIndex + 1) % tools.size)
                     }
                 }
                 Input.Keys.R -> {
                     if(tools.size > 0) {
-                        activeToolIndex=if(activeToolIndex < 1) tools.size -1 else activeToolIndex - 1
-                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
-                        activeTool = tools[activeToolIndex]
-                        // println("("active tool : ${activeTool?.name} ( $activeToolIndex/${tools.size} )")
-
-                        activeTool!!.reset()
+                        activateTool(if(activeToolIndex < 1) tools.size -1 else activeToolIndex - 1)
                     }
                 }
                 Input.Keys.G -> {
@@ -661,10 +661,7 @@ class Voxd31Editor @JvmOverloads constructor(
                     } else if(selected.cubes.isNotEmpty()) {
                         selected.clear()
                     } else if (activeToolIndex != 0) {
-                        activeTool!!.reset()
-                        activeToolIndex = 0
-                        activeTool = tools[activeToolIndex]
-                        activeTool!!.reset()
+                        abandonActiveToolToSelect()
                     }
                 }
                 else -> {
@@ -1085,6 +1082,46 @@ class Voxd31Editor @JvmOverloads constructor(
         selected.clear()
         rebuildGroundPlane(force = true)
         setStatusMessage("Deleted ${cubesToDelete.size} selected cube(s).")
+    }
+
+    private fun contextualToolOperators(): List<ToolOperator> {
+        val tool = activeTool ?: return emptyList()
+        val operators = mutableListOf<ToolOperator>()
+
+        if (activeToolIndex != 0) {
+            operators += ToolOperator("Esc / Select", { abandonActiveToolToSelect() })
+        }
+        if (tool.isObjectEditing()) {
+            operators += ToolOperator(
+                "Finish",
+                {
+                    if (tool.finishEditing()) {
+                        setStatusMessage("Finished ${tool.name}.")
+                    }
+                },
+                enabled = { tool.canFinishEditing() }
+            )
+            operators += ToolOperator(
+                "Close",
+                {
+                    if (tool.closeEditing()) {
+                        rebuildGroundPlane(force = true)
+                        setStatusMessage("Closed ${tool.name}.")
+                    }
+                },
+                enabled = { tool.canCloseEditing() }
+            )
+        }
+
+        operators += tool.toolOperators()
+        return operators.distinctBy { it.label }
+    }
+
+    private fun abandonActiveToolToSelect() {
+        activeTool?.reset()
+        feedback.clear()
+        activateTool(0, announce = false)
+        setStatusMessage("Returned to Select tool.")
     }
 
     private fun placeAxialGrid(point: Vector3?) {

@@ -116,7 +116,7 @@ class VoxcraftUiOverlay(
         root.touchable = Touchable.childrenOnly
         stage.addActor(root)
 
-        val topBar = buildTopBar()
+        val topBars = buildTopBars()
         val toolsColumn = VisTable(true).apply {
             add(buildToolsWindow("Modification", modificationToolsContent)).width(220f).growX().top().left()
             row()
@@ -125,7 +125,7 @@ class VoxcraftUiOverlay(
         val toolOperatorsWindow = buildToolOperatorsWindow()
         val statusWindow = buildStatusWindow()
 
-        root.add(topBar).growX().colspan(3).pad(8f, 8f, 4f, 8f)
+        root.add(topBars).growX().colspan(3).pad(8f, 8f, 4f, 8f)
         root.row()
         root.add(toolsColumn).width(220f).top().left().padLeft(8f).padBottom(8f)
         root.add().expand()
@@ -173,8 +173,15 @@ class VoxcraftUiOverlay(
         stage.dispose()
     }
 
-    private fun buildTopBar(): VisWindow {
-        val window = fixedWindow("Editor")
+    private fun buildTopBars(): Table {
+        return VisTable(true).apply {
+            add(buildFunctionsBar()).growX().uniformX().left()
+            add(buildSettingsBar()).growX().uniformX().left()
+        }
+    }
+
+    private fun buildFunctionsBar(): VisWindow {
+        val window = fixedWindow("Functions")
         val content = VisTable(true)
 
         val openButton = VisTextButton("Open")
@@ -193,10 +200,6 @@ class VoxcraftUiOverlay(
         exportButton.addListener(onChange { showExportDialog() })
         content.add(exportButton).padRight(6f)
 
-        val modelButton = VisTextButton("Model")
-        modelButton.addListener(onChange { showModelSettingsDialog() })
-        content.add(modelButton).padRight(6f)
-
         val resetButton = VisTextButton("Reset Tool")
         resetButton.addListener(onChange { resetToolAction() })
         content.add(resetButton).padRight(6f)
@@ -212,6 +215,17 @@ class VoxcraftUiOverlay(
         val clearGuidesButton = VisTextButton("Clear Guides")
         clearGuidesButton.addListener(onChange { clearGuidesAction() })
         content.add(clearGuidesButton).padRight(6f)
+
+        return attachTopBarContent(window, content)
+    }
+
+    private fun buildSettingsBar(): VisWindow {
+        val window = fixedWindow("Settings")
+        val content = VisTable(true)
+
+        val modelButton = VisTextButton("Model")
+        modelButton.addListener(onChange { showModelSettingsDialog() })
+        content.add(modelButton).padRight(6f)
 
         content.add(currentColorPreview).size(32f).padRight(12f)
 
@@ -278,7 +292,14 @@ class VoxcraftUiOverlay(
             content.add(button).padRight(4f)
         }
 
-        window.add(content).growX().left().pad(6f)
+        return attachTopBarContent(window, content)
+    }
+
+    private fun attachTopBarContent(window: VisWindow, content: VisTable): VisWindow {
+        val scroll = VisScrollPane(content)
+        scroll.setFadeScrollBars(false)
+        scroll.setScrollingDisabled(false, true)
+        window.add(scroll).growX().left().pad(6f)
         window.pack()
         return window
     }
