@@ -1,0 +1,60 @@
+//move 15 0 6 15 0 11
+//move 12 0 14 16 0 14
+//move -19 0 15 -27 0 15
+//move -17 0 -6 -17 0 -2
+# Volume -12 0 6 11 9 6 ffffffff
+/fill -12 0 6 11 9 6 minecraft:stone
+# Volume 11 9 5 11 0 -2 ffffffff
+/fill 11 9 5 11 0 -2 minecraft:stone
+# Volume 11 9 -3 15 0 -3 ffffffff
+/fill 11 9 -3 15 0 -3 minecraft:stone
+# Volume 15 9 -4 15 0 -17 ffffffff
+/fill 15 9 -4 15 0 -17 minecraft:stone
+# Volume 14 9 -17 -24 0 -17 ffffffff
+/fill 14 9 -17 -24 0 -17 minecraft:stone
+# Volume -24 9 -16 -24 0 5 ffffffff
+/fill -24 9 -16 -24 0 5 minecraft:stone
+# Volume -24 9 6 -13 0 6 ffffffff
+/fill -24 9 6 -13 0 6 minecraft:stone
+# Volume -15 9 6 -15 0 10 ffffffff
+/fill -15 9 6 -15 0 10 minecraft:stone
+# Volume -14 9 10 3 0 10 ffffffff
+/fill -14 9 10 3 0 10 minecraft:stone
+# Volume 3 9 9 3 0 6 ffffffff
+/fill 3 9 9 3 0 6 minecraft:stone
+# Volume 11 9 10 11 0 6 ffffffff
+/fill 11 9 10 11 0 6 minecraft:stone
+# Volume -24 9 6 -24 0 10 ffffffff
+/fill -24 9 6 -24 0 10 minecraft:stone
+# Volume 11 9 11 14 0 11 ffffffff
+/fill 11 9 11 14 0 11 minecraft:stone
+# Volume 11 9 -17 14 0 -17 ffffffff
+/fill 11 9 -17 14 0 -17 minecraft:stone
+# Volume -24 9 11 -32 0 11 ffffffff
+/fill -24 9 11 -32 0 11 minecraft:stone
+# Volume -24 9 -17 -31 0 -17 ffffffff
+/fill -24 9 -17 -31 0 -17 minecraft:stone
+# Volume 14 9 -3 -10 0 -3 ffffffff
+/fill 14 9 -3 -10 0 -3 minecraft:stone
+# Volume -10 9 -16 -10 0 3 ffffffff
+/fill -10 9 -16 -10 0 3 minecraft:stone
+# Volume 3 9 10 3 0 3 ffffffff
+/fill 3 9 10 3 0 3 minecraft:stone
+# Volume 14 9 3 10 0 3 ffffffff
+/fill 14 9 3 10 0 3 minecraft:stone
+# Volume 10 0 4 10 9 10 ffffffff
+/fill 10 0 4 10 9 10 minecraft:stone
+# Volume -10 9 4 -10 0 7 ffffffff
+/fill -10 9 4 -10 0 7 minecraft:stone
+# Volume -9 0 7 2 0 7 ffffffff
+/fill -9 0 7 2 0 7 minecraft:stone
+# Volume 2 1 7 -9 9 7 ffffffff
+/fill 2 1 7 -9 9 7 minecraft:stone
+# Volume 3 9 11 3 1 14 ffffffff
+/fill 3 9 11 3 1 14 minecraft:stone
+# Volume 3 0 16 3 0 19 ffffffff
+/fill 3 0 16 3 0 19 minecraft:stone
+# Volume -32 9 11 -32 10 15 ffffffff
+/fill -32 9 11 -32 10 15 minecraft:stone
+# Volume -32 8 1 -32 0 3 ffffffff
+/fill -32 8 1 -32 0 3 minecraft:stone

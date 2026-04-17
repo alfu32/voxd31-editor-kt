@@ -110,6 +110,10 @@ class Voxd31Editor @JvmOverloads constructor(
     private var uiScale = 1f
     private var showMergedFaceEdges = false
     private var showRenderableFaceEdges = false
+    private val pendingImportCubes = mutableListOf<Pair<Vector3, Color>>()
+    private var importPlacementToolIndex = -1
+    private var lastPickedSelectionCubeId: String? = null
+    private var lastPickedSelectionColor = Color.RED.cpy()
     private val shadowSettings = ShadowSettings(
         shadowBias = 2500f,
         shadowNormalBias = 5620f,
@@ -407,6 +411,17 @@ class Voxd31Editor @JvmOverloads constructor(
         tools.add(EditorTool.VoxelEditor(scene,feedback))
         tools.add(EditorTool.PointHelperEditor("Axial Grid", feedback, Color.WHITE, this::placeAxialGrid))
         tools.add(EditorTool.PointHelperEditor("Planar Grid", feedback, Color.LIGHT_GRAY, this::placePlanarGrid))
+        importPlacementToolIndex = tools.size
+        tools.add(EditorTool.ImportPlacementEditor(
+            scene = scene,
+            importedCubesProvider = { pendingImportCubes },
+            onPlaced = { count ->
+                pendingImportCubes.clear()
+                rebuildGroundPlane(force = true)
+                activateTool(0, announce = false)
+                setStatusMessage("Imported $count cube(s).")
+            }
+        ))
         tools.add(EditorTool.makeTwoInputEditor("Segment",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
 
             val a=Vector3i.fromFloats(s.x,s.y,s.z)
@@ -513,8 +528,8 @@ class Voxd31Editor @JvmOverloads constructor(
             activeToolIndexProvider = { activeToolIndex },
             toolSelected = { index -> activateTool(index) },
             toolOperatorsProvider = { contextualToolOperators() },
-            currentColorProvider = { scene.currentColor },
-            colorSelected = { color -> scene.currentColor = color },
+            currentColorProvider = { toolbarColor() },
+            colorSelected = { color -> applyToolbarColor(color) },
             addModeProvider = { scene.addMode },
             addModeChanged = { mode -> scene.addMode = mode },
             cameraModeProvider = { activeCameraMode },
@@ -523,6 +538,7 @@ class Voxd31Editor @JvmOverloads constructor(
             cameraInteractionModeChanged = { mode -> setCameraInteractionMode(mode) },
             orthographicViewChanged = { view -> setOrthographicView(view) },
             openAction = { openModelDialog() },
+            importAction = { importModelDialog() },
             saveAction = { saveCurrentModel() },
             saveAsAction = { saveModelAsDialog() },
             exportChoicesProvider = { exportChoices().map { it.label } },
@@ -688,6 +704,7 @@ class Voxd31Editor @JvmOverloads constructor(
         }
         inputEventDispatcher.on("touchDown"){event ->
             if (event.button == Input.Buttons.LEFT) {
+                updateLastPickedSelectionColor(event)
                 activeTool?.touchDown(event)
             }
             currentEvent = event
@@ -1070,6 +1087,39 @@ class Voxd31Editor @JvmOverloads constructor(
         setStatusMessage("UI scale set to ${if (uiScale == 1f) "1" else uiScale}x")
     }
 
+    private fun toolbarColor(): Color {
+        if (selected.cubes.isEmpty()) {
+            return Color(scene.currentColor)
+        }
+        val latest = lastPickedSelectionCubeId?.let { selected.cubes[it] }
+        return Color(latest?.color ?: selected.cubes.values.lastOrNull()?.color ?: lastPickedSelectionColor)
+    }
+
+    private fun applyToolbarColor(color: Color) {
+        if (selected.cubes.isEmpty()) {
+            scene.currentColor = Color(color)
+            return
+        }
+
+        val selectedCubes = selected.cubes.values.toList()
+        selected.clear()
+        selectedCubes.forEach { cube ->
+            scene.removeCube(cube)
+            scene.addOrReplaceCube(cube.position, color)
+            selected.addCube(cube.position, color)
+        }
+        lastPickedSelectionColor = Color(color)
+        rebuildGroundPlane(force = true)
+        setStatusMessage("Recolored ${selectedCubes.size} selected cube(s).")
+    }
+
+    private fun updateLastPickedSelectionColor(event: Vox3Event) {
+        val target = event.target ?: return
+        val cube = scene.cubes[target.getId()] ?: return
+        lastPickedSelectionCubeId = cube.getId()
+        lastPickedSelectionColor = Color(cube.color)
+    }
+
     private fun deleteSelection() {
         if (selected.cubes.isEmpty()) {
             setStatusMessage("Delete skipped: selection is empty.")
@@ -1275,6 +1325,46 @@ class Voxd31Editor @JvmOverloads constructor(
         }
     }
 
+    private fun importModelDialog() {
+        if (!fileDialogService.isSupported()) {
+            setStatusMessage("Import dialog is unavailable in this runtime.")
+            return
+        }
+        runNativeFileDialog(
+            errorPrefix = "Import failed",
+            dialogCall = {
+                fileDialogService.openFile(
+                    title = "Import VXDI Model",
+                    directoryHint = directoryHint(filename),
+                    defaultFileName = displayFileName(filename),
+                    allowedExtensions = setOf("vxdi")
+                )
+            }
+        ) { path ->
+            if (path == null) {
+                setStatusMessage("Import canceled.")
+                return@runNativeFileDialog
+            }
+            try {
+                val loaded = loadModelFromCsv(path, documentIoService)
+                if (loaded.cubes.isEmpty()) {
+                    setStatusMessage("Import skipped: ${displayFileName(path)} has no cubes.")
+                    return@runNativeFileDialog
+                }
+                pendingImportCubes.clear()
+                pendingImportCubes += loaded.cubes.map { (position, color) ->
+                    Vector3(position) to Color(color)
+                }
+                selected.clear()
+                feedback.clear()
+                activateTool(importPlacementToolIndex)
+                setStatusMessage("Pick insertion point for ${loaded.cubes.size} imported cube(s).")
+            } catch (t: Throwable) {
+                setStatusMessage("Import failed: ${t.message ?: t.javaClass.simpleName}")
+            }
+        }
+    }
+
     private fun saveModelAsDialog() {
         if (!fileDialogService.isSupported()) {
             setStatusMessage("Save As dialog is unavailable in this runtime.")
@@ -1348,9 +1438,11 @@ class Voxd31Editor @JvmOverloads constructor(
                     return
                 }
                 try {
-                    val bytes = exportSceneMesh(scene, option.format, modelSettings)
+                    val exportScene = if (selected.cubes.isNotEmpty()) selected else scene
+                    val bytes = exportSceneMesh(exportScene, option.format, modelSettings)
                     documentIoService.writeBytes(targetPath, bytes)
-                    setStatusMessage("Exported ${displayFileName(targetPath)}")
+                    val scope = if (selected.cubes.isNotEmpty()) "selection" else "model"
+                    setStatusMessage("Exported $scope to ${displayFileName(targetPath)}")
                 } catch (t: Throwable) {
                     setStatusMessage("Export failed: ${t.message ?: t.javaClass.simpleName}")
                 }
@@ -1590,13 +1682,13 @@ class Voxd31Editor @JvmOverloads constructor(
 
     private fun uiStatusSnapshot(): VoxcraftUiOverlay.StatusSnapshot {
         val cursorText = buildString {
-            append("Cursor: ")
+            append("3D: ")
             append(currentEvent.modelVoxel ?: "-")
-            append(" | Next: ")
+            append(" -> ")
             append(currentEvent.modelNextVoxel ?: "-")
-            append(" | Normal: ")
+            append(" n: ")
             append(currentEvent.normal ?: "-")
-            append(" | Screen: ")
+            append(" 2D: ")
             append(currentEvent.screen ?: "-")
         }
         return VoxcraftUiOverlay.StatusSnapshot(
@@ -1676,6 +1768,7 @@ class Voxd31Editor @JvmOverloads constructor(
             val bb=cub.getBoundingBox()
             shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
         }
+        activeTool?.drawWorldOverlay(shapeRenderer)
 
         if(currentEvent.modelVoxel != null ) {
             shapeRenderer.color = Color.NAVY
