@@ -724,4 +724,75 @@
 # Volume 16 32 23 -22 32 -23 e0d900ff
 /fill 16 32 23 -22 32 -23 minecraft:stone
 # Volume -22 32 24 16 32 24 e0d900ff
-/fill -22 32 24 16 32 24 minecraft:stone
+/fill -22 32 24 16 32 24 minecraft:stone//move 17 32 24 -34 0 102
+//move 17 33 24 -11 0 104
+//move 20 22 24 34 0 104
+//move 33 22 17 33 22 17
+//move 42 11 0 45 0 -64
+//move 42 11 0 45 0 -64
+//move 46 0 0 143 0 -63
+//move 24 4 -39 24 5 -39
+//move 135 0 -37 38 0 26
+//move 134 -2 -39 37 1 24
+//move 31 9 57 31 8 57
+//move -45 1 13 -45 1 14
+# Volume -24 0 83 30 -1 56 ff0000ff
+/fill -24 0 83 30 -1 56 minecraft:stone
+# Volume -12 -1 30 -12 -1 24 2e4ca6ff
+/fill -12 -1 30 -12 -1 24 minecraft:stone
+# Volume -13 -1 24 -42 0 23 2e4ca6ff
+/fill -13 -1 24 -42 0 23 minecraft:stone
+# Volume 28 0 11 36 0 7 2e4ca6ff
+/fill 28 0 11 36 0 7 minecraft:stone
+# Volume 30 0 14 36 0 16 2e4ca6ff
+/fill 30 0 14 36 0 16 minecraft:stone
+# Volume 22 0 24 36 0 24 2e4ca6ff
+/fill 22 0 24 36 0 24 minecraft:stone
+# Volume 17 0 9 22 0 23 2e4ca6ff
+/fill 17 0 9 22 0 23 minecraft:stone
+# Volume 22 0 8 22 0 8 2e4ca6ff
+/fill 22 0 8 22 0 8 minecraft:stone
+# Volume 23 0 0 -8 0 -22 2e4ca6ff
+/fill 23 0 0 -8 0 -22 minecraft:stone
+# Volume 27 0 0 37 0 1 2e4ca6ff
+/fill 27 0 0 37 0 1 minecraft:stone
+# Volume 38 0 0 42 0 -2 2e4ca6ff
+/fill 38 0 0 42 0 -2 minecraft:stone
+# Volume 37 0 6 36 0 24 2e4ca6ff
+/fill 37 0 6 36 0 24 minecraft:stone
+# Volume 0 0 15 -9 0 4 2e4ca6ff
+/fill 0 0 15 -9 0 4 minecraft:stone
+# Volume 42 0 -22 42 0 -21 2e4ca6ff
+/fill 42 0 -22 42 0 -21 minecraft:stone
+# Volume -46 0 -22 -46 0 8 2e4ca6ff
+/fill -46 0 -22 -46 0 8 minecraft:stone
+# Volume -18 1 105 -18 1 105 2e4ca6ff
+/fill -18 1 105 -18 1 105 minecraft:stone
+# Volume 44 0 3 45 0 3 2e4ca6ff
+/fill 44 0 3 45 0 3 minecraft:stone
+# Volume 37 1 1 27 1 1 ffffffff
+/fill 37 1 1 27 1 1 minecraft:stone
+# Volume 27 2 1 37 2 1 ffffffff
+/fill 27 2 1 37 2 1 minecraft:stone
+# Volume 38 1 1 38 2 1 ffffffff
+/fill 38 1 1 38 2 1 minecraft:stone
+# Volume 39 1 1 39 2 1 ffffffff
+/fill 39 1 1 39 2 1 minecraft:stone
+# Volume 40 1 1 40 2 1 ffffffff
+/fill 40 1 1 40 2 1 minecraft:stone
+# Volume 41 1 1 41 2 1 ffffffff
+/fill 41 1 1 41 2 1 minecraft:stone
+# Volume 42 1 1 42 2 1 ffffffff
+/fill 42 1 1 42 2 1 minecraft:stone
+# Volume 42 1 0 42 2 0 ffffffff
+/fill 42 1 0 42 2 0 minecraft:stone
+# Volume 42 1 -1 42 2 -1 ffffffff
+/fill 42 1 -1 42 2 -1 minecraft:stone
+# Volume 38 0 1 42 0 1 2e4ca6ff
+/fill 38 0 1 42 0 1 minecraft:stone
+# Volume 22 0 25 37 -1 25 2e4ca6ff
+/fill 22 0 25 37 -1 25 minecraft:stone
+# Volume 22 0 26 22 0 32 2e4ca6ff
+/fill 22 0 26 22 0 32 minecraft:stone
+# Volume -12 0 31 21 0 32 2e4ca6ff
+/fill -12 0 31 21 0 32 minecraft:stone
