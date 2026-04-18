@@ -730,6 +730,7 @@ open class EditorTool(
             val objectPoints = mutableListOf<Vector3>()
             var anchor: Vector3? = null
             var arcPoint: Vector3? = null
+            var circleCenter: Vector3? = null
 
             fun eventPoint(event: Vox3Event): Vector3? = event.modelNextVoxel ?: event.modelVoxel
 
@@ -763,25 +764,28 @@ open class EditorTool(
                 arcPoint = null
             }
 
-            fun appendCircleArc(center: Vector3, start: Vector3, end: Vector3) {
+            fun appendCircleArc(start: Vector3, center: Vector3, end: Vector3) {
                 val to = Vector3(end)
                 if (center.dst2(start) > 1e-8f) {
                     voxelRangeArcAroundCenter(Vector3(center), Vector3(start), to, ::renderVoxel)
                 }
                 objectPoints.add(to)
                 anchor = to
+                circleCenter = null
             }
 
             fun clearEditing() {
                 objectPoints.clear()
                 anchor = null
                 arcPoint = null
+                circleCenter = null
                 feedback.clear()
             }
 
             fun setSegmentMode(mode: PolySegmentMode) {
                 segmentMode = mode
                 arcPoint = null
+                circleCenter = null
                 feedback.clear()
             }
 
@@ -811,7 +815,14 @@ open class EditorTool(
                                 appendArc(currentAnchor, currentArcPoint, point)
                             }
                         }
-                        PolySegmentMode.CIRCLE -> appendCircleArc(objectPoints.first(), currentAnchor, point)
+                        PolySegmentMode.CIRCLE -> {
+                            val currentCenter = circleCenter
+                            if (currentCenter == null) {
+                                circleCenter = point
+                            } else {
+                                appendCircleArc(currentAnchor, currentCenter, point)
+                            }
+                        }
                     }
                     return true
                 },
@@ -836,9 +847,12 @@ open class EditorTool(
                             }
                         }
                         PolySegmentMode.CIRCLE -> {
-                            val center = objectPoints.first()
-                            if (center.dst2(currentAnchor) > 1e-8f) {
+                            val center = circleCenter
+                            if (center == null) {
+                                voxelRangeSegment(currentAnchor, point) { feedback.addCube(it, arcPointColor) }
+                            } else if (center.dst2(currentAnchor) > 1e-8f) {
                                 voxelRangeArcAroundCenter(center, currentAnchor, point, ::previewVoxel)
+                                feedback.addCube(center, arcPointColor)
                             } else {
                                 voxelRangeSegment(center, point) { feedback.addCube(it, arcPointColor) }
                             }
