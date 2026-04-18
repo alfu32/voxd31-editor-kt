@@ -55,6 +55,8 @@ class VoxcraftUiOverlay(
     private val importAction: () -> Unit,
     private val saveAction: () -> Unit,
     private val saveAsAction: () -> Unit,
+    private val undoAction: () -> Unit,
+    private val redoAction: () -> Unit,
     private val exportChoicesProvider: () -> List<String>,
     private val exportChoiceSelected: (String) -> Unit,
     private val modelSettingsProvider: () -> ModelSettings,
@@ -346,10 +348,12 @@ class VoxcraftUiOverlay(
             imageAction("Save", "file_save", saveAction),
             imageAction("Save As", "file_save", saveAsAction),
             imageAction("Export", "file_save") { showExportDialog() },
-            imageAction("Reset Tool", "select", resetToolAction),
+            imageAction("Undo", "undo", undoAction),
+            imageAction("Redo", "redo", redoAction),
+            imageAction("Reset Tool", "reset", resetToolAction),
             imageAction("Delete Selection", "delete", deleteSelectionAction),
-            imageAction("Clear Selection", "delete", clearSelectionAction),
-            imageAction("Clear Guides", "delete", clearGuidesAction)
+            imageAction("Clear Selection", "clear_selection", clearSelectionAction),
+            imageAction("Clear Guides", "clear_guides", clearGuidesAction)
         ).forEach { content.add(it).size(toolbarButtonSize, toolbarButtonSize) }
         window.add(content).pad(0f).left()
         window.pack()
@@ -474,6 +478,7 @@ class VoxcraftUiOverlay(
         rightDockWindow.isMovable = false
         rightDockWindow.isResizable = false
         rightDockWindow.add(scroll).grow().pad(4f)
+        rightDockContent.top().left()
         rightDockContent.defaults().growX().padBottom(4f)
         rightDockContent.add(buildModelSettingsPanel()).growX().row()
         rightDockContent.add(buildUiSettingsPanel()).growX().row()
@@ -967,7 +972,7 @@ class VoxcraftUiOverlay(
             val endX = parts[coordStartIndex + 1].toIntOrNull() ?: return@forEach
             val startY = parts[coordStartIndex + 2].toIntOrNull() ?: return@forEach
             val endY = parts[coordStartIndex + 3].toIntOrNull() ?: return@forEach
-            iconDrawables[name] = TextureRegionDrawable(TextureRegion(texture, startX, startY, endX - startX + 1, endY - startY + 1))
+            iconDrawables.putIfAbsent(name, TextureRegionDrawable(TextureRegion(texture, startX, startY, endX - startX + 1, endY - startY + 1)))
         }
     }
 
@@ -994,8 +999,8 @@ class VoxcraftUiOverlay(
             "frame" -> "frame"
             "shell" -> "shell"
             "volume" -> "volume"
-            "axial grid" -> "view_top"
-            "planar grid" -> "plane"
+            "axial grid" -> "axial_grid_helper"
+            "planar grid" -> "planar_grid_helper"
             "import vxdi" -> "file_open"
             else -> "select"
         }
@@ -1144,7 +1149,7 @@ class VoxcraftUiOverlay(
         }
 
         override fun draw(batch: Batch, parentAlpha: Float) {
-            val base = colorProvider()
+            val base = Color(colorProvider()).mul(color)
             val original = batch.color.cpy()
             batch.color = Color(base.r, base.g, base.b, base.a * parentAlpha)
             batch.draw(texture, x, y, width, height)

@@ -120,6 +120,83 @@ fun voxelRangeCircle(a: Vector3,b:Vector3,callback: (p:Vector3)->Unit){
         callback(p)
     }
 }
+
+private val TWO_PI_F = (Math.PI * 2.0).toFloat()
+
+private fun normalizeAngleRadians(angle: Float): Float {
+    var normalized = angle % TWO_PI_F
+    if (normalized < 0f) {
+        normalized += TWO_PI_F
+    }
+    return normalized
+}
+
+private fun ccwDelta(start: Float, end: Float): Float = normalizeAngleRadians(end - start)
+
+private fun rasterizeArcOnGround(
+    center: Vector3,
+    radius: Float,
+    startAngle: Float,
+    endAngle: Float,
+    direction: Int,
+    y: Float,
+    callback: (p: Vector3) -> Unit
+) {
+    if (radius < 0.5f) {
+        callback(Vector3(center.x, y, center.z))
+        return
+    }
+    val totalAngle = if (direction >= 0) ccwDelta(startAngle, endAngle) else ccwDelta(endAngle, startAngle)
+    val steps = max(1, ceil(totalAngle * radius).toInt())
+    for (i in 0..steps) {
+        val offset = totalAngle * (i.toFloat() / steps.toFloat())
+        val angle = if (direction >= 0) startAngle + offset else startAngle - offset
+        callback(Vector3(center.x + radius * cos(angle), y, center.z + radius * sin(angle)))
+    }
+}
+
+fun voxelRangeArcAroundCenter(center: Vector3, start: Vector3, end: Vector3, callback: (p: Vector3) -> Unit) {
+    val radius = Vector2(start.x - center.x, start.z - center.z).len()
+    if (radius < 0.5f) {
+        voxelRangeSegment(start, end, callback)
+        return
+    }
+    val startAngle = atan2(start.z - center.z, start.x - center.x)
+    val endAngle = atan2(end.z - center.z, end.x - center.x)
+    val direction = if (ccwDelta(startAngle, endAngle) <= ccwDelta(endAngle, startAngle)) 1 else -1
+    rasterizeArcOnGround(center, radius, startAngle, endAngle, direction, start.y, callback)
+}
+
+fun voxelRangeArcThroughPoints(start: Vector3, mid: Vector3, end: Vector3, callback: (p: Vector3) -> Unit) {
+    val x1 = start.x
+    val z1 = start.z
+    val x2 = mid.x
+    val z2 = mid.z
+    val x3 = end.x
+    val z3 = end.z
+    val determinant = 2f * (x1 * (z2 - z3) + x2 * (z3 - z1) + x3 * (z1 - z2))
+    if (abs(determinant) < 1e-5f) {
+        voxelRangeSegment(start, mid, callback)
+        voxelRangeSegment(mid, end, callback)
+        return
+    }
+
+    val x1s = x1 * x1 + z1 * z1
+    val x2s = x2 * x2 + z2 * z2
+    val x3s = x3 * x3 + z3 * z3
+    val center = Vector3(
+        (x1s * (z2 - z3) + x2s * (z3 - z1) + x3s * (z1 - z2)) / determinant,
+        start.y,
+        (x1s * (x3 - x2) + x2s * (x1 - x3) + x3s * (x2 - x1)) / determinant
+    )
+    val radius = Vector2(start.x - center.x, start.z - center.z).len()
+    val startAngle = atan2(start.z - center.z, start.x - center.x)
+    val midAngle = atan2(mid.z - center.z, mid.x - center.x)
+    val endAngle = atan2(end.z - center.z, end.x - center.x)
+    val direction = if (ccwDelta(startAngle, midAngle) <= ccwDelta(startAngle, endAngle)) 1 else -1
+    rasterizeArcOnGround(center, radius, startAngle, endAngle, direction, start.y, callback)
+}
+
 fun voxelRangeArc0(a: Vector3,b:Vector3,c:Vector3,callback: (p:Vector3)->Unit){
     val ac=c.cpy().sub(a)
     val ab=b.cpy().sub(a)

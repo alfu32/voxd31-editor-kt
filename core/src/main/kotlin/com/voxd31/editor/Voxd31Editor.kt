@@ -556,6 +556,8 @@ class Voxd31Editor @JvmOverloads constructor(
             importAction = { importModelDialog() },
             saveAction = { saveCurrentModel() },
             saveAsAction = { saveModelAsDialog() },
+            undoAction = { undoHistory() },
+            redoAction = { redoHistory() },
             exportChoicesProvider = { exportChoices().map { it.label } },
             exportChoiceSelected = { label -> exportDialogForChoice(label) },
             modelSettingsProvider = { modelSettings.copy() },
@@ -1057,6 +1059,7 @@ class Voxd31Editor @JvmOverloads constructor(
     ) {
         enum class Kind {
             MESH,
+            VXDI,
             PNG,
             SVG
         }
@@ -1072,6 +1075,12 @@ class Voxd31Editor @JvmOverloads constructor(
             )
         }
         return meshChoices + listOf(
+            ExportChoice(
+                label = "VXDI Voxcraft Model (*.vxdi)",
+                extensions = setOf("vxdi"),
+                defaultExtension = "vxdi",
+                kind = ExportChoice.Kind.VXDI
+            ),
             ExportChoice(
                 label = "PNG Screenshot (*.png)",
                 extensions = setOf("png"),
@@ -1551,7 +1560,7 @@ class Voxd31Editor @JvmOverloads constructor(
             setStatusMessage("Export failed: unknown export format.")
             return
         }
-        if (choice.kind == ExportChoice.Kind.MESH && scene.cubes.isEmpty()) {
+        if ((choice.kind == ExportChoice.Kind.MESH || choice.kind == ExportChoice.Kind.VXDI) && scene.cubes.isEmpty()) {
             setStatusMessage("Export failed: the model is empty.")
             return
         }
@@ -1589,6 +1598,17 @@ class Voxd31Editor @JvmOverloads constructor(
                     setStatusMessage("Exported $scope to ${displayFileName(targetPath)}")
                 } catch (t: Throwable) {
                     setStatusMessage("Export failed: ${t.message ?: t.javaClass.simpleName}")
+                }
+            }
+
+            ExportChoice.Kind.VXDI -> {
+                try {
+                    val exportCubes = if (selected.cubes.isNotEmpty()) selected.cubes.values.toList() else scene.cubes.values.toList()
+                    saveModelAsCsv(exportCubes, targetPath, modelSettings, documentIoService)
+                    val scope = if (selected.cubes.isNotEmpty()) "selection" else "model"
+                    setStatusMessage("Exported $scope to ${displayFileName(targetPath)}")
+                } catch (t: Throwable) {
+                    setStatusMessage("VXDI export failed: ${t.message ?: t.javaClass.simpleName}")
                 }
             }
 
