@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Touchable
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup
+import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
@@ -861,10 +862,7 @@ class VoxcraftUiOverlay(
             var changed = false
             content.children.forEach { child ->
                 val nextVisible = !collapsed || child === representative
-                if (child.isVisible != nextVisible) {
-                    child.isVisible = nextVisible
-                    changed = true
-                }
+                changed = applyToolbarCellVisibility(id, content, child, nextVisible) || changed
             }
             if (changed) {
                 val oldTop = window.y + window.height
@@ -872,6 +870,58 @@ class VoxcraftUiOverlay(
                 window.invalidateHierarchy()
                 window.pack()
                 window.setY(oldTop - window.height)
+            }
+        }
+    }
+
+    private fun applyToolbarCellVisibility(id: String, content: VisTable, child: Actor, visible: Boolean): Boolean {
+        val cell = content.getCell(child) ?: return false
+        val changed = child.isVisible != visible
+        child.isVisible = visible
+        if (visible) {
+            restoreToolbarCell(id, child, cell)
+        } else {
+            collapseToolbarCell(cell)
+        }
+        return changed
+    }
+
+    private fun collapseToolbarCell(cell: Cell<Actor>) {
+        cell.minSize(0f)
+        cell.prefSize(0f)
+        cell.maxSize(0f)
+        cell.pad(0f)
+        cell.space(0f)
+    }
+
+    private fun restoreToolbarCell(id: String, child: Actor, cell: Cell<Actor>) {
+        cell.space(0f)
+        cell.pad(if (id == "cubes") 2f else 0f)
+        when (child) {
+            is AppImageTextButton,
+            is ColorChip -> cell.size(toolbarButtonSize, toolbarButtonSize)
+
+            is VisTextButton -> {
+                val minWidth = child.prefWidth.coerceAtLeast(if (child.isDisabled) 86f else 58f)
+                cell.minWidth(minWidth)
+                cell.prefWidth(minWidth)
+                cell.maxWidth(Float.MAX_VALUE)
+                cell.height(toolbarButtonSize)
+            }
+
+            is VisLabel -> {
+                cell.minSize(0f)
+                cell.prefSize(child.prefWidth, child.prefHeight)
+                cell.maxSize(Float.MAX_VALUE, Float.MAX_VALUE)
+                cell.left()
+            }
+
+            else -> {
+                val width = child.width.coerceAtLeast(toolbarButtonSize)
+                val height = child.height.coerceAtLeast(toolbarButtonSize)
+                cell.minSize(0f)
+                cell.prefSize(width, height)
+                cell.maxSize(Float.MAX_VALUE, Float.MAX_VALUE)
             }
         }
     }
