@@ -44,26 +44,38 @@ fun exportSceneMesh(scene: SceneController, format: MeshIo.ExportFormat, modelSe
     return MeshIo.exportTriangles(triangles, format, meshExportSettings(modelSettings, format))
 }
 
+private data class ResolvedExportUnit(
+    val threeMf: MeshIo.ThreeMfUnit?,
+    val colladaName: String?,
+    val meterScale: Float?,
+    val amfName: String?,
+    val dxfInsUnits: Int?
+)
+
 private fun meshExportSettings(modelSettings: ModelSettings, format: MeshIo.ExportFormat): MeshIo.ExportSettings {
-    if (format != MeshIo.ExportFormat.THREE_MF) {
-        return MeshIo.ExportSettings()
-    }
+    val unit = resolveExportUnit(modelSettings.unitSuffix)
     return MeshIo.ExportSettings(
         threeMf = MeshIo.ThreeMfExportSettings(
-            unit = resolveThreeMfUnit(modelSettings.unitSuffix),
+            unit = if (format == MeshIo.ExportFormat.THREE_MF) unit.threeMf else null,
             coordinateScale = 1f
+        ),
+        unit = MeshIo.UnitExportSettings(
+            colladaName = unit.colladaName,
+            meterScale = unit.meterScale,
+            amfName = unit.amfName,
+            dxfInsUnits = unit.dxfInsUnits
         )
     )
 }
 
-private fun resolveThreeMfUnit(unitSuffix: String): MeshIo.ThreeMfUnit {
+private fun resolveExportUnit(unitSuffix: String): ResolvedExportUnit {
     return when (unitSuffix.trim().lowercase()) {
-        "micron", "microns", "um", "μm", "µm" -> MeshIo.ThreeMfUnit.MICRON
-        "mm", "millimeter", "millimeters", "millimetre", "millimetres" -> MeshIo.ThreeMfUnit.MILLIMETER
-        "cm", "centimeter", "centimeters", "centimetre", "centimetres" -> MeshIo.ThreeMfUnit.CENTIMETER
-        "m", "meter", "meters", "metre", "metres" -> MeshIo.ThreeMfUnit.METER
-        "in", "inch", "inches", "\"" -> MeshIo.ThreeMfUnit.INCH
-        "ft", "foot", "feet", "'" -> MeshIo.ThreeMfUnit.FOOT
-        else -> MeshIo.ThreeMfUnit.MILLIMETER
+        "micron", "microns", "um", "μm", "µm" -> ResolvedExportUnit(MeshIo.ThreeMfUnit.MICRON, "micron", 0.000001f, "micron", 13)
+        "mm", "millimeter", "millimeters", "millimetre", "millimetres" -> ResolvedExportUnit(MeshIo.ThreeMfUnit.MILLIMETER, "millimeter", 0.001f, "millimeter", 4)
+        "cm", "centimeter", "centimeters", "centimetre", "centimetres" -> ResolvedExportUnit(MeshIo.ThreeMfUnit.CENTIMETER, "centimeter", 0.01f, null, 5)
+        "m", "meter", "meters", "metre", "metres" -> ResolvedExportUnit(MeshIo.ThreeMfUnit.METER, "meter", 1f, "meter", 6)
+        "in", "inch", "inches", "\"" -> ResolvedExportUnit(MeshIo.ThreeMfUnit.INCH, "inch", 0.0254f, "inch", 1)
+        "ft", "foot", "feet", "'" -> ResolvedExportUnit(MeshIo.ThreeMfUnit.FOOT, "foot", 0.3048f, "feet", 2)
+        else -> ResolvedExportUnit(null, null, null, null, null)
     }
 }

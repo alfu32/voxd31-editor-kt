@@ -915,6 +915,70 @@ open class EditorTool(
                 }
             }
         }
+
+        fun ImportPlacementEditor(
+            scene: SceneController,
+            importedCubesProvider: () -> List<Pair<Vector3, Color>>,
+            onPlaced: (Int) -> Unit
+        ): EditorTool {
+            val preview = mutableListOf<Pair<Vector3, Color>>()
+
+            fun eventPoint(event: Vox3Event): Vector3? = event.modelNextVoxel ?: event.modelVoxel
+
+            fun rebuildPreview(anchor: Vector3?) {
+                preview.clear()
+                val source = importedCubesProvider()
+                if (anchor == null || source.isEmpty()) {
+                    return
+                }
+                val minX = source.minOf { it.first.x }
+                val minY = source.minOf { it.first.y }
+                val minZ = source.minOf { it.first.z }
+                source.forEach { (position, color) ->
+                    preview += Vector3(
+                        anchor.x + position.x - minX,
+                        anchor.y + position.y - minY,
+                        anchor.z + position.z - minZ
+                    ) to Color(color)
+                }
+            }
+
+            return object : EditorTool(
+                name = "Import VXDI",
+                onClick = fun(self: EditorTool, event: Vox3Event): Boolean {
+                    rebuildPreview(eventPoint(event))
+                    if (preview.isEmpty()) {
+                        return true
+                    }
+                    preview.forEach { (position, color) ->
+                        scene.addOrReplaceCube(position, color)
+                    }
+                    val placed = preview.size
+                    preview.clear()
+                    onPlaced(placed)
+                    return true
+                },
+                onMove = fun(self: EditorTool, event: Vox3Event): Boolean {
+                    rebuildPreview(eventPoint(event))
+                    return true
+                }
+            ) {
+                override fun drawWorldOverlay(shapeRenderer: ShapeRenderer) {
+                    preview.forEach { (position, color) ->
+                        shapeRenderer.color = Color(color.r, color.g, color.b, 0.9f)
+                        shapeRenderer.box(position.x, position.y, position.z + 1f, 1f, 1f, 1f)
+                    }
+                }
+
+                override fun reset() {
+                    preview.clear()
+                }
+
+                override fun toolOperators(): List<ToolOperator> = listOf(
+                    ToolOperator("Reset", { reset() })
+                )
+            }
+        }
     }
     var points:MutableList<Vector3> = mutableListOf()
     open fun touchDown(event: Vox3Event) {}
@@ -922,6 +986,7 @@ open class EditorTool(
     open fun touchUp(event: Vox3Event) {
         handleEvent(event)
     }
+    open fun drawWorldOverlay(shapeRenderer: ShapeRenderer) {}
     open fun drawScreenOverlayFill(shapeRenderer: ShapeRenderer) {}
     open fun drawScreenOverlay(shapeRenderer: ShapeRenderer) {}
 

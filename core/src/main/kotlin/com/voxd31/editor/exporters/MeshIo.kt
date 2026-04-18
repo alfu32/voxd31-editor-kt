@@ -29,7 +29,15 @@ object MeshIo {
     )
 
     data class ExportSettings(
-        val threeMf: ThreeMfExportSettings = ThreeMfExportSettings()
+        val threeMf: ThreeMfExportSettings = ThreeMfExportSettings(),
+        val unit: UnitExportSettings = UnitExportSettings()
+    )
+
+    data class UnitExportSettings(
+        val colladaName: String? = null,
+        val meterScale: Float? = null,
+        val amfName: String? = null,
+        val dxfInsUnits: Int? = null
     )
 
     data class ImportSettings(
@@ -37,7 +45,7 @@ object MeshIo {
     )
 
     data class ThreeMfExportSettings(
-        val unit: ThreeMfUnit = ThreeMfUnit.MILLIMETER,
+        val unit: ThreeMfUnit? = null,
         val coordinateScale: Float = 1f
     )
 
@@ -156,10 +164,10 @@ object MeshIo {
             ExportFormat.FBX -> writeFbxAscii(triangles).toByteArray(StandardCharsets.UTF_8)
             ExportFormat.GLTF -> writeGltf(triangles)
             ExportFormat.GLB -> writeGlb(triangles)
-            ExportFormat.DAE -> writeCollada(triangles).toByteArray(StandardCharsets.UTF_8)
-            ExportFormat.DXF -> writeDxf(triangles, emptyList()).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.DAE -> writeCollada(triangles, settings.unit).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.DXF -> writeDxf(triangles, emptyList(), settings.unit).toByteArray(StandardCharsets.UTF_8)
             ExportFormat.THREE_MF -> write3mf(triangles, settings.threeMf)
-            ExportFormat.AMF -> writeAmf(triangles).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.AMF -> writeAmf(triangles, settings.unit).toByteArray(StandardCharsets.UTF_8)
         }
     }
 
@@ -171,7 +179,7 @@ object MeshIo {
         triangles: List<Triangle>,
         segments: List<Segment>
     ): ByteArray {
-        return writeDxf(triangles, segments).toByteArray(StandardCharsets.UTF_8)
+        return writeDxf(triangles, segments, UnitExportSettings()).toByteArray(StandardCharsets.UTF_8)
     }
 
     private fun parseObj(text: String): List<Triangle> {
@@ -1468,14 +1476,18 @@ object MeshIo {
         return sb.toString()
     }
 
-    private fun writeCollada(triangles: List<Triangle>): String {
+    private fun writeCollada(triangles: List<Triangle>, unit: UnitExportSettings): String {
         val points = triangles.flatMap { tri -> listOf(tri.a, tri.b, tri.c) }
         val triCount = triangles.size
         val floatCount = points.size * 3
         val sb = StringBuilder()
         sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         sb.append("<COLLADA xmlns=\"http://www.collada.org/2005/11/COLLADASchema\" version=\"1.4.1\">\n")
-        sb.append("  <asset><unit name=\"meter\" meter=\"1\"/><up_axis>Y_UP</up_axis></asset>\n")
+        sb.append("  <asset>")
+        if (unit.colladaName != null && unit.meterScale != null) {
+            sb.append("<unit name=\"").append(unit.colladaName).append("\" meter=\"").append(fmt(unit.meterScale)).append("\"/>")
+        }
+        sb.append("<up_axis>Y_UP</up_axis></asset>\n")
         sb.append("  <library_geometries>\n")
         sb.append("    <geometry id=\"mesh0\" name=\"mesh0\"><mesh>\n")
         sb.append("      <source id=\"mesh0-positions\">\n")
@@ -1504,8 +1516,11 @@ object MeshIo {
         return sb.toString()
     }
 
-    private fun writeDxf(triangles: List<Triangle>, segments: List<Segment>): String {
+    private fun writeDxf(triangles: List<Triangle>, segments: List<Segment>, unit: UnitExportSettings): String {
         val sb = StringBuilder()
+        unit.dxfInsUnits?.let {
+            sb.append("0\nSECTION\n2\nHEADER\n9\n\$INSUNITS\n70\n").append(it).append("\n0\nENDSEC\n")
+        }
         sb.append("0\nSECTION\n2\nENTITIES\n")
         segments.forEach { segment ->
             sb.append("0\nLINE\n8\n0\n")
@@ -1548,7 +1563,9 @@ object MeshIo {
         validateThreeMfMesh(mesh)
         val modelXml = buildString {
             append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-            append("<model unit=\"").append(settings.unit.xmlValue).append("\" xml:lang=\"en-US\" xmlns=\"http://schemas.microsoft.com/3dmanufacturing/core/2015/02\">\n")
+            append("<model")
+            settings.unit?.let { append(" unit=\"").append(it.xmlValue).append("\"") }
+            append(" xml:lang=\"en-US\" xmlns=\"http://schemas.microsoft.com/3dmanufacturing/core/2015/02\">\n")
             append("  <resources>\n")
             append("    <object id=\"1\" type=\"model\">\n")
             append("      <mesh>\n")
@@ -1742,11 +1759,13 @@ object MeshIo {
             ) / 6.0
     }
 
-    private fun writeAmf(triangles: List<Triangle>): String {
+    private fun writeAmf(triangles: List<Triangle>, unit: UnitExportSettings): String {
         val points = triangles.flatMap { tri -> listOf(tri.a, tri.b, tri.c) }
         val sb = StringBuilder()
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-        sb.append("<amf unit=\"meter\">\n")
+        sb.append("<amf")
+        unit.amfName?.let { sb.append(" unit=\"").append(it).append("\"") }
+        sb.append(">\n")
         sb.append("  <object id=\"0\"><mesh>\n")
         sb.append("    <vertices>\n")
         points.forEach { v ->

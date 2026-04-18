@@ -52,6 +52,17 @@ class Voxd31Editor @JvmOverloads constructor(
     companion object {
 
     }
+    private data class CubeHistoryState(val x: Float, val y: Float, val z: Float, val colorRgba: Int)
+
+    private data class EditorHistoryState(
+        val cubes: List<CubeHistoryState>,
+        val selected: List<CubeHistoryState>,
+        val guides: List<CubeHistoryState>,
+        val modelSettings: ModelSettings,
+        val currentColorRgba: Int,
+        val addMode: String
+    )
+
     private val groundPlaneY = -0.5f
     private val gridPlaneY = groundPlaneY + 0.03f
     private val minimumGroundPlaneWidth = 12f
@@ -114,6 +125,10 @@ class Voxd31Editor @JvmOverloads constructor(
     private var importPlacementToolIndex = -1
     private var lastPickedSelectionCubeId: String? = null
     private var lastPickedSelectionColor = Color.RED.cpy()
+    private val undoQueue = ArrayDeque<EditorHistoryState>()
+    private val redoQueue = ArrayDeque<EditorHistoryState>()
+    private val historyLimit = 100
+    private var restoringHistory = false
     private val shadowSettings = ShadowSettings(
         shadowBias = 2500f,
         shadowNormalBias = 5620f,
@@ -547,7 +562,7 @@ class Voxd31Editor @JvmOverloads constructor(
             modelSettingsChanged = { settings -> applyModelSettings(settings) },
             deleteSelectionAction = { deleteSelection() },
             clearSelectionAction = { selected.clear() },
-            clearGuidesAction = { guides.clear() },
+            clearGuidesAction = { recordHistoryAround { guides.clear() } },
             resetToolAction = { activeTool?.reset() },
             uiScaleProvider = { uiScale },
             uiScaleChanged = { scale -> setUiScale(scale) },
@@ -609,7 +624,17 @@ class Voxd31Editor @JvmOverloads constructor(
         inputProcessors = InputMultiplexer(uiOverlay.stage, activeCameraProcessor, inputEventDispatcher)
         installedInputProcessor = inputProcessorDecorator.wrap(inputProcessors)
         Gdx.input.inputProcessor = installedInputProcessor
-        inputEventDispatcher.on("keyUp"){event ->
+        inputEventDispatcher.on("keyUp") keyUp@{event ->
+            if (event.ctrl && event.keyCode == Input.Keys.U) {
+                undoHistory()
+                currentEvent = event
+                return@keyUp
+            }
+            if (event.ctrl && event.keyCode == Input.Keys.R) {
+                redoHistory()
+                currentEvent = event
+                return@keyUp
+            }
             when(event.keyCode){
                 Input.Keys.DEL,
                 Input.Keys.BACK,
@@ -627,7 +652,7 @@ class Voxd31Editor @JvmOverloads constructor(
                     }
                 }
                 Input.Keys.G -> {
-                    placeAxialGrid(event.modelVoxel)
+                    recordHistoryAround { placeAxialGrid(event.modelVoxel) }
                 }
                 Input.Keys.S -> {
                     saveCurrentModel()
@@ -663,7 +688,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 Input.Keys.SPACE -> {
                     saveCurrentModel()
                     if(guides.cubes.isNotEmpty()) {
-                        guides.clear()
+                        recordHistoryAround { guides.clear() }
                     } else if(selected.cubes.isNotEmpty()) {
                         selected.clear()
                     } else if (activeToolIndex != 0) {
@@ -673,7 +698,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 Input.Keys.ESCAPE -> {
                     saveCurrentModel()
                     if(guides.cubes.isNotEmpty()) {
-                        guides.clear()
+                        recordHistoryAround { guides.clear() }
                     } else if(selected.cubes.isNotEmpty()) {
                         selected.clear()
                     } else if (activeToolIndex != 0) {
@@ -698,7 +723,9 @@ class Voxd31Editor @JvmOverloads constructor(
         }
         inputEventDispatcher.on("touchUp"){event ->
             if (event.button == Input.Buttons.LEFT) {
+                val before = captureHistoryState()
                 activeTool?.touchUp(event)
+                commitHistoryState(before)
             }
             currentEvent = event
         }
@@ -1066,14 +1093,129 @@ class Voxd31Editor @JvmOverloads constructor(
         )
     }
 
+    private fun captureHistoryState(): EditorHistoryState {
+        return EditorHistoryState(
+            cubes = captureCubeStates(scene),
+            selected = captureCubeStates(selected),
+            guides = captureCubeStates(guides),
+            modelSettings = modelSettings.copy(),
+            currentColorRgba = Color.rgba8888(scene.currentColor),
+            addMode = scene.addMode
+        )
+    }
+
+    private fun captureCubeStates(controller: SceneController): List<CubeHistoryState> {
+        return controller.cubes.values.map { cube ->
+            CubeHistoryState(
+                x = floor(cube.position.x),
+                y = floor(cube.position.y),
+                z = floor(cube.position.z),
+                colorRgba = Color.rgba8888(cube.color)
+            )
+        }.sortedWith(compareBy<CubeHistoryState> { it.x }.thenBy { it.y }.thenBy { it.z }.thenBy { it.colorRgba })
+    }
+
+    private fun sameUndoTrackedState(a: EditorHistoryState, b: EditorHistoryState): Boolean {
+        return a.cubes == b.cubes &&
+            a.guides == b.guides &&
+            a.modelSettings == b.modelSettings
+    }
+
+    private fun recordHistoryAround(action: () -> Unit) {
+        val before = captureHistoryState()
+        action()
+        commitHistoryState(before)
+    }
+
+    private fun commitHistoryState(before: EditorHistoryState) {
+        if (restoringHistory) {
+            return
+        }
+        val after = captureHistoryState()
+        if (sameUndoTrackedState(before, after)) {
+            return
+        }
+        pushHistory(undoQueue, before)
+        redoQueue.clear()
+    }
+
+    private fun pushHistory(queue: ArrayDeque<EditorHistoryState>, state: EditorHistoryState) {
+        queue.addLast(state)
+        while (queue.size > historyLimit) {
+            queue.removeFirst()
+        }
+    }
+
+    private fun undoHistory() {
+        if (undoQueue.isEmpty()) {
+            setStatusMessage("Undo skipped: history is empty.")
+            return
+        }
+        val current = captureHistoryState()
+        val previous = undoQueue.removeLast()
+        pushHistory(redoQueue, current)
+        restoreHistoryState(previous)
+        setStatusMessage("Undo.")
+    }
+
+    private fun redoHistory() {
+        if (redoQueue.isEmpty()) {
+            setStatusMessage("Redo skipped: history is empty.")
+            return
+        }
+        val current = captureHistoryState()
+        val next = redoQueue.removeLast()
+        pushHistory(undoQueue, current)
+        restoreHistoryState(next)
+        setStatusMessage("Redo.")
+    }
+
+    private fun restoreHistoryState(state: EditorHistoryState) {
+        restoringHistory = true
+        try {
+            scene.clear()
+            selected.clear()
+            guides.clear()
+            restoreCubeStates(scene, state.cubes)
+            restoreCubeStates(selected, state.selected)
+            restoreCubeStates(guides, state.guides)
+            modelSettings = state.modelSettings.copy()
+            scene.currentColor = colorFromRgba(state.currentColorRgba)
+            scene.addMode = state.addMode
+            feedback.clear()
+            lastPickedSelectionCubeId = selected.cubes.keys.firstOrNull()
+            lastPickedSelectionColor = selected.cubes[lastPickedSelectionCubeId]?.color?.cpy() ?: scene.currentColor.cpy()
+            activeTool?.reset()
+            rebuildGroundPlane(force = true)
+        } finally {
+            restoringHistory = false
+        }
+    }
+
+    private fun restoreCubeStates(controller: SceneController, states: List<CubeHistoryState>) {
+        states.forEach { state ->
+            controller.addOrReplaceCube(Vector3(state.x, state.y, state.z), colorFromRgba(state.colorRgba))
+        }
+    }
+
+    private fun colorFromRgba(rgba: Int): Color {
+        return Color().also { Color.rgba8888ToColor(it, rgba) }
+    }
+
     private fun applyModelSettings(settings: ModelSettings) {
-        modelSettings = settings.copy(
+        val before = captureHistoryState()
+        modelSettings = normalizedModelSettings(settings)
+        commitHistoryState(before)
+        setStatusMessage(
+            "Model settings updated: grid=${modelSettings.gridSize}, unit=${modelSettings.unitSize} ${modelSettings.unitSuffix}"
+        )
+    }
+
+    private fun normalizedModelSettings(settings: ModelSettings): ModelSettings {
+        return settings.copy(
             gridSize = settings.gridSize.coerceAtLeast(1),
             unitSize = settings.unitSize.coerceAtLeast(1e-6f),
             unitSuffix = settings.unitSuffix.ifBlank { "unit" }
-        )
-        setStatusMessage(
-            "Model settings updated: grid=${modelSettings.gridSize}, unit=${modelSettings.unitSize} ${modelSettings.unitSuffix}"
         )
     }
 
@@ -1101,6 +1243,7 @@ class Voxd31Editor @JvmOverloads constructor(
             return
         }
 
+        val before = captureHistoryState()
         val selectedCubes = selected.cubes.values.toList()
         selected.clear()
         selectedCubes.forEach { cube ->
@@ -1108,6 +1251,7 @@ class Voxd31Editor @JvmOverloads constructor(
             scene.addOrReplaceCube(cube.position, color)
             selected.addCube(cube.position, color)
         }
+        commitHistoryState(before)
         lastPickedSelectionColor = Color(color)
         rebuildGroundPlane(force = true)
         setStatusMessage("Recolored ${selectedCubes.size} selected cube(s).")
@@ -1125,11 +1269,13 @@ class Voxd31Editor @JvmOverloads constructor(
             setStatusMessage("Delete skipped: selection is empty.")
             return
         }
+        val before = captureHistoryState()
         val cubesToDelete = selected.cubes.values.toList()
         cubesToDelete.forEach { cube ->
             scene.removeCube(cube)
         }
         selected.clear()
+        commitHistoryState(before)
         rebuildGroundPlane(force = true)
         setStatusMessage("Deleted ${cubesToDelete.size} selected cube(s).")
     }
@@ -1231,12 +1377,10 @@ class Voxd31Editor @JvmOverloads constructor(
         loaded.cubes.forEach { (position, color) ->
             scene.addCube(position, color)
         }
-        modelSettings = loaded.settings.copy(
-            gridSize = loaded.settings.gridSize.coerceAtLeast(1),
-            unitSize = loaded.settings.unitSize.coerceAtLeast(1e-6f),
-            unitSuffix = loaded.settings.unitSuffix.ifBlank { "unit" }
-        )
+        modelSettings = normalizedModelSettings(loaded.settings)
         filename = path
+        undoQueue.clear()
+        redoQueue.clear()
         activeTool?.reset()
         rebuildGroundPlane(force = true)
         updateWindowTitle()

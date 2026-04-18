@@ -5,17 +5,22 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.Touchable
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup
 import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable
+import com.badlogic.gdx.scenes.scene2d.utils.Layout
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.utils.viewport.ScreenViewport
+import com.kotcrab.vis.ui.widget.VisCheckBox
 import com.kotcrab.vis.ui.widget.VisLabel
 import com.kotcrab.vis.ui.widget.VisScrollPane
 import com.kotcrab.vis.ui.widget.VisSelectBox
@@ -30,6 +35,7 @@ import com.voxd31.editor.CameraMode
 import com.voxd31.editor.ModelSettings
 import com.voxd31.editor.OrthographicView
 import com.voxd31.editor.ToolOperator
+import kotlin.math.max
 
 class VoxcraftUiOverlay(
     private val toolNamesProvider: () -> List<String>,
@@ -46,6 +52,7 @@ class VoxcraftUiOverlay(
     private val cameraInteractionModeChanged: (CameraInteractionMode) -> Unit,
     private val orthographicViewChanged: (OrthographicView) -> Unit,
     private val openAction: () -> Unit,
+    private val importAction: () -> Unit,
     private val saveAction: () -> Unit,
     private val saveAsAction: () -> Unit,
     private val exportChoicesProvider: () -> List<String>,
@@ -72,68 +79,195 @@ class VoxcraftUiOverlay(
         val cursor: String
     )
 
+    private data class ToolbarEntry(val id: String, val window: CollapsibleWindow)
+
+    private inner open class CollapsibleWindow(
+        title: String,
+        private val showCloseButton: Boolean = false
+    ) : VisWindow(title, true) {
+        private val baseTitle = title
+        private val compactTitle = title.take(4)
+        private var collapsed = false
+
+        init {
+            isMovable = true
+            isResizable = false
+            isModal = false
+            setKeepWithinParent(false)
+            if (showCloseButton) {
+                addCloseButton()
+            }
+            getTitleTable().addListener(object : ClickListener() {
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    if (tapCount >= 2) {
+                        toggleCollapsed()
+                    }
+                }
+            })
+        }
+
+        override fun close() {
+            isVisible = false
+        }
+
+        fun setCompactTitle(compact: Boolean) {
+            getTitleLabel().setText(if (compact) compactTitle else baseTitle)
+        }
+
+        fun setCollapsedState(value: Boolean) {
+            if (collapsed != value) {
+                toggleCollapsed()
+            }
+        }
+
+        private fun toggleCollapsed() {
+            val oldTop = y + height
+            collapsed = !collapsed
+            val titleTable = getTitleTable()
+            children.forEach { child ->
+                if (child !== titleTable) {
+                    child.isVisible = !collapsed
+                }
+            }
+            invalidateHierarchy()
+            pack()
+            setY(oldTop - height)
+            layoutDockPanel()
+        }
+    }
+
+    private inner class DockSection(
+        private val titleText: String,
+        private val body: Actor
+    ) : WidgetGroup() {
+        private val header = VisTable()
+        private val titleLabel = VisLabel()
+        private var collapsed = false
+        private val headerHeight = 24f
+        private val padding = 4f
+
+        init {
+            touchable = Touchable.enabled
+            header.add(titleLabel).left().padLeft(6f).growX()
+            addActor(header)
+            addActor(body)
+            updateHeader()
+            header.addListener(object : ClickListener() {
+                override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                    toggleCollapsed()
+                }
+            })
+        }
+
+        fun setCollapsedState(value: Boolean) {
+            if (collapsed != value) {
+                toggleCollapsed()
+            }
+        }
+
+        private fun toggleCollapsed() {
+            collapsed = !collapsed
+            body.isVisible = !collapsed
+            updateHeader()
+            invalidateHierarchy()
+            layoutDockPanel()
+        }
+
+        private fun updateHeader() {
+            header.background = if (collapsed) dockClosedDrawable() else dockOpenDrawable()
+            titleLabel.setText((if (collapsed) "▶ " else "▼ ") + titleText)
+            titleLabel.color = Color.WHITE
+        }
+
+        override fun getPrefWidth(): Float {
+            if (!isVisible) {
+                return 0f
+            }
+            val bodyLayout = body as? Layout
+            return max(header.prefWidth, (bodyLayout?.prefWidth ?: body.width) + padding * 2f)
+        }
+
+        override fun getPrefHeight(): Float {
+            if (!isVisible) {
+                return 0f
+            }
+            val bodyLayout = body as? Layout
+            val bodyHeight = if (body.isVisible) bodyLayout?.prefHeight ?: body.height else 0f
+            return headerHeight + if (body.isVisible) padding * 2f + bodyHeight else 0f
+        }
+
+        override fun layout() {
+            val w = width.coerceAtLeast(1f)
+            header.setBounds(0f, height - headerHeight, w, headerHeight)
+            if (body.isVisible) {
+                body.setBounds(
+                    padding,
+                    padding,
+                    (w - padding * 2f).coerceAtLeast(1f),
+                    (height - headerHeight - padding * 2f).coerceAtLeast(1f)
+                )
+                (body as? Layout)?.let {
+                    it.invalidate()
+                    it.validate()
+                }
+            }
+        }
+    }
+
     private val uiViewport = ScreenViewport()
     val stage: Stage = Stage(uiViewport)
-
-    private val root = Table()
-    private val whiteTexture: Texture = createWhiteTexture()
-    private val toolGroup = ButtonGroup<VisTextButton>()
-    private val toolButtons = linkedMapOf<Int, VisTextButton>()
-    private val cameraButtons = linkedMapOf<CameraMode, VisTextButton>()
-    private val cameraInteractionButtons = linkedMapOf<CameraInteractionMode, VisTextButton>()
-    private val addModeSelect = VisSelectBox<String>()
+    private val prefs = Gdx.app.getPreferences("voxcraft-ui")
+    private val whiteTexture = createWhiteTexture()
+    private val ownedTextures = mutableListOf<Texture>()
+    private val toolbarEntries = linkedMapOf<String, CollapsibleWindow>()
+    private val toolGroup = ButtonGroup<AppImageTextButton>()
+    private val toolButtons = linkedMapOf<Int, AppImageTextButton>()
+    private val buttonLabels = mutableMapOf<AppImageTextButton, String>()
+    private val buttonMarkers = mutableMapOf<AppImageTextButton, Actor>()
+    private val cameraButtons = linkedMapOf<CameraMode, AppImageTextButton>()
+    private val cameraInteractionButtons = linkedMapOf<CameraInteractionMode, AppImageTextButton>()
+    private val addModeButtons = linkedMapOf<String, AppImageTextButton>()
+    private val iconDrawables = mutableMapOf<String, TextureRegionDrawable>()
+    private val currentColorPreview = ColorChip(whiteTexture) { currentColorProvider() }
+    private val cubeToolbarLabel = VisLabel("")
+    private val statusBar = VisTable()
+    private val statusLine = VisLabel("")
+    private val rightDockWindow = CollapsibleWindow("Panels")
+    private val rightDockContent = VisTable()
+    private val modelGridField = VisTextField("")
+    private val modelUnitSizeField = VisTextField("")
+    private val modelUnitSuffixField = VisTextField("")
     private val uiScaleSelect = VisSelectBox<String>()
-    private val modificationToolsContent = VisTable(true)
-    private val constructionToolsContent = VisTable(true)
-    private val toolOperatorsContent = VisTable(true)
-    private val currentColorPreview = ColorChip(whiteTexture) { currentColorProvider() }.apply {
-        addListener(object : ClickListener() {
-            override fun clicked(event: InputEvent?, x: Float, y: Float) {
-                showColorPicker()
-            }
-        })
-    }
-    private val fileLabel = VisLabel("")
-    private val cameraLabel = VisLabel("")
-    private val toolLabel = VisLabel("")
-    private val countsLabel = VisLabel("")
-    private val messageLabel = VisLabel("")
-    private val cursorLabel = VisLabel("")
+    private val toolbarSizeSelect = VisSelectBox<String>()
+    private val toolbarAutoCollapseCheck = VisCheckBox("Auto-collapse toolbars")
+    private lateinit var inToolOperatorsContent: VisTable
     private var colorPicker: ColorPicker? = null
-    private var modelSettingsDialog: VisWindow? = null
     private var exportDialog: VisWindow? = null
+    private var hoverPopover: VisWindow? = null
     private var toolOperatorsSignature = ""
     private var syncing = false
+    private var toolbarsPositioned = false
+    private var toolbarIconSizePx = prefs.getInteger("toolbar.iconSize", 32).coerceToToolbarIconSize()
+    private var toolbarButtonSize = toolbarIconSizePx.toFloat()
+    private var toolbarAutoCollapse = prefs.getBoolean("toolbar.autoCollapse", false)
 
     init {
         setUiScale(uiScaleProvider())
+        loadIconDrawables()
         toolGroup.setMinCheckCount(1)
         toolGroup.setMaxCheckCount(1)
-        toolGroup.setUncheckLast(true)
+        toolGroup.setUncheckLast(false)
 
-        root.setFillParent(true)
-        root.top().left()
-        root.touchable = Touchable.childrenOnly
-        stage.addActor(root)
+        statusBar.background = darkBarDrawable()
+        statusBar.defaults().pad(2f)
+        statusLine.setWrap(false)
+        statusBar.add(statusLine).left()
+        stage.addActor(statusBar)
 
-        val topBars = buildTopBars()
-        val toolsColumn = VisTable(true).apply {
-            add(buildToolsWindow("Modification", modificationToolsContent)).width(220f).growX().top().left()
-            row()
-            add(buildToolsWindow("Construction", constructionToolsContent)).width(220f).grow().top().left()
-        }
-        val toolOperatorsWindow = buildToolOperatorsWindow()
-        val statusWindow = buildStatusWindow()
-
-        root.add(topBars).growX().colspan(3).pad(8f, 8f, 4f, 8f)
-        root.row()
-        root.add(toolsColumn).width(220f).top().left().padLeft(8f).padBottom(8f)
-        root.add().expand()
-        root.add(toolOperatorsWindow).top().right().padRight(8f).padTop(4f)
-        root.row()
-        root.add(statusWindow).growX().colspan(3).pad(0f, 8f, 8f, 8f)
-
-        rebuildToolButtons()
+        buildToolbars()
+        buildRightDock()
+        layoutStaticPanels()
+        arrangeToolbarsHorizontalFlow()
         syncFromState()
     }
 
@@ -148,13 +282,16 @@ class VoxcraftUiOverlay(
 
     fun resize(width: Int, height: Int) {
         uiViewport.update(width, height, true)
+        layoutStaticPanels()
+        clampToolbarsToViewport()
     }
 
     fun setUiScale(scale: Float) {
         val normalized = normalizeUiScale(scale)
         uiViewport.setUnitsPerPixel(1f / normalized)
         uiViewport.update(Gdx.graphics.width, Gdx.graphics.height, true)
-        root.invalidateHierarchy()
+        prefs.putFloat("ui.scale", normalized)
+        prefs.flush()
     }
 
     fun isPointerOverUi(screenX: Int, screenY: Int): Boolean {
@@ -170,260 +307,583 @@ class VoxcraftUiOverlay(
 
     fun dispose() {
         whiteTexture.dispose()
+        ownedTextures.forEach { it.dispose() }
         stage.dispose()
     }
 
-    private fun buildTopBars(): Table {
-        return VisTable(true).apply {
-            add(buildFunctionsBar()).growX().uniformX().left()
-            add(buildSettingsBar()).growX().uniformX().left()
+    private fun buildToolbars() {
+        toolbarEntries.values.forEach { it.remove() }
+        toolbarEntries.clear()
+        toolButtons.clear()
+        cameraButtons.clear()
+        cameraInteractionButtons.clear()
+        addModeButtons.clear()
+        buttonLabels.clear()
+        buttonMarkers.clear()
+        toolGroup.buttons.clear()
+
+        registerToolbar("functions", buildFunctionsToolbar())
+        registerToolbar("modification", buildToolsToolbar("Modification", true))
+        registerToolbar("construction", buildToolsToolbar("Construction", false))
+        registerToolbar("camera", buildCameraToolbar())
+        registerToolbar("cubes", buildCubesToolbar())
+        registerToolbar("in_tool", buildToolOperatorsToolbar())
+        toolbarsPositioned = false
+    }
+
+    private fun registerToolbar(id: String, window: CollapsibleWindow) {
+        toolbarEntries[id] = window
+        stage.addActor(window)
+    }
+
+    private fun buildFunctionsToolbar(): CollapsibleWindow {
+        val window = CollapsibleWindow("Functions")
+        val content = VisTable()
+        content.defaults().pad(0f)
+        listOf(
+            imageAction("Open", "file_open", openAction),
+            imageAction("Import VXDI", "file_open", importAction),
+            imageAction("Save", "file_save", saveAction),
+            imageAction("Save As", "file_save", saveAsAction),
+            imageAction("Export", "file_save") { showExportDialog() },
+            imageAction("Reset Tool", "select", resetToolAction),
+            imageAction("Delete Selection", "delete", deleteSelectionAction),
+            imageAction("Clear Selection", "delete", clearSelectionAction),
+            imageAction("Clear Guides", "delete", clearGuidesAction)
+        ).forEach { content.add(it).size(toolbarButtonSize, toolbarButtonSize) }
+        window.add(content).pad(0f).left()
+        window.pack()
+        return window
+    }
+
+    private fun buildToolsToolbar(title: String, modification: Boolean): CollapsibleWindow {
+        val window = CollapsibleWindow(title)
+        val content = VisTable()
+        content.defaults().pad(0f)
+        toolNamesProvider().forEachIndexed { index, toolName ->
+            if (isModificationTool(toolName) != modification) {
+                return@forEachIndexed
+            }
+            val icon = iconNameForTool(toolName)
+            val button = imageAction(toolName, icon) { toolSelected(index) }
+            button.isChecked = activeToolIndexProvider() == index
+            button.addListener(object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    if (!syncing && button.isChecked) {
+                        toolSelected(index)
+                    }
+                }
+            })
+            toolGroup.add(button)
+            toolButtons[index] = button
+            content.add(button).size(toolbarButtonSize, toolbarButtonSize)
         }
+        window.add(content).pad(0f).left()
+        window.pack()
+        return window
     }
 
-    private fun buildFunctionsBar(): VisWindow {
-        val window = fixedWindow("Functions")
-        val content = VisTable(true)
-
-        val openButton = VisTextButton("Open")
-        openButton.addListener(onChange { openAction() })
-        content.add(openButton).padRight(6f)
-
-        val saveButton = VisTextButton("Save")
-        saveButton.addListener(onChange { saveAction() })
-        content.add(saveButton).padRight(6f)
-
-        val saveAsButton = VisTextButton("Save As")
-        saveAsButton.addListener(onChange { saveAsAction() })
-        content.add(saveAsButton).padRight(6f)
-
-        val exportButton = VisTextButton("Export")
-        exportButton.addListener(onChange { showExportDialog() })
-        content.add(exportButton).padRight(6f)
-
-        val resetButton = VisTextButton("Reset Tool")
-        resetButton.addListener(onChange { resetToolAction() })
-        content.add(resetButton).padRight(6f)
-
-        val deleteButton = VisTextButton("Delete")
-        deleteButton.addListener(onChange { deleteSelectionAction() })
-        content.add(deleteButton).padRight(6f)
-
-        val clearSelectionButton = VisTextButton("Clear Selection")
-        clearSelectionButton.addListener(onChange { clearSelectionAction() })
-        content.add(clearSelectionButton).padRight(6f)
-
-        val clearGuidesButton = VisTextButton("Clear Guides")
-        clearGuidesButton.addListener(onChange { clearGuidesAction() })
-        content.add(clearGuidesButton).padRight(6f)
-
-        return attachTopBarContent(window, content)
-    }
-
-    private fun buildSettingsBar(): VisWindow {
-        val window = fixedWindow("Settings")
-        val content = VisTable(true)
-
-        val modelButton = VisTextButton("Model")
-        modelButton.addListener(onChange { showModelSettingsDialog() })
-        content.add(modelButton).padRight(6f)
-
-        content.add(currentColorPreview).size(32f).padRight(12f)
-
-        content.add(VisLabel("Add")).padRight(4f)
-        addModeSelect.setItems("addWithoutReplace", "addOrReplace", "replaceCube")
-        addModeSelect.addListener(object : ChangeListener() {
-            override fun changed(event: ChangeEvent?, actor: Actor?) {
-                if (!syncing) {
-                    addModeChanged(addModeSelect.selected)
-                }
-            }
-        })
-        content.add(addModeSelect).width(180f).padRight(12f)
-
-        content.add(VisLabel("UI")).padRight(4f)
-        uiScaleSelect.setItems("1x", "1.5x", "2x")
-        uiScaleSelect.addListener(object : ChangeListener() {
-            override fun changed(event: ChangeEvent?, actor: Actor?) {
-                if (!syncing) {
-                    uiScaleChanged(parseUiScaleLabel(uiScaleSelect.selected))
-                }
-            }
-        })
-        content.add(uiScaleSelect).width(80f).padRight(12f)
-
-        content.add(VisLabel("Camera")).padRight(4f)
-        val cameraGroup = ButtonGroup<VisTextButton>().apply {
+    private fun buildCameraToolbar(): CollapsibleWindow {
+        val window = CollapsibleWindow("Camera")
+        val content = VisTable()
+        content.defaults().pad(0f)
+        val cameraGroup = ButtonGroup<AppImageTextButton>().apply {
             setMinCheckCount(1)
             setMaxCheckCount(1)
-            setUncheckLast(true)
+            setUncheckLast(false)
         }
         CameraMode.entries.forEach { mode ->
-            val button = VisTextButton(mode.displayName, "toggle")
-            button.addListener(onChange { cameraModeChanged(mode) })
-            cameraButtons[mode] = button
+            val button = imageAction(mode.displayName, iconNameForCameraMode(mode)) { cameraModeChanged(mode) }
             cameraGroup.add(button)
-            content.add(button).padRight(4f)
+            cameraButtons[mode] = button
+            content.add(button).size(toolbarButtonSize, toolbarButtonSize)
         }
-
-        content.add(VisLabel("Drag")).padLeft(8f).padRight(4f)
-        val cameraInteractionGroup = ButtonGroup<VisTextButton>().apply {
+        val dragGroup = ButtonGroup<AppImageTextButton>().apply {
             setMinCheckCount(1)
             setMaxCheckCount(1)
-            setUncheckLast(true)
+            setUncheckLast(false)
         }
         CameraInteractionMode.entries.forEach { mode ->
-            val button = VisTextButton(mode.displayName, "toggle")
-            button.addListener(onChange { cameraInteractionModeChanged(mode) })
+            val button = imageAction("Drag ${mode.displayName}", iconNameForCameraInteractionMode(mode)) {
+                cameraInteractionModeChanged(mode)
+            }
+            dragGroup.add(button)
             cameraInteractionButtons[mode] = button
-            cameraInteractionGroup.add(button)
-            content.add(button).padRight(4f)
+            content.add(button).size(toolbarButtonSize, toolbarButtonSize)
         }
-
-        content.add(VisLabel("View")).padLeft(8f).padRight(4f)
         listOf(
             OrthographicView.TOP,
             OrthographicView.FRONT,
-            OrthographicView.RIGHT,
             OrthographicView.LEFT,
+            OrthographicView.RIGHT,
             OrthographicView.BACK
         ).forEach { view ->
-            val button = VisTextButton(view.displayName)
-            button.addListener(onChange { orthographicViewChanged(view) })
-            content.add(button).padRight(4f)
+            content.add(imageAction("View ${view.displayName}", iconNameForView(view)) {
+                orthographicViewChanged(view)
+            }).size(toolbarButtonSize, toolbarButtonSize)
         }
-
-        return attachTopBarContent(window, content)
-    }
-
-    private fun attachTopBarContent(window: VisWindow, content: VisTable): VisWindow {
-        val scroll = VisScrollPane(content)
-        scroll.setFadeScrollBars(false)
-        scroll.setScrollingDisabled(false, true)
-        window.add(scroll).growX().left().pad(6f)
+        window.add(content).pad(0f).left()
         window.pack()
         return window
+    }
+
+    private fun buildCubesToolbar(): CollapsibleWindow {
+        val window = CollapsibleWindow("Cubes")
+        val content = VisTable()
+        content.defaults().pad(2f)
+        currentColorPreview.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                showColorPicker()
+            }
+        })
+        content.add(cubeToolbarLabel).left()
+        content.add(currentColorPreview).size(toolbarButtonSize, toolbarButtonSize)
+        val addGroup = ButtonGroup<AppImageTextButton>().apply {
+            setMinCheckCount(1)
+            setMaxCheckCount(1)
+            setUncheckLast(false)
+        }
+        listOf(
+            "addWithoutReplace" to ("Add without replace" to "add_without_replace"),
+            "addOrReplace" to ("Add or replace" to "add_or_replace"),
+            "replaceCube" to ("Replace existing cube" to "replace_only")
+        ).forEach { (mode, labelIcon) ->
+            val button = imageAction(labelIcon.first, labelIcon.second) { addModeChanged(mode) }
+            addGroup.add(button)
+            addModeButtons[mode] = button
+            content.add(button).size(toolbarButtonSize, toolbarButtonSize)
+        }
+        window.add(content).pad(2f).left()
+        window.pack()
+        return window
+    }
+
+    private fun buildToolOperatorsToolbar(): CollapsibleWindow {
+        val window = CollapsibleWindow("In-Tool Operators")
+        inToolOperatorsContent = VisTable()
+        inToolOperatorsContent.defaults().pad(0f)
+        window.add(inToolOperatorsContent).pad(0f).left()
+        window.pack()
+        return window
+    }
+
+    private fun buildRightDock() {
+        val scroll = VisScrollPane(rightDockContent)
+        scroll.setFadeScrollBars(false)
+        scroll.setScrollingDisabled(true, false)
+        rightDockWindow.isMovable = false
+        rightDockWindow.isResizable = false
+        rightDockWindow.add(scroll).grow().pad(4f)
+        rightDockContent.defaults().growX().padBottom(4f)
+        rightDockContent.add(buildModelSettingsPanel()).growX().row()
+        rightDockContent.add(buildUiSettingsPanel()).growX().row()
+        stage.addActor(rightDockWindow)
+    }
+
+    private fun buildModelSettingsPanel(): DockSection {
+        val content = VisTable()
+        content.background = darkPanelDrawable()
+        content.defaults().pad(4f).left().growX()
+        content.add(VisLabel("Grid size")).left().row()
+        content.add(modelGridField).growX().row()
+        content.add(VisLabel("Unit size")).left().row()
+        content.add(modelUnitSizeField).growX().row()
+        content.add(VisLabel("Unit suffix")).left().row()
+        content.add(modelUnitSuffixField).growX().row()
+
+        listOf(modelGridField, modelUnitSizeField, modelUnitSuffixField).forEach { field ->
+            field.addListener(object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    if (!syncing) {
+                        applyModelSettingsFields()
+                    }
+                }
+            })
+        }
+        return DockSection("Model Settings", content).apply { setCollapsedState(false) }
+    }
+
+    private fun buildUiSettingsPanel(): DockSection {
+        val content = VisTable()
+        content.background = darkPanelDrawable()
+        content.defaults().pad(4f).left().growX()
+        uiScaleSelect.setItems("1x", "1.5x", "2x")
+        toolbarSizeSelect.setItems("32 x 32 px", "48 x 48 px", "64 x 64 px")
+        toolbarAutoCollapseCheck.isChecked = toolbarAutoCollapse
+        content.add(VisLabel("UI text size")).left().row()
+        content.add(uiScaleSelect).growX().row()
+        content.add(toolbarAutoCollapseCheck).left().row()
+        content.add(VisLabel("Toolbar icon/button size")).left().row()
+        content.add(toolbarSizeSelect).growX().row()
+        content.add(VisLabel("Arrange toolbars")).left().padTop(6f).row()
+        val arrangeRow = VisTable()
+        arrangeRow.defaults().pad(2f)
+        val horizontal = VisTextButton("Flow L->R")
+        val vertical = VisTextButton("Flow T->D")
+        arrangeRow.add(horizontal).growX()
+        arrangeRow.add(vertical).growX()
+        content.add(arrangeRow).growX().row()
+        val note = VisLabel("Affects built-in and mapped toolbar icons.")
+        note.setWrap(true)
+        content.add(note).width(250f).left().row()
+
+        uiScaleSelect.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                if (syncing) return
+                val scale = parseUiScaleLabel(uiScaleSelect.selected)
+                uiScaleChanged(scale)
+                setUiScale(scale)
+                layoutStaticPanels()
+            }
+        })
+        toolbarSizeSelect.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                if (!syncing) {
+                    setToolbarIconSize(parseToolbarSize(toolbarSizeSelect.selected))
+                }
+            }
+        })
+        toolbarAutoCollapseCheck.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                if (!syncing) {
+                    toolbarAutoCollapse = toolbarAutoCollapseCheck.isChecked
+                    prefs.putBoolean("toolbar.autoCollapse", toolbarAutoCollapse)
+                    prefs.flush()
+                    applyToolbarCompactState()
+                }
+            }
+        })
+        horizontal.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                arrangeToolbarsHorizontalFlow()
+            }
+        })
+        vertical.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                arrangeToolbarsVerticalFlow()
+            }
+        })
+
+        return DockSection("UI Settings", content).apply { setCollapsedState(false) }
+    }
+
+    private fun imageAction(label: String, iconName: String, action: () -> Unit): AppImageTextButton {
+        val icon = iconFor(iconName, createActionIconDrawable(Color(0.35f, 0.35f, 0.35f, 1f)))
+        val button = AppImageTextButton("", icon)
+        applyButtonStyle(button, icon)
+        buttonLabels[button] = label
+        attachButtonMarker(button)
+        attachPopover(button, label)
+        button.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                action()
+            }
+        })
+        return button
     }
 
     private fun showExportDialog() {
         val choices = exportChoicesProvider()
         exportDialog?.remove()
-        val dialog = fixedWindow("Export").also {
+        val dialog = CollapsibleWindow("Export", showCloseButton = true).also {
             it.isModal = true
             exportDialog = it
         }
-
         val content = VisTable(true)
         if (choices.isEmpty()) {
-            content.add(VisLabel("No export formats are available.")).pad(10f)
-            val closeButton = VisTextButton("Close")
-            closeButton.addListener(onChange { dialog.remove() })
-            dialog.add(content).pad(10f)
-            dialog.row()
-            dialog.add(closeButton).pad(0f, 10f, 10f, 10f).right()
+            content.add(VisLabel("No export formats are available.")).pad(10f).row()
+            val close = VisTextButton("Close")
+            close.addListener(onChange { dialog.remove() })
+            content.add(close).right().pad(10f)
         } else {
             val select = VisSelectBox<String>()
             select.setItems(*choices.toTypedArray())
             content.add(VisLabel("Format")).left().padRight(8f)
-            content.add(select).width(280f).left()
-
-            val buttons = VisTable(true)
-            val exportButton = VisTextButton("Export")
-            exportButton.addListener(onChange {
+            content.add(select).width(280f).left().row()
+            val export = VisTextButton("Export")
+            val cancel = VisTextButton("Cancel")
+            export.addListener(onChange {
                 val selected = select.selected
                 dialog.remove()
                 exportChoiceSelected(selected)
             })
-            val cancelButton = VisTextButton("Cancel")
-            cancelButton.addListener(onChange { dialog.remove() })
-            buttons.add(exportButton).padRight(6f)
-            buttons.add(cancelButton)
-
-            dialog.add(content).pad(10f)
-            dialog.row()
-            dialog.add(buttons).pad(0f, 10f, 10f, 10f).right()
+            cancel.addListener(onChange { dialog.remove() })
+            content.add(export).pad(8f)
+            content.add(cancel).pad(8f)
         }
-
-        if (dialog.stage == null) {
-            stage.addActor(dialog)
-        }
+        dialog.add(content).pad(8f)
+        stage.addActor(dialog)
         dialog.pack()
         dialog.centerWindow()
-        dialog.fadeIn()
+        dialog.toFront()
     }
 
-    private fun buildToolsWindow(title: String, content: VisTable): VisWindow {
-        val window = fixedWindow(title)
-        val scroll = VisScrollPane(content)
-        scroll.setFadeScrollBars(false)
-        scroll.setScrollingDisabled(true, false)
-        window.add(scroll).grow().minHeight(if (title == "Modification") 180f else 320f)
-        return window
-    }
-
-    private fun buildToolOperatorsWindow(): VisWindow {
-        val window = fixedWindow("In-Tool Operators")
-        val scroll = VisScrollPane(toolOperatorsContent)
-        scroll.setFadeScrollBars(false)
-        scroll.setScrollingDisabled(true, false)
-        window.add(scroll).width(220f).minHeight(80f).pad(6f)
-        return window
-    }
-
-    private fun buildStatusWindow(): VisWindow {
-        val window = fixedWindow("Status")
-        val content = VisTable(true)
-
-        fileLabel.setAlignment(Align.left)
-        cameraLabel.setAlignment(Align.left)
-        toolLabel.setAlignment(Align.left)
-        countsLabel.setAlignment(Align.left)
-        messageLabel.setAlignment(Align.left)
-        cursorLabel.setAlignment(Align.left)
-        messageLabel.setWrap(true)
-        cursorLabel.setWrap(true)
-
-        content.add(fileLabel).growX().left()
-        content.row()
-        content.add(cameraLabel).growX().left()
-        content.row()
-        content.add(toolLabel).growX().left()
-        content.row()
-        content.add(countsLabel).growX().left()
-        content.row()
-        content.add(messageLabel).growX().left().minHeight(24f)
-        content.row()
-        content.add(cursorLabel).growX().left().minHeight(44f)
-
-        window.add(content).growX().pad(6f)
-        window.pack()
-        return window
-    }
-
-    private fun rebuildToolButtons() {
-        modificationToolsContent.clearChildren()
-        constructionToolsContent.clearChildren()
-        toolButtons.clear()
-        toolGroup.buttons.clear()
-
-        toolNamesProvider().forEachIndexed { index, toolName ->
-            val button = VisTextButton(toolName, "toggle")
-            button.label.setWrap(true)
+    private fun rebuildToolOperatorsIfNeeded(toolName: String) {
+        if (!::inToolOperatorsContent.isInitialized) {
+            return
+        }
+        val operators = toolOperatorsProvider()
+        val signature = buildString {
+            append(toolName)
+            operators.forEach { operator ->
+                append('|').append(operator.label).append(':').append(operator.active()).append(':').append(operator.enabled())
+            }
+        }
+        if (signature == toolOperatorsSignature) {
+            return
+        }
+        toolOperatorsSignature = signature
+        inToolOperatorsContent.clearChildren()
+        val toolNameButton = VisTextButton(toolName.ifBlank { "-" }, "toggle")
+        toolNameButton.isDisabled = true
+        inToolOperatorsContent.add(toolNameButton).height(toolbarButtonSize).minWidth(86f)
+        operators.forEach { operator ->
+            val label = if (operator.active()) "* ${operator.label}" else operator.label
+            val button = VisTextButton(label)
+            button.isDisabled = !operator.enabled()
             button.addListener(onChange {
-                if (!syncing && button.isChecked) {
-                    toolSelected(index)
+                if (operator.enabled()) {
+                    operator.action()
+                    toolOperatorsSignature = ""
                 }
             })
-            toolGroup.add(button)
-            toolButtons[index] = button
+            inToolOperatorsContent.add(button).height(toolbarButtonSize).minWidth(button.prefWidth.coerceAtLeast(58f))
+        }
+        inToolOperatorsContent.invalidateHierarchy()
+        toolbarEntries["in_tool"]?.pack()
+        applyToolbarCompactState()
+    }
 
-            val content = if (isModificationTool(toolName)) modificationToolsContent else constructionToolsContent
-            content.add(button).growX().left().padBottom(4f)
-            content.row()
+    private fun syncFromState() {
+        syncing = true
+        val snapshot = statusProvider()
+        toolButtons.forEach { (index, button) ->
+            button.isChecked = activeToolIndexProvider() == index
+        }
+        cameraButtons.forEach { (mode, button) ->
+            button.isChecked = cameraModeProvider() == mode
+        }
+        cameraInteractionButtons.forEach { (mode, button) ->
+            button.isChecked = cameraInteractionModeProvider() == mode
+        }
+        addModeButtons.forEach { (mode, button) ->
+            button.isChecked = addModeProvider() == mode
+        }
+        cubeToolbarLabel.setText(if (snapshot.selectionCount > 0) "Selection" else "Current")
+        uiScaleSelect.selected = uiScaleLabel(uiScaleProvider())
+        toolbarSizeSelect.selected = toolbarSizeLabel(toolbarIconSizePx)
+        toolbarAutoCollapseCheck.isChecked = toolbarAutoCollapse
+        syncModelSettingsFields()
+        statusLine.setText(
+            "File: ${snapshot.fileName} | Camera: ${snapshot.cameraMode} | Add: ${snapshot.addMode} | " +
+                "Tool: ${snapshot.activeTool} | Cubes: ${snapshot.cubeCount} | Selection: ${snapshot.selectionCount} | " +
+                "Guides: ${snapshot.guideCount} | ${snapshot.message} | ${snapshot.cursor}"
+        )
+        updateButtonMarkers()
+        rebuildToolOperatorsIfNeeded(snapshot.activeTool)
+        if (!toolbarsPositioned) {
+            arrangeToolbarsHorizontalFlow()
+        }
+        syncing = false
+    }
+
+    private fun syncModelSettingsFields() {
+        val settings = modelSettingsProvider()
+        setFieldTextIfNotFocused(modelGridField, settings.gridSize.toString())
+        setFieldTextIfNotFocused(modelUnitSizeField, settings.unitSize.toString())
+        setFieldTextIfNotFocused(modelUnitSuffixField, settings.unitSuffix)
+    }
+
+    private fun setFieldTextIfNotFocused(field: VisTextField, value: String) {
+        if (stage.keyboardFocus !== field && field.text != value) {
+            field.text = value
         }
     }
 
-    private fun isModificationTool(toolName: String): Boolean {
-        return toolName.lowercase() in setOf("select2", "select", "move", "copy", "rotate", "copyrot")
+    private fun applyModelSettingsFields() {
+        val current = modelSettingsProvider()
+        val next = ModelSettings(
+            gridSize = modelGridField.text.toIntOrNull()?.coerceAtLeast(1) ?: current.gridSize,
+            unitSize = modelUnitSizeField.text.toFloatOrNull()?.coerceAtLeast(1e-6f) ?: current.unitSize,
+            unitSuffix = modelUnitSuffixField.text.ifBlank { current.unitSuffix }
+        )
+        modelSettingsChanged(next)
+    }
+
+    private fun layoutStaticPanels() {
+        val width = viewportWidth()
+        val height = viewportHeight()
+        val statusHeight = 24f
+        statusBar.setBounds(0f, 0f, width, statusHeight)
+        statusLine.setBounds(4f, 0f, width * 2f, statusHeight)
+
+        rightDockWindow.pack()
+        val dockWidth = 300f.coerceAtMost((width * 0.42f).coerceAtLeast(220f))
+        val dockHeight = (height - statusHeight - 16f).coerceAtLeast(120f)
+        rightDockWindow.setSize(dockWidth, dockHeight)
+        rightDockWindow.setPosition(width - dockWidth - 8f, statusHeight + 8f)
+        layoutDockPanel()
+    }
+
+    private fun layoutDockPanel() {
+        rightDockContent.invalidateHierarchy()
+        rightDockWindow.invalidateHierarchy()
+    }
+
+    private fun arrangeToolbarsHorizontalFlow() {
+        val width = viewportWidth()
+        val height = viewportHeight()
+        val margin = 4f
+        val gap = 4f
+        val rightLimit = if (rightDockWindow.isVisible) rightDockWindow.x - gap else width - margin
+        var x = margin
+        var yTop = height - margin
+        var rowHeight = 0f
+        orderedToolbarEntries().forEach { entry ->
+            val window = entry.window
+            window.invalidateHierarchy()
+            window.pack()
+            if (x + window.width > rightLimit && x > margin) {
+                x = margin
+                yTop -= rowHeight + gap
+                rowHeight = 0f
+            }
+            window.setPosition(x, yTop - window.height)
+            window.toFront()
+            x += window.width + gap
+            rowHeight = max(rowHeight, window.height)
+        }
+        rightDockWindow.toFront()
+        statusBar.toFront()
+        toolbarsPositioned = true
+    }
+
+    private fun arrangeToolbarsVerticalFlow() {
+        val height = viewportHeight()
+        val margin = 4f
+        val gap = 4f
+        var x = margin
+        var yTop = height - margin
+        var columnWidth = 0f
+        orderedToolbarEntries().forEach { entry ->
+            val window = entry.window
+            window.invalidateHierarchy()
+            window.pack()
+            if (yTop < height - margin && yTop - window.height < 32f) {
+                x += columnWidth + gap
+                yTop = height - margin
+                columnWidth = 0f
+            }
+            window.setPosition(x, yTop - window.height)
+            window.toFront()
+            yTop -= window.height + gap
+            columnWidth = max(columnWidth, window.width)
+        }
+        rightDockWindow.toFront()
+        statusBar.toFront()
+        toolbarsPositioned = true
+    }
+
+    private fun orderedToolbarEntries(): List<ToolbarEntry> {
+        return listOf("functions", "modification", "construction", "camera", "cubes", "in_tool")
+            .mapNotNull { id -> toolbarEntries[id]?.let { ToolbarEntry(id, it) } }
+    }
+
+    private fun clampToolbarsToViewport() {
+        val width = viewportWidth()
+        val height = viewportHeight()
+        toolbarEntries.values.forEach { window ->
+            val x = window.x.coerceIn(0f, (width - window.width).coerceAtLeast(0f))
+            val y = window.y.coerceIn(24f, (height - window.height).coerceAtLeast(24f))
+            window.setPosition(x, y)
+        }
+    }
+
+    private fun setToolbarIconSize(size: Int) {
+        val normalized = size.coerceToToolbarIconSize()
+        if (normalized == toolbarIconSizePx) {
+            return
+        }
+        toolbarIconSizePx = normalized
+        toolbarButtonSize = normalized.toFloat()
+        prefs.putInteger("toolbar.iconSize", normalized)
+        prefs.flush()
+        iconDrawables.clear()
+        loadIconDrawables()
+        buildToolbars()
+        layoutStaticPanels()
+        arrangeToolbarsHorizontalFlow()
+    }
+
+    private fun applyToolbarCompactState() {
+        if (!toolbarAutoCollapse) {
+            toolbarEntries.values.forEach { it.setCompactTitle(false) }
+            return
+        }
+        toolbarEntries.values.forEach { it.setCompactTitle(true) }
+    }
+
+    private fun updateButtonMarkers() {
+        val activeIndex = activeToolIndexProvider()
+        toolButtons.forEach { (index, button) ->
+            buttonMarkers[button]?.color = if (index == activeIndex) Color(0.9f, 0.1f, 0.1f, 1f) else Color.WHITE
+        }
+        cameraButtons.forEach { (mode, button) ->
+            buttonMarkers[button]?.color = if (mode == cameraModeProvider()) Color(0.9f, 0.1f, 0.1f, 1f) else Color.WHITE
+        }
+        cameraInteractionButtons.forEach { (mode, button) ->
+            buttonMarkers[button]?.color = if (mode == cameraInteractionModeProvider()) Color(0.9f, 0.1f, 0.1f, 1f) else Color.WHITE
+        }
+        addModeButtons.forEach { (mode, button) ->
+            buttonMarkers[button]?.color = if (mode == addModeProvider()) Color(0.9f, 0.1f, 0.1f, 1f) else Color.WHITE
+        }
+    }
+
+    private fun attachButtonMarker(button: AppImageTextButton) {
+        val marker = ColorChip(whiteTexture) { Color.WHITE }.apply {
+            setSize((toolbarButtonSize * 0.22f).coerceIn(7f, 14f), (toolbarButtonSize * 0.22f).coerceIn(7f, 14f))
+            touchable = Touchable.disabled
+        }
+        button.addActor(marker)
+        buttonMarkers[button] = marker
+    }
+
+    private fun attachPopover(button: AppImageTextButton, label: String) {
+        button.addListener(object : ClickListener() {
+            override fun enter(event: InputEvent?, x: Float, y: Float, pointer: Int, fromActor: Actor?) {
+                if (pointer == -1) {
+                    showPopover(button, label)
+                }
+            }
+
+            override fun exit(event: InputEvent?, x: Float, y: Float, pointer: Int, toActor: Actor?) {
+                if (pointer == -1) {
+                    hidePopover()
+                }
+            }
+
+            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, buttonCode: Int): Boolean {
+                hidePopover()
+                return false
+            }
+        })
+    }
+
+    private fun showPopover(anchor: Actor, text: String) {
+        hidePopover()
+        val window = CollapsibleWindow(text).also { hoverPopover = it }
+        window.isMovable = false
+        window.add(VisLabel(text)).pad(6f)
+        stage.addActor(window)
+        window.pack()
+        val pos = anchor.localToStageCoordinates(Vector2(0f, anchor.height))
+        window.setPosition(pos.x, pos.y + 4f)
+        window.toFront()
+    }
+
+    private fun hidePopover() {
+        hoverPopover?.remove()
+        hoverPopover = null
     }
 
     private fun showColorPicker() {
@@ -431,27 +891,18 @@ class VoxcraftUiOverlay(
             colorPicker = ColorPicker("Color").apply {
                 setListener(object : ColorPickerListener {
                     override fun changed(color: Color?) {
-                        if (color != null) {
-                            colorSelected(Color(color))
-                        }
+                        color?.let { colorSelected(Color(it)) }
                     }
 
                     override fun canceled(oldColor: Color?) {
-                        if (oldColor != null) {
-                            colorSelected(Color(oldColor))
-                        }
                     }
 
                     override fun reset(oldColor: Color?, newColor: Color?) {
-                        if (newColor != null) {
-                            colorSelected(Color(newColor))
-                        }
+                        newColor?.let { colorSelected(Color(it)) }
                     }
 
                     override fun finished(color: Color?) {
-                        if (color != null) {
-                            colorSelected(Color(color))
-                        }
+                        color?.let { colorSelected(Color(it)) }
                     }
                 })
             }
@@ -463,159 +914,156 @@ class VoxcraftUiOverlay(
         }
         picker.centerWindow()
         picker.fadeIn()
+        picker.toFront()
     }
 
-    private fun showModelSettingsDialog() {
-        val current = modelSettingsProvider()
-        modelSettingsDialog?.remove()
-        val dialog = fixedWindow("Model Settings").also {
-            it.isModal = true
-            modelSettingsDialog = it
-        }
-
-        val content = VisTable(true)
-        val gridField = VisTextField(current.gridSize.toString())
-        val unitSizeField = VisTextField(current.unitSize.toString())
-        val unitSuffixField = VisTextField(current.unitSuffix)
-
-        content.add(VisLabel("Grid Size")).left().padRight(8f)
-        content.add(gridField).width(160f).left()
-        content.row()
-        content.add(VisLabel("Unit Size")).left().padRight(8f)
-        content.add(unitSizeField).width(160f).left()
-        content.row()
-        content.add(VisLabel("Unit Suffix")).left().padRight(8f)
-        content.add(unitSuffixField).width(160f).left()
-
-        val buttons = VisTable(true)
-        val applyButton = VisTextButton("Apply")
-        applyButton.addListener(onChange {
-            val gridSize = gridField.text.toIntOrNull()?.coerceAtLeast(1) ?: current.gridSize
-            val unitSize = unitSizeField.text.toFloatOrNull()?.coerceAtLeast(1e-6f) ?: current.unitSize
-            val unitSuffix = unitSuffixField.text.ifBlank { current.unitSuffix }
-            modelSettingsChanged(ModelSettings(gridSize = gridSize, unitSize = unitSize, unitSuffix = unitSuffix))
-            dialog.remove()
-        })
-        val cancelButton = VisTextButton("Cancel")
-        cancelButton.addListener(onChange { dialog.remove() })
-        buttons.add(applyButton).padRight(6f)
-        buttons.add(cancelButton)
-
-        dialog.add(content).pad(10f)
-        dialog.row()
-        dialog.add(buttons).pad(0f, 10f, 10f, 10f).right()
-
-        if (dialog.stage == null) {
-            stage.addActor(dialog)
-        }
-        dialog.pack()
-        dialog.centerWindow()
-        dialog.fadeIn()
+    private fun applyButtonStyle(button: AppImageTextButton, icon: Drawable) {
+        val style = button.style
+        val background = buttonUpDrawable()
+        style.up = background
+        style.down = background
+        style.checked = background
+        style.over = background
+        style.imageUp = icon
+        style.imageDown = icon
+        style.imageChecked = icon
+        style.imageOver = icon
+        style.fontColor = Color.BLACK
+        style.checkedFontColor = Color.BLACK
+        style.overFontColor = Color.BLACK
+        button.style = style
+        button.setText("")
+        button.image?.drawable = icon
+        button.imageCell?.size((toolbarButtonSize - 4f).coerceAtLeast(12f))
     }
 
-    private fun syncFromState() {
-        syncing = true
-        val snapshot = statusProvider()
-
-        addModeSelect.selected = addModeProvider()
-        uiScaleSelect.selected = uiScaleLabel(uiScaleProvider())
-        cameraButtons.forEach { (mode, button) ->
-            button.isChecked = cameraModeProvider() == mode
-        }
-        cameraInteractionButtons.forEach { (mode, button) ->
-            button.isChecked = cameraInteractionModeProvider() == mode
-        }
-        toolButtons.forEach { (index, button) ->
-            button.isChecked = activeToolIndexProvider() == index
-        }
-        currentColorPreview.selected = false
-
-        fileLabel.setText("File: ${snapshot.fileName}")
-        cameraLabel.setText("Camera: ${snapshot.cameraMode} | Add: ${snapshot.addMode}")
-        toolLabel.setText("Tool: ${snapshot.activeTool}")
-        countsLabel.setText(
-            "Cubes: ${snapshot.cubeCount} | Selection: ${snapshot.selectionCount} | Guides: ${snapshot.guideCount}"
-        )
-        messageLabel.setText("Message: ${snapshot.message}")
-        cursorLabel.setText(snapshot.cursor)
-        rebuildToolOperatorsIfNeeded(snapshot.activeTool)
-        syncing = false
-    }
-
-    private fun rebuildToolOperatorsIfNeeded(toolName: String) {
-        val operators = toolOperatorsProvider()
-        val signature = buildString {
-            append(toolName)
-            operators.forEach { operator ->
-                append('|')
-                append(operator.label)
-                append(':')
-                append(operator.active())
-                append(':')
-                append(operator.enabled())
-            }
-        }
-        if (signature == toolOperatorsSignature) {
+    private fun loadIconDrawables() {
+        val mappingFile = Gdx.files.internal("icons.mapping.csv")
+        val textureFile = when (toolbarIconSizePx) {
+            48 -> listOf("icons-48px.png", "icons.48.png")
+            64 -> listOf("icons-64px.png", "icons.64.png")
+            else -> listOf("icons-32px.png", "icons.png")
+        }.map { Gdx.files.internal(it) }.firstOrNull { it.exists() } ?: return
+        if (!mappingFile.exists()) {
             return
         }
-        toolOperatorsSignature = signature
-        toolOperatorsContent.clearChildren()
-
-        val activeToolName = VisTextButton(toolName.ifBlank { "-" }, "toggle")
-        activeToolName.isDisabled = true
-        activeToolName.label.setWrap(true)
-        toolOperatorsContent.add(activeToolName).growX().left().padBottom(6f)
-        toolOperatorsContent.row()
-
-        operators.forEach { operator ->
-            val label = if (operator.active()) "* ${operator.label}" else operator.label
-            val button = VisTextButton(label)
-            button.isDisabled = !operator.enabled()
-            button.label.setWrap(true)
-            button.addListener(onChange {
-                if (operator.enabled()) {
-                    operator.action()
-                    toolOperatorsSignature = ""
-                }
-            })
-            toolOperatorsContent.add(button).growX().left().padBottom(4f)
-            toolOperatorsContent.row()
+        val texture = Texture(textureFile)
+        ownedTextures += texture
+        val coordStartIndex = when (toolbarIconSizePx) {
+            48 -> 8
+            64 -> 12
+            else -> 4
         }
-        toolOperatorsContent.invalidateHierarchy()
-    }
-
-    private fun fixedWindow(title: String): VisWindow {
-        return VisWindow(title).apply {
-            setName(title)
-            isMovable = false
-            isResizable = false
-            isModal = false
-            setKeepWithinParent(false)
+        mappingFile.readString("UTF-8").lineSequence().drop(1).forEach { line ->
+            val parts = line.split('|')
+            if (parts.size < coordStartIndex + 4) {
+                return@forEach
+            }
+            val name = parts[1].trim()
+            if (name.isBlank() || name.startsWith("Undefined")) {
+                return@forEach
+            }
+            val startX = parts[coordStartIndex].toIntOrNull() ?: return@forEach
+            val endX = parts[coordStartIndex + 1].toIntOrNull() ?: return@forEach
+            val startY = parts[coordStartIndex + 2].toIntOrNull() ?: return@forEach
+            val endY = parts[coordStartIndex + 3].toIntOrNull() ?: return@forEach
+            iconDrawables[name] = TextureRegionDrawable(TextureRegion(texture, startX, startY, endX - startX + 1, endY - startY + 1))
         }
     }
 
-    private fun uiScaleLabel(scale: Float): String {
-        return when (normalizeUiScale(scale)) {
-            1.5f -> "1.5x"
-            2f -> "2x"
-            else -> "1x"
+    private fun iconFor(name: String, fallback: Drawable): TextureRegionDrawable {
+        return iconDrawables[name] ?: (fallback as? TextureRegionDrawable) ?: createActionIconDrawable(Color.DARK_GRAY)
+    }
+
+    private fun iconNameForTool(toolName: String): String {
+        return when (toolName.lowercase()) {
+            "select2", "select" -> "select"
+            "move" -> "move"
+            "copy" -> "copy"
+            "rotate" -> "rotate"
+            "copyrot" -> "rotate_copy"
+            "voxel" -> "voxel"
+            "segment" -> "segment"
+            "polyline" -> "polyline"
+            "arc" -> "arc"
+            "circle" -> "circle"
+            "plane" -> "plane"
+            "sphere" -> "sphere"
+            "cloud" -> "fuzzy_sphere"
+            "ball" -> "hollow_sphere"
+            "frame" -> "frame"
+            "shell" -> "shell"
+            "volume" -> "volume"
+            "axial grid" -> "view_top"
+            "planar grid" -> "plane"
+            "import vxdi" -> "file_open"
+            else -> "select"
         }
     }
 
-    private fun parseUiScaleLabel(label: String?): Float {
-        return when (label) {
-            "1.5x" -> 1.5f
-            "2x" -> 2f
-            else -> 1f
+    private fun iconNameForCameraMode(mode: CameraMode): String {
+        return when (mode) {
+            CameraMode.ORBIT -> "camera_perspective"
+            CameraMode.WALKTHROUGH -> "camera_walkthrough"
+            CameraMode.ORTHOGRAPHIC -> "camera_orthogonal"
         }
     }
 
-    private fun normalizeUiScale(scale: Float): Float {
-        return when {
-            scale >= 1.75f -> 2f
-            scale >= 1.25f -> 1.5f
-            else -> 1f
+    private fun iconNameForCameraInteractionMode(mode: CameraInteractionMode): String {
+        return when (mode) {
+            CameraInteractionMode.TOOL -> "select"
+            CameraInteractionMode.ROTATE -> "camera_rotate"
+            CameraInteractionMode.PAN -> "camera_pan"
+            CameraInteractionMode.ZOOM -> "camera_zoom"
         }
+    }
+
+    private fun iconNameForView(view: OrthographicView): String {
+        return when (view) {
+            OrthographicView.TOP, OrthographicView.BOTTOM -> "view_top"
+            OrthographicView.FRONT -> "view_front"
+            OrthographicView.LEFT -> "view_left"
+            OrthographicView.RIGHT -> "view_right"
+            OrthographicView.BACK -> "view_back"
+        }
+    }
+
+    private fun isModificationTool(toolName: String): Boolean {
+        return toolName.lowercase() in setOf("select2", "select", "move", "copy", "rotate", "copyrot")
+    }
+
+    private fun createActionIconDrawable(color: Color): TextureRegionDrawable {
+        val pixmap = Pixmap(32, 32, Pixmap.Format.RGBA8888)
+        pixmap.setColor(color)
+        pixmap.fillRectangle(5, 5, 22, 22)
+        pixmap.setColor(Color.WHITE)
+        pixmap.drawRectangle(5, 5, 22, 22)
+        val texture = Texture(pixmap)
+        pixmap.dispose()
+        ownedTextures += texture
+        return TextureRegionDrawable(TextureRegion(texture))
+    }
+
+    private fun buttonUpDrawable(): TextureRegionDrawable = createSolidBorderDrawable(Color.WHITE, Color(0.55f, 0.55f, 0.55f, 1f))
+
+    private fun darkBarDrawable(): TextureRegionDrawable = createSolidBorderDrawable(Color.valueOf("555555"), Color.valueOf("555555"))
+
+    private fun darkPanelDrawable(): TextureRegionDrawable = createSolidBorderDrawable(Color.valueOf("555555"), Color.valueOf("555555"))
+
+    private fun dockOpenDrawable(): TextureRegionDrawable = createSolidBorderDrawable(Color.valueOf("168ccc"), Color.valueOf("168ccc"))
+
+    private fun dockClosedDrawable(): TextureRegionDrawable = createSolidBorderDrawable(Color.valueOf("3c4650"), Color.valueOf("657380"))
+
+    private fun createSolidBorderDrawable(fill: Color, border: Color): TextureRegionDrawable {
+        val pixmap = Pixmap(16, 16, Pixmap.Format.RGBA8888)
+        pixmap.setColor(fill)
+        pixmap.fill()
+        pixmap.setColor(border)
+        pixmap.drawRectangle(0, 0, 16, 16)
+        val texture = Texture(pixmap)
+        pixmap.dispose()
+        ownedTextures += texture
+        return TextureRegionDrawable(TextureRegion(texture))
     }
 
     private fun createWhiteTexture(): Texture {
@@ -635,12 +1083,62 @@ class VoxcraftUiOverlay(
         }
     }
 
+    private fun viewportWidth(): Float = if (stage.viewport.screenWidth > 0) stage.viewport.screenWidth.toFloat() else Gdx.graphics.width.toFloat()
+
+    private fun viewportHeight(): Float = if (stage.viewport.screenHeight > 0) stage.viewport.screenHeight.toFloat() else Gdx.graphics.height.toFloat()
+
+    private fun normalizeUiScale(scale: Float): Float {
+        return when {
+            scale >= 1.75f -> 2f
+            scale >= 1.25f -> 1.5f
+            else -> 1f
+        }
+    }
+
+    private fun uiScaleLabel(scale: Float): String {
+        return when (normalizeUiScale(scale)) {
+            1.5f -> "1.5x"
+            2f -> "2x"
+            else -> "1x"
+        }
+    }
+
+    private fun parseUiScaleLabel(label: String?): Float {
+        return when (label) {
+            "1.5x" -> 1.5f
+            "2x" -> 2f
+            else -> 1f
+        }
+    }
+
+    private fun parseToolbarSize(label: String?): Int {
+        return when (label) {
+            "48 x 48 px" -> 48
+            "64 x 64 px" -> 64
+            else -> 32
+        }
+    }
+
+    private fun toolbarSizeLabel(size: Int): String {
+        return when (size.coerceToToolbarIconSize()) {
+            48 -> "48 x 48 px"
+            64 -> "64 x 64 px"
+            else -> "32 x 32 px"
+        }
+    }
+
+    private fun Int.coerceToToolbarIconSize(): Int {
+        return when {
+            this >= 56 -> 64
+            this >= 40 -> 48
+            else -> 32
+        }
+    }
+
     private class ColorChip(
         private val texture: Texture,
         val colorProvider: () -> Color
     ) : Actor() {
-        var selected: Boolean = false
-
         init {
             setSize(28f, 28f)
         }
@@ -650,18 +1148,11 @@ class VoxcraftUiOverlay(
             val original = batch.color.cpy()
             batch.color = Color(base.r, base.g, base.b, base.a * parentAlpha)
             batch.draw(texture, x, y, width, height)
-
-            val outline = if (selected) {
-                Color(1f, 0.85f, 0.2f, parentAlpha)
-            } else {
-                Color(0f, 0f, 0f, 0.55f * parentAlpha)
-            }
-            batch.color = outline
-            val thickness = if (selected) 3f else 1f
-            batch.draw(texture, x, y, width, thickness)
-            batch.draw(texture, x, y + height - thickness, width, thickness)
-            batch.draw(texture, x, y, thickness, height)
-            batch.draw(texture, x + width - thickness, y, thickness, height)
+            batch.color = Color(0f, 0f, 0f, 0.55f * parentAlpha)
+            batch.draw(texture, x, y, width, 1f)
+            batch.draw(texture, x, y + height - 1f, width, 1f)
+            batch.draw(texture, x, y, 1f, height)
+            batch.draw(texture, x + width - 1f, y, 1f, height)
             batch.color = original
         }
 
