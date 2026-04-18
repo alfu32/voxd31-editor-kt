@@ -1673,4 +1673,4 @@
 # Volume -37 13 -39 -51 13 -53 d9ff0056
 /fill -37 13 -39 -51 13 -53 minecraft:stone
 # Volume -37 19 -54 -51 19 -38 d9ff00c4
-/fill -37 19 -54 -51 19 -38 minecraft:stone
+/fill -37 19 -54 -51 19 -38 minecraft:stone//move -91 0 -12 -196 0 -123

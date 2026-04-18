@@ -222,6 +222,7 @@ class VoxcraftUiOverlay(
     private val whiteTexture = createWhiteTexture()
     private val ownedTextures = mutableListOf<Texture>()
     private val toolbarEntries = linkedMapOf<String, CollapsibleWindow>()
+    private val toolbarContents = linkedMapOf<String, VisTable>()
     private val toolGroup = ButtonGroup<AppImageTextButton>()
     private val toolButtons = linkedMapOf<Int, AppImageTextButton>()
     private val buttonLabels = mutableMapOf<AppImageTextButton, String>()
@@ -249,6 +250,7 @@ class VoxcraftUiOverlay(
     private var toolOperatorsSignature = ""
     private var syncing = false
     private var toolbarsPositioned = false
+    private var expandedToolbarId: String? = null
     private var toolbarIconSizePx = prefs.getInteger("toolbar.iconSize", 32).coerceToToolbarIconSize()
     private var toolbarButtonSize = toolbarIconSizePx.toFloat()
     private var toolbarAutoCollapse = prefs.getBoolean("toolbar.autoCollapse", false)
@@ -316,6 +318,7 @@ class VoxcraftUiOverlay(
     private fun buildToolbars() {
         toolbarEntries.values.forEach { it.remove() }
         toolbarEntries.clear()
+        toolbarContents.clear()
         toolButtons.clear()
         cameraButtons.clear()
         cameraInteractionButtons.clear()
@@ -324,21 +327,43 @@ class VoxcraftUiOverlay(
         buttonMarkers.clear()
         toolGroup.buttons.clear()
 
-        registerToolbar("functions", buildFunctionsToolbar())
-        registerToolbar("modification", buildToolsToolbar("Modification", true))
-        registerToolbar("construction", buildToolsToolbar("Construction", false))
-        registerToolbar("camera", buildCameraToolbar())
-        registerToolbar("cubes", buildCubesToolbar())
-        registerToolbar("in_tool", buildToolOperatorsToolbar())
+        val functions = buildFunctionsToolbar()
+        registerToolbar("functions", functions.first, functions.second)
+        val modification = buildToolsToolbar("Modification", true)
+        registerToolbar("modification", modification.first, modification.second)
+        val construction = buildToolsToolbar("Construction", false)
+        registerToolbar("construction", construction.first, construction.second)
+        val camera = buildCameraToolbar()
+        registerToolbar("camera", camera.first, camera.second)
+        val cubes = buildCubesToolbar()
+        registerToolbar("cubes", cubes.first, cubes.second)
+        val inTool = buildToolOperatorsToolbar()
+        registerToolbar("in_tool", inTool.first, inTool.second)
         toolbarsPositioned = false
     }
 
-    private fun registerToolbar(id: String, window: CollapsibleWindow) {
+    private fun registerToolbar(id: String, window: CollapsibleWindow, content: VisTable) {
         toolbarEntries[id] = window
+        toolbarContents[id] = content
+        window.addListener(object : ClickListener() {
+            override fun enter(event: InputEvent?, x: Float, y: Float, pointer: Int, fromActor: Actor?) {
+                if (pointer == -1 && toolbarAutoCollapse) {
+                    expandedToolbarId = id
+                    updateAutoCollapsedToolbars()
+                }
+            }
+
+            override fun exit(event: InputEvent?, x: Float, y: Float, pointer: Int, toActor: Actor?) {
+                if (pointer == -1 && expandedToolbarId == id) {
+                    expandedToolbarId = null
+                    updateAutoCollapsedToolbars()
+                }
+            }
+        })
         stage.addActor(window)
     }
 
-    private fun buildFunctionsToolbar(): CollapsibleWindow {
+    private fun buildFunctionsToolbar(): Pair<CollapsibleWindow, VisTable> {
         val window = CollapsibleWindow("Functions")
         val content = VisTable()
         content.defaults().pad(0f)
@@ -357,10 +382,10 @@ class VoxcraftUiOverlay(
         ).forEach { content.add(it).size(toolbarButtonSize, toolbarButtonSize) }
         window.add(content).pad(0f).left()
         window.pack()
-        return window
+        return window to content
     }
 
-    private fun buildToolsToolbar(title: String, modification: Boolean): CollapsibleWindow {
+    private fun buildToolsToolbar(title: String, modification: Boolean): Pair<CollapsibleWindow, VisTable> {
         val window = CollapsibleWindow(title)
         val content = VisTable()
         content.defaults().pad(0f)
@@ -384,10 +409,10 @@ class VoxcraftUiOverlay(
         }
         window.add(content).pad(0f).left()
         window.pack()
-        return window
+        return window to content
     }
 
-    private fun buildCameraToolbar(): CollapsibleWindow {
+    private fun buildCameraToolbar(): Pair<CollapsibleWindow, VisTable> {
         val window = CollapsibleWindow("Camera")
         val content = VisTable()
         content.defaults().pad(0f)
@@ -428,10 +453,10 @@ class VoxcraftUiOverlay(
         }
         window.add(content).pad(0f).left()
         window.pack()
-        return window
+        return window to content
     }
 
-    private fun buildCubesToolbar(): CollapsibleWindow {
+    private fun buildCubesToolbar(): Pair<CollapsibleWindow, VisTable> {
         val window = CollapsibleWindow("Cubes")
         val content = VisTable()
         content.defaults().pad(2f)
@@ -459,16 +484,16 @@ class VoxcraftUiOverlay(
         }
         window.add(content).pad(2f).left()
         window.pack()
-        return window
+        return window to content
     }
 
-    private fun buildToolOperatorsToolbar(): CollapsibleWindow {
+    private fun buildToolOperatorsToolbar(): Pair<CollapsibleWindow, VisTable> {
         val window = CollapsibleWindow("In-Tool Operators")
         inToolOperatorsContent = VisTable()
         inToolOperatorsContent.defaults().pad(0f)
         window.add(inToolOperatorsContent).pad(0f).left()
         window.pack()
-        return window
+        return window to inToolOperatorsContent
     }
 
     private fun buildRightDock() {
@@ -821,11 +846,55 @@ class VoxcraftUiOverlay(
     }
 
     private fun applyToolbarCompactState() {
+        toolbarEntries.values.forEach { it.setCompactTitle(toolbarAutoCollapse) }
         if (!toolbarAutoCollapse) {
-            toolbarEntries.values.forEach { it.setCompactTitle(false) }
-            return
+            expandedToolbarId = null
         }
-        toolbarEntries.values.forEach { it.setCompactTitle(true) }
+        updateAutoCollapsedToolbars()
+    }
+
+    private fun updateAutoCollapsedToolbars() {
+        toolbarEntries.forEach { (id, window) ->
+            val content = toolbarContents[id] ?: return@forEach
+            val representative = representativeActorForToolbar(id, content)
+            val collapsed = toolbarAutoCollapse && expandedToolbarId != id && representative != null
+            var changed = false
+            content.children.forEach { child ->
+                val nextVisible = !collapsed || child === representative
+                if (child.isVisible != nextVisible) {
+                    child.isVisible = nextVisible
+                    changed = true
+                }
+            }
+            if (changed) {
+                val oldTop = window.y + window.height
+                content.invalidateHierarchy()
+                window.invalidateHierarchy()
+                window.pack()
+                window.setY(oldTop - window.height)
+            }
+        }
+    }
+
+    private fun representativeActorForToolbar(id: String, content: VisTable): Actor? {
+        fun contains(actor: Actor): Boolean = content.children.contains(actor, true)
+        return when (id) {
+            "modification", "construction" ->
+                toolButtons.entries.firstOrNull { (_, button) -> contains(button) && button.isChecked }?.value
+                    ?: content.children.firstOrNull { it is AppImageTextButton }
+
+            "camera" ->
+                cameraButtons.entries.firstOrNull { (_, button) -> contains(button) && button.isChecked }?.value
+                    ?: cameraInteractionButtons.entries.firstOrNull { (_, button) -> contains(button) && button.isChecked }?.value
+                    ?: content.children.firstOrNull { it is AppImageTextButton }
+
+            "cubes" ->
+                addModeButtons.entries.firstOrNull { (_, button) -> contains(button) && button.isChecked }?.value
+                    ?: content.children.firstOrNull { it is AppImageTextButton }
+                    ?: currentColorPreview
+
+            else -> content.children.firstOrNull { it is AppImageTextButton } ?: content.children.firstOrNull()
+        }
     }
 
     private fun updateButtonMarkers() {
@@ -842,6 +911,7 @@ class VoxcraftUiOverlay(
         addModeButtons.forEach { (mode, button) ->
             buttonMarkers[button]?.color = if (mode == addModeProvider()) Color(0.9f, 0.1f, 0.1f, 1f) else Color.WHITE
         }
+        updateAutoCollapsedToolbars()
     }
 
     private fun attachButtonMarker(button: AppImageTextButton) {
@@ -881,8 +951,10 @@ class VoxcraftUiOverlay(
         window.add(VisLabel(text)).pad(6f)
         stage.addActor(window)
         window.pack()
-        val pos = anchor.localToStageCoordinates(Vector2(0f, anchor.height))
-        window.setPosition(pos.x, pos.y + 4f)
+        val pos = anchor.localToStageCoordinates(Vector2(0f, 0f))
+        val x = pos.x.coerceIn(0f, (viewportWidth() - window.width).coerceAtLeast(0f))
+        val y = (pos.y - window.height - 4f).coerceAtLeast(24f)
+        window.setPosition(x, y)
         window.toFront()
     }
 
