@@ -510,4 +510,17 @@
 # Volume 36 12 -4 34 0 3 c4ff00ff
 /fill 36 12 -4 34 0 3 minecraft:stone
 # Volume 37 12 4 44 0 6 c4ff00ff
-/fill 37 12 4 44 0 6 minecraft:stone
+/fill 37 12 4 44 0 6 minecraft:stone//move -39 11 26 -39 13 26
+//move -29 17 26 -48 0 25
+//move -41 0 25 -41 14 25
+//move -41 13 25 -41 14 25
+//move -61 0 26 -42 0 27
+//copy -39 1 12 -39 1 13
+# Shell -30 15 24 -41 0 11 f2ff00ff
+/fill -30 15 24 -41 0 11 minecraft:stone
+/fill -29 16 25 -42 -1 10 air replace
+ 
+# Volume -29 0 10 -42 15 25 ff0000ff
+/fill -29 0 10 -42 15 25 minecraft:stone
+# Volume -30 1 24 -41 1 11 ff0000ff
+/fill -30 1 24 -41 1 11 minecraft:stone

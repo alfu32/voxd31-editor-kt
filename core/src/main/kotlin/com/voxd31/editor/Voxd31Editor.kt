@@ -1831,7 +1831,7 @@ class Voxd31Editor @JvmOverloads constructor(
         if (selected.cubes.isEmpty()) {
             return
         }
-        val bounds = BoundingBox()
+        val bounds = BoundingBox().inf()
         selected.cubes.values.forEach { cube ->
             bounds.ext(cube.getBoundingBox())
         }

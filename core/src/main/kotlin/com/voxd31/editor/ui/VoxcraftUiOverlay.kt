@@ -281,6 +281,7 @@ class VoxcraftUiOverlay(
     fun act(delta: Float) {
         syncFromState()
         stage.act(delta)
+        updateToolbarHoverExpansion()
     }
 
     fun draw() {
@@ -357,13 +358,6 @@ class VoxcraftUiOverlay(
             override fun enter(event: InputEvent?, x: Float, y: Float, pointer: Int, fromActor: Actor?) {
                 if (pointer == -1 && toolbarAutoCollapse) {
                     expandedToolbarId = id
-                    updateAutoCollapsedToolbars()
-                }
-            }
-
-            override fun exit(event: InputEvent?, x: Float, y: Float, pointer: Int, toActor: Actor?) {
-                if (pointer == -1 && expandedToolbarId == id) {
-                    expandedToolbarId = null
                     updateAutoCollapsedToolbars()
                 }
             }
@@ -888,6 +882,24 @@ class VoxcraftUiOverlay(
             expandedToolbarId = null
         }
         updateAutoCollapsedToolbars()
+    }
+
+    private fun updateToolbarHoverExpansion() {
+        if (!toolbarAutoCollapse) {
+            return
+        }
+        val pointer = stage.screenToStageCoordinates(Vector2(Gdx.input.x.toFloat(), Gdx.input.y.toFloat()))
+        val hoveredId = toolbarEntries.entries.firstOrNull { (_, window) ->
+            window.isVisible &&
+                pointer.x >= window.x &&
+                pointer.x <= window.x + window.width &&
+                pointer.y >= window.y &&
+                pointer.y <= window.y + window.height
+        }?.key
+        if (hoveredId != expandedToolbarId) {
+            expandedToolbarId = hoveredId
+            updateAutoCollapsedToolbars()
+        }
     }
 
     private fun updateAutoCollapsedToolbars() {
