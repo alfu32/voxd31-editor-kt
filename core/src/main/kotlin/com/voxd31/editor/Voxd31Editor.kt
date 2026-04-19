@@ -1789,6 +1789,9 @@ class Voxd31Editor @JvmOverloads constructor(
         val maxY = maxOf(startRaw.y, endRaw.y)
         return scene.cubes.values.filter { cube ->
             val bounds = cube.getBoundingBox()
+            if (!activeCamera.frustum.boundsInFrustum(bounds)) {
+                return@filter false
+            }
             val corners = arrayOf(
                 Vector3(bounds.min.x, bounds.min.y, bounds.min.z),
                 Vector3(bounds.min.x, bounds.min.y, bounds.max.z),
@@ -1803,19 +1806,45 @@ class Voxd31Editor @JvmOverloads constructor(
             var projectedMaxX = Float.NEGATIVE_INFINITY
             var projectedMinY = Float.POSITIVE_INFINITY
             var projectedMaxY = Float.NEGATIVE_INFINITY
+            var visibleCornerCount = 0
             corners.forEach { corner ->
                 val projected = activeCamera.project(Vector3(corner))
+                if (projected.z !in 0f..1f) {
+                    return@forEach
+                }
                 val rawY = Gdx.graphics.height.toFloat() - projected.y
                 projectedMinX = minOf(projectedMinX, projected.x)
                 projectedMaxX = maxOf(projectedMaxX, projected.x)
                 projectedMinY = minOf(projectedMinY, rawY)
                 projectedMaxY = maxOf(projectedMaxY, rawY)
+                visibleCornerCount++
             }
-            projectedMaxX >= minX &&
+            visibleCornerCount > 0 &&
+                projectedMaxX >= minX &&
                 projectedMinX <= maxX &&
                 projectedMaxY >= minY &&
                 projectedMinY <= maxY
         }
+    }
+
+    private fun drawSelectionBoundingBox() {
+        if (selected.cubes.isEmpty()) {
+            return
+        }
+        val bounds = BoundingBox()
+        selected.cubes.values.forEach { cube ->
+            bounds.ext(cube.getBoundingBox())
+        }
+        val pad = 0.08f
+        shapeRenderer.color = Color(1f, 0.95f, 0.05f, 1f)
+        shapeRenderer.box(
+            bounds.min.x - pad,
+            bounds.min.y - pad,
+            bounds.max.z + pad,
+            bounds.width + pad * 2f,
+            bounds.height + pad * 2f,
+            bounds.depth + pad * 2f
+        )
     }
 
     private fun pickOrbitModelPoint(screenX: Int, screenY: Int): Vector3? {
@@ -1932,6 +1961,7 @@ class Voxd31Editor @JvmOverloads constructor(
             val bb=cub.getBoundingBox()
             shapeRenderer.box(bb.min.x,bb.min.y,bb.max.z,bb.width,bb.height,bb.depth)
         }
+        drawSelectionBoundingBox()
         activeTool?.drawWorldOverlay(shapeRenderer)
 
         if(currentEvent.modelVoxel != null ) {

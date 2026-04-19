@@ -128,7 +128,7 @@ open class EditorTool(
             val dragThresholdSq = 49f
             val doubleClickThresholdMs = 350L
             var pointerDown = false
-            var pointerDownOnGround = false
+            var pointerDownOnEmpty = false
             var draggingWindow = false
             var volumeSelectionStart: Vector3? = null
             var lastClickedSceneCubeId: String? = null
@@ -136,6 +136,9 @@ open class EditorTool(
             var lastClickWasSelectedBeforeAction = false
 
             fun isSceneCube(event: Vox3Event): com.voxd31.gdxui.Cube? {
+                if (event.hitType == "ground" || event.hitType == "guide" || event.hitType == "origin") {
+                    return null
+                }
                 val target = event.target ?: return null
                 return scene.cubes[target.getId()]
             }
@@ -233,7 +236,7 @@ open class EditorTool(
                         return
                     }
                     pointerDown = true
-                    pointerDownOnGround = isSceneCube(event) == null
+                    pointerDownOnEmpty = isSceneCube(event) == null
                     draggingWindow = false
                     event.screen?.let {
                         dragStartStage.set(it)
@@ -246,7 +249,7 @@ open class EditorTool(
                 }
 
                 override fun touchDragged(event: Vox3Event) {
-                    if (!pointerDown || !pointerDownOnGround) {
+                    if (!pointerDown || !pointerDownOnEmpty) {
                         return
                     }
                     event.screen?.let { dragCurrentStage.set(it) }
@@ -318,7 +321,7 @@ open class EditorTool(
                         return
                     }
 
-                    if (pointerDownOnGround && releasePoint != null) {
+                    if (pointerDownOnEmpty && releasePoint != null) {
                         volumeSelectionStart = releasePoint
                         updateHoverFeedback(event)
                     } else {
@@ -354,7 +357,7 @@ open class EditorTool(
 
                 override fun reset() {
                     pointerDown = false
-                    pointerDownOnGround = false
+                    pointerDownOnEmpty = false
                     draggingWindow = false
                     volumeSelectionStart = null
                     feedback.clear()
