@@ -157,17 +157,19 @@ object MeshIo {
         format: ExportFormat,
         settings: ExportSettings = ExportSettings()
     ): ByteArray {
+        val mesh = buildIndexedMesh(triangles, 1f)
+        validateIndexedMesh(mesh, format)
         return when (format) {
-            ExportFormat.OBJ -> writeObj(triangles).toByteArray(StandardCharsets.UTF_8)
-            ExportFormat.STL_ASCII -> writeStlAscii(triangles).toByteArray(StandardCharsets.UTF_8)
-            ExportFormat.STL_BINARY -> writeStlBinary(triangles)
-            ExportFormat.FBX -> writeFbxAscii(triangles).toByteArray(StandardCharsets.UTF_8)
-            ExportFormat.GLTF -> writeGltf(triangles)
-            ExportFormat.GLB -> writeGlb(triangles)
-            ExportFormat.DAE -> writeCollada(triangles, settings.unit).toByteArray(StandardCharsets.UTF_8)
-            ExportFormat.DXF -> writeDxf(triangles, emptyList(), settings.unit).toByteArray(StandardCharsets.UTF_8)
-            ExportFormat.THREE_MF -> write3mf(triangles, settings.threeMf)
-            ExportFormat.AMF -> writeAmf(triangles, settings.unit).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.OBJ -> writeObj(mesh).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.STL_ASCII -> writeStlAscii(indexedMeshToTriangles(mesh)).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.STL_BINARY -> writeStlBinary(indexedMeshToTriangles(mesh))
+            ExportFormat.FBX -> writeFbxAscii(mesh).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.GLTF -> writeGltf(mesh)
+            ExportFormat.GLB -> writeGlb(mesh)
+            ExportFormat.DAE -> writeCollada(mesh, settings.unit).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.DXF -> writeDxf(indexedMeshToTriangles(mesh), emptyList(), settings.unit).toByteArray(StandardCharsets.UTF_8)
+            ExportFormat.THREE_MF -> write3mf(mesh, settings.threeMf)
+            ExportFormat.AMF -> writeAmf(mesh, settings.unit).toByteArray(StandardCharsets.UTF_8)
         }
     }
 
@@ -1215,19 +1217,17 @@ object MeshIo {
         return out
     }
 
-    private fun writeObj(triangles: List<Triangle>): String {
+    private fun writeObj(mesh: IndexedMesh): String {
         val sb = StringBuilder()
         sb.append("# Octodraw OBJ export\n")
-        var vertexIndex = 1
-        triangles.forEach { tri ->
-            appendObjVertex(sb, tri.a)
-            appendObjVertex(sb, tri.b)
-            appendObjVertex(sb, tri.c)
+        mesh.vertices.forEach { vertex ->
+            appendObjVertex(sb, vertex)
+        }
+        mesh.triangles.forEach { tri ->
             sb.append("f ")
-                .append(vertexIndex).append(' ')
-                .append(vertexIndex + 1).append(' ')
-                .append(vertexIndex + 2).append('\n')
-            vertexIndex += 3
+                .append(tri.v1 + 1).append(' ')
+                .append(tri.v2 + 1).append(' ')
+                .append(tri.v3 + 1).append('\n')
         }
         return sb.toString()
     }
@@ -1286,26 +1286,24 @@ object MeshIo {
         return buffer.array()
     }
 
-    private fun writeFbxAscii(triangles: List<Triangle>): String {
-        val vertexCount = triangles.size * 3
-        val polygonIndexCount = triangles.size * 3
+    private fun writeFbxAscii(mesh: IndexedMesh): String {
+        val vertexCount = mesh.vertices.size
+        val polygonIndexCount = mesh.triangles.size * 3
         val vertices = StringBuilder(max(128, vertexCount * 24))
         val indices = StringBuilder(max(128, polygonIndexCount * 6))
-        var vertexIndex = 0
-        triangles.forEach { tri ->
-            listOf(tri.a, tri.b, tri.c).forEach { v ->
-                if (vertices.isNotEmpty()) vertices.append(',')
-                vertices.append(fmt(v.x)).append(',').append(fmt(v.y)).append(',').append(fmt(v.z))
-            }
+        mesh.vertices.forEach { vertex ->
+            if (vertices.isNotEmpty()) vertices.append(',')
+            vertices.append(fmt(vertex.x)).append(',').append(fmt(vertex.y)).append(',').append(fmt(vertex.z))
+        }
+        mesh.triangles.forEach { tri ->
             if (indices.isNotEmpty()) {
                 indices.append(',')
             }
-            indices.append(vertexIndex)
+            indices.append(tri.v1)
                 .append(',')
-                .append(vertexIndex + 1)
+                .append(tri.v2)
                 .append(',')
-                .append(-(vertexIndex + 2) - 1)
-            vertexIndex += 3
+                .append(-(tri.v3) - 1)
         }
 
         val geometryId = 100000L
@@ -1345,8 +1343,8 @@ object MeshIo {
         return sb.toString()
     }
 
-    private fun writeGltf(triangles: List<Triangle>): ByteArray {
-        val packed = packPositionsAndIndices(triangles)
+    private fun writeGltf(mesh: IndexedMesh): ByteArray {
+        val packed = packPositionsAndIndices(mesh)
         val json = buildGltfJson(
             vertexCount = packed.vertexCount,
             indexCount = packed.indexCount,
@@ -1359,8 +1357,8 @@ object MeshIo {
         return json.toByteArray(StandardCharsets.UTF_8)
     }
 
-    private fun writeGlb(triangles: List<Triangle>): ByteArray {
-        val packed = packPositionsAndIndices(triangles)
+    private fun writeGlb(mesh: IndexedMesh): ByteArray {
+        val packed = packPositionsAndIndices(mesh)
         val jsonText = buildGltfJson(
             vertexCount = packed.vertexCount,
             indexCount = packed.indexCount,
@@ -1396,9 +1394,9 @@ object MeshIo {
         val max: Vector3
     )
 
-    private fun packPositionsAndIndices(triangles: List<Triangle>): PackedMesh {
-        val vertexCount = triangles.size * 3
-        val indexCount = triangles.size * 3
+    private fun packPositionsAndIndices(mesh: IndexedMesh): PackedMesh {
+        val vertexCount = mesh.vertices.size
+        val indexCount = mesh.triangles.size * 3
         val positionBytes = vertexCount * 12
         val indicesOffset = align4(positionBytes)
         val indexBytes = indexCount * 4
@@ -1406,24 +1404,24 @@ object MeshIo {
         val buffer = ByteBuffer.allocate(totalBytes).order(ByteOrder.LITTLE_ENDIAN)
         val minV = Vector3(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
         val maxV = Vector3(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY)
-        triangles.forEach { tri ->
-            listOf(tri.a, tri.b, tri.c).forEach { v ->
-                minV.x = min(minV.x, v.x)
-                minV.y = min(minV.y, v.y)
-                minV.z = min(minV.z, v.z)
-                maxV.x = max(maxV.x, v.x)
-                maxV.y = max(maxV.y, v.y)
-                maxV.z = max(maxV.z, v.z)
-                buffer.putFloat(v.x)
-                buffer.putFloat(v.y)
-                buffer.putFloat(v.z)
-            }
+        mesh.vertices.forEach { vertex ->
+            minV.x = min(minV.x, vertex.x)
+            minV.y = min(minV.y, vertex.y)
+            minV.z = min(minV.z, vertex.z)
+            maxV.x = max(maxV.x, vertex.x)
+            maxV.y = max(maxV.y, vertex.y)
+            maxV.z = max(maxV.z, vertex.z)
+            buffer.putFloat(vertex.x)
+            buffer.putFloat(vertex.y)
+            buffer.putFloat(vertex.z)
         }
         while (buffer.position() < indicesOffset) {
             buffer.put(0)
         }
-        for (i in 0 until indexCount) {
-            buffer.putInt(i)
+        mesh.triangles.forEach { tri ->
+            buffer.putInt(tri.v1)
+            buffer.putInt(tri.v2)
+            buffer.putInt(tri.v3)
         }
         return PackedMesh(
             binary = buffer.array(),
@@ -1476,10 +1474,9 @@ object MeshIo {
         return sb.toString()
     }
 
-    private fun writeCollada(triangles: List<Triangle>, unit: UnitExportSettings): String {
-        val points = triangles.flatMap { tri -> listOf(tri.a, tri.b, tri.c) }
-        val triCount = triangles.size
-        val floatCount = points.size * 3
+    private fun writeCollada(mesh: IndexedMesh, unit: UnitExportSettings): String {
+        val triCount = mesh.triangles.size
+        val floatCount = mesh.vertices.size * 3
         val sb = StringBuilder()
         sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         sb.append("<COLLADA xmlns=\"http://www.collada.org/2005/11/COLLADASchema\" version=\"1.4.1\">\n")
@@ -1492,20 +1489,20 @@ object MeshIo {
         sb.append("    <geometry id=\"mesh0\" name=\"mesh0\"><mesh>\n")
         sb.append("      <source id=\"mesh0-positions\">\n")
         sb.append("        <float_array id=\"mesh0-positions-array\" count=\"").append(floatCount).append("\">")
-        points.forEachIndexed { idx, v ->
+        mesh.vertices.forEachIndexed { idx, v ->
             if (idx > 0) sb.append(' ')
             sb.append(fmt(v.x)).append(' ').append(fmt(v.y)).append(' ').append(fmt(v.z))
         }
         sb.append("</float_array>\n")
         sb.append("        <technique_common><accessor source=\"#mesh0-positions-array\" count=\"")
-            .append(points.size)
+            .append(mesh.vertices.size)
             .append("\" stride=\"3\"><param name=\"X\" type=\"float\"/><param name=\"Y\" type=\"float\"/><param name=\"Z\" type=\"float\"/></accessor></technique_common>\n")
         sb.append("      </source>\n")
         sb.append("      <vertices id=\"mesh0-vertices\"><input semantic=\"POSITION\" source=\"#mesh0-positions\"/></vertices>\n")
         sb.append("      <triangles count=\"").append(triCount).append("\"><input semantic=\"VERTEX\" source=\"#mesh0-vertices\" offset=\"0\"/><p>")
-        for (i in points.indices) {
-            if (i > 0) sb.append(' ')
-            sb.append(i)
+        mesh.triangles.forEachIndexed { idx, tri ->
+            if (idx > 0) sb.append(' ')
+            sb.append(tri.v1).append(' ').append(tri.v2).append(' ').append(tri.v3)
         }
         sb.append("</p></triangles>\n")
         sb.append("    </mesh></geometry>\n")
@@ -1557,10 +1554,13 @@ object MeshIo {
 
     private data class EdgeUse(val triangleIndex: Int, val from: Int, val to: Int)
 
-    private fun write3mf(triangles: List<Triangle>, settings: ThreeMfExportSettings): ByteArray {
+    private fun write3mf(mesh: IndexedMesh, settings: ThreeMfExportSettings): ByteArray {
         val scale = settings.coordinateScale.coerceAtLeast(1e-9f)
-        val mesh = buildIndexedMesh(triangles, scale)
-        validateThreeMfMesh(mesh)
+        val scaledVertices = if (abs(scale - 1f) <= 1e-9f) {
+            mesh.vertices
+        } else {
+            mesh.vertices.map { vertex -> Vector3(vertex).scl(scale) }
+        }
         val modelXml = buildString {
             append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
             append("<model")
@@ -1570,7 +1570,7 @@ object MeshIo {
             append("    <object id=\"1\" type=\"model\">\n")
             append("      <mesh>\n")
             append("        <vertices>\n")
-            mesh.vertices.forEach { v ->
+            scaledVertices.forEach { v ->
                 append("          <vertex x=\"").append(fmt(v.x)).append("\" y=\"").append(fmt(v.y)).append("\" z=\"").append(fmt(v.z)).append("\"/>\n")
             }
             append("        </vertices>\n")
@@ -1647,9 +1647,9 @@ object MeshIo {
         return kotlin.math.round(value.toDouble() / step).toLong()
     }
 
-    private fun validateThreeMfMesh(mesh: IndexedMesh) {
+    private fun validateIndexedMesh(mesh: IndexedMesh, format: ExportFormat) {
         if (mesh.triangles.isEmpty()) {
-            throw IllegalArgumentException("3MF export failed: no triangles to export.")
+            throw IllegalArgumentException("${format.displayName()} export failed: no triangles to export.")
         }
         val areaToleranceSquared = 1e-10f
         val edgeUses = HashMap<EdgeKey, MutableList<EdgeUse>>(mesh.triangles.size * 2)
@@ -1673,7 +1673,7 @@ object MeshIo {
             registerEdge(edgeUses, index, triangle.v3, triangle.v1)
         }
         if (degenerateCount > 0) {
-            throw IllegalArgumentException("3MF export failed: mesh contains $degenerateCount degenerate triangle(s).")
+            throw IllegalArgumentException("${format.displayName()} export failed: mesh contains $degenerateCount degenerate triangle(s).")
         }
 
         var openEdgeCount = 0
@@ -1702,10 +1702,10 @@ object MeshIo {
             if (nonManifoldEdgeCount > 0) {
                 parts.add("$nonManifoldEdgeCount non-manifold edge(s)")
             }
-            throw IllegalArgumentException("3MF export failed: mesh is not manifold (${parts.joinToString(", ")}).")
+            throw IllegalArgumentException("${format.displayName()} export failed: mesh is not manifold (${parts.joinToString(", ")}).")
         }
         if (windingMismatchCount > 0) {
-            throw IllegalArgumentException("3MF export failed: mesh winding is inconsistent across $windingMismatchCount shared edge(s).")
+            throw IllegalArgumentException("${format.displayName()} export failed: mesh winding is inconsistent across $windingMismatchCount shared edge(s).")
         }
 
         val volumeTolerance = 1e-6
@@ -1733,10 +1733,10 @@ object MeshIo {
                 }
             }
             if (kotlin.math.abs(signedVolume) <= volumeTolerance) {
-                throw IllegalArgumentException("3MF export failed: mesh contains a zero-volume shell.")
+                throw IllegalArgumentException("${format.displayName()} export failed: mesh contains a zero-volume shell.")
             }
             if (signedVolume < 0.0) {
-                throw IllegalArgumentException("3MF export failed: mesh contains an inward-facing shell.")
+                throw IllegalArgumentException("${format.displayName()} export failed: mesh contains an inward-facing shell.")
             }
         }
     }
@@ -1759,8 +1759,7 @@ object MeshIo {
             ) / 6.0
     }
 
-    private fun writeAmf(triangles: List<Triangle>, unit: UnitExportSettings): String {
-        val points = triangles.flatMap { tri -> listOf(tri.a, tri.b, tri.c) }
+    private fun writeAmf(mesh: IndexedMesh, unit: UnitExportSettings): String {
         val sb = StringBuilder()
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         sb.append("<amf")
@@ -1768,22 +1767,46 @@ object MeshIo {
         sb.append(">\n")
         sb.append("  <object id=\"0\"><mesh>\n")
         sb.append("    <vertices>\n")
-        points.forEach { v ->
+        mesh.vertices.forEach { v ->
             sb.append("      <vertex><coordinates><x>").append(fmt(v.x)).append("</x><y>")
                 .append(fmt(v.y)).append("</y><z>").append(fmt(v.z))
                 .append("</z></coordinates></vertex>\n")
         }
         sb.append("    </vertices>\n")
         sb.append("    <volume>\n")
-        for (i in triangles.indices) {
-            val base = i * 3
-            sb.append("      <triangle><v1>").append(base).append("</v1><v2>")
-                .append(base + 1).append("</v2><v3>").append(base + 2).append("</v3></triangle>\n")
+        mesh.triangles.forEach { tri ->
+            sb.append("      <triangle><v1>").append(tri.v1).append("</v1><v2>")
+                .append(tri.v2).append("</v2><v3>").append(tri.v3).append("</v3></triangle>\n")
         }
         sb.append("    </volume>\n")
         sb.append("  </mesh></object>\n")
         sb.append("</amf>\n")
         return sb.toString()
+    }
+
+    private fun indexedMeshToTriangles(mesh: IndexedMesh): List<Triangle> {
+        return mesh.triangles.map { tri ->
+            Triangle(
+                Vector3(mesh.vertices[tri.v1]),
+                Vector3(mesh.vertices[tri.v2]),
+                Vector3(mesh.vertices[tri.v3])
+            )
+        }
+    }
+
+    private fun ExportFormat.displayName(): String {
+        return when (this) {
+            ExportFormat.OBJ -> "OBJ"
+            ExportFormat.STL_ASCII -> "STL ASCII"
+            ExportFormat.STL_BINARY -> "STL Binary"
+            ExportFormat.FBX -> "FBX"
+            ExportFormat.GLTF -> "glTF"
+            ExportFormat.GLB -> "GLB"
+            ExportFormat.DAE -> "DAE"
+            ExportFormat.DXF -> "DXF"
+            ExportFormat.THREE_MF -> "3MF"
+            ExportFormat.AMF -> "AMF"
+        }
     }
 
     private fun writeZipEntry(zip: ZipOutputStream, name: String, data: ByteArray) {

@@ -34,7 +34,7 @@ fun meshExportOptionForExtension(extension: String): MeshExportOption? {
 fun exportSceneMesh(scene: SceneController, format: MeshIo.ExportFormat, modelSettings: ModelSettings): ByteArray {
     val scale = modelSettings.unitSize.coerceAtLeast(1e-6f)
     val triangles = ArrayList<MeshIo.Triangle>(4096)
-    scene.collectVisibleTriangles { a, b, c, _ ->
+    scene.collectSolidTriangles { a, b, c ->
         triangles += MeshIo.Triangle(
             Vector3(a).scl(scale),
             Vector3(b).scl(scale),

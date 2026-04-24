@@ -44,6 +44,7 @@ class SceneController(val modelBuilder: ModelBuilder) {
 
     companion object {
         private const val CHUNK_SIZE = 16
+        private const val SOLID_EXPORT_KEY = 0
         private val TOP_NORMAL = Vector3(0f, 1f, 0f)
         private val BOTTOM_NORMAL = Vector3(0f, -1f, 0f)
         private val LEFT_NORMAL = Vector3(-1f, 0f, 0f)
@@ -182,6 +183,17 @@ class SceneController(val modelBuilder: ModelBuilder) {
                         consumer(corners[0], corners[1], corners[2], colorKey)
                         consumer(corners[0], corners[2], corners[3], colorKey)
                     }
+                }
+            }
+        }
+    }
+
+    fun collectSolidTriangles(consumer: (a: Vector3, b: Vector3, c: Vector3) -> Unit) {
+        collectChunkCoords().sortedWith(compareBy<ChunkCoord>({ it.x }, { it.y }, { it.z })).forEach { chunk ->
+            collectChunkFaces(chunk, solidExport = true).values.flatten().forEach { face ->
+                forEachRenderableFace(face) { corners, _ ->
+                    consumer(corners[0], corners[1], corners[2])
+                    consumer(corners[0], corners[2], corners[3])
                 }
             }
         }
@@ -445,18 +457,18 @@ class SceneController(val modelBuilder: ModelBuilder) {
         )
     }
 
-    private fun collectChunkFaces(chunk: ChunkCoord): Map<Int, MutableList<MergedFace>> {
+    private fun collectChunkFaces(chunk: ChunkCoord, solidExport: Boolean = false): Map<Int, MutableList<MergedFace>> {
         val facesByColor = linkedMapOf<Int, MutableList<MergedFace>>()
         val startX = chunk.x * CHUNK_SIZE
         val startY = chunk.y * CHUNK_SIZE
         val startZ = chunk.z * CHUNK_SIZE
 
-        appendTopFaces(facesByColor, startX, startY, startZ)
-        appendBottomFaces(facesByColor, startX, startY, startZ)
-        appendFrontFaces(facesByColor, startX, startY, startZ)
-        appendBackFaces(facesByColor, startX, startY, startZ)
-        appendRightFaces(facesByColor, startX, startY, startZ)
-        appendLeftFaces(facesByColor, startX, startY, startZ)
+        appendTopFaces(facesByColor, startX, startY, startZ, solidExport)
+        appendBottomFaces(facesByColor, startX, startY, startZ, solidExport)
+        appendFrontFaces(facesByColor, startX, startY, startZ, solidExport)
+        appendBackFaces(facesByColor, startX, startY, startZ, solidExport)
+        appendRightFaces(facesByColor, startX, startY, startZ, solidExport)
+        appendLeftFaces(facesByColor, startX, startY, startZ, solidExport)
 
         return facesByColor
     }
@@ -466,7 +478,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         startX: Int,
         startY: Int,
-        startZ: Int
+        startZ: Int,
+        solidExport: Boolean
     ) {
         for (y in startY until startY + CHUNK_SIZE) {
             stitchRectanglesToSharedGrid(
@@ -474,8 +487,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     val x = startX + lx
                     val z = startZ + lz
                     val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                    val colorKey = renderMaterialKey(cube)
-                    if (isOccludedBySameMaterial(x, y + 1, z, colorKey)) null else colorKey
+                    val colorKey = faceKeyFor(cube, solidExport)
+                    if (isFaceOccluded(x, y + 1, z, colorKey, solidExport)) null else colorKey
                 }
             ).forEach { rect ->
                 val x0 = startX + rect.u
@@ -501,7 +514,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         startX: Int,
         startY: Int,
-        startZ: Int
+        startZ: Int,
+        solidExport: Boolean
     ) {
         for (y in startY until startY + CHUNK_SIZE) {
             stitchRectanglesToSharedGrid(
@@ -509,8 +523,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     val x = startX + lx
                     val z = startZ + lz
                     val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                    val colorKey = renderMaterialKey(cube)
-                    if (isOccludedBySameMaterial(x, y - 1, z, colorKey)) null else colorKey
+                    val colorKey = faceKeyFor(cube, solidExport)
+                    if (isFaceOccluded(x, y - 1, z, colorKey, solidExport)) null else colorKey
                 }
             ).forEach { rect ->
                 val x0 = startX + rect.u
@@ -536,7 +550,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         startX: Int,
         startY: Int,
-        startZ: Int
+        startZ: Int,
+        solidExport: Boolean
     ) {
         for (z in startZ until startZ + CHUNK_SIZE) {
             stitchRectanglesToSharedGrid(
@@ -544,8 +559,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     val x = startX + lx
                     val y = startY + ly
                     val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                    val colorKey = renderMaterialKey(cube)
-                    if (isOccludedBySameMaterial(x, y, z + 1, colorKey)) null else colorKey
+                    val colorKey = faceKeyFor(cube, solidExport)
+                    if (isFaceOccluded(x, y, z + 1, colorKey, solidExport)) null else colorKey
                 }
             ).forEach { rect ->
                 val x0 = startX + rect.u
@@ -571,7 +586,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         startX: Int,
         startY: Int,
-        startZ: Int
+        startZ: Int,
+        solidExport: Boolean
     ) {
         for (z in startZ until startZ + CHUNK_SIZE) {
             stitchRectanglesToSharedGrid(
@@ -579,8 +595,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     val x = startX + lx
                     val y = startY + ly
                     val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                    val colorKey = renderMaterialKey(cube)
-                    if (isOccludedBySameMaterial(x, y, z - 1, colorKey)) null else colorKey
+                    val colorKey = faceKeyFor(cube, solidExport)
+                    if (isFaceOccluded(x, y, z - 1, colorKey, solidExport)) null else colorKey
                 }
             ).forEach { rect ->
                 val x0 = startX + rect.u
@@ -606,7 +622,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         startX: Int,
         startY: Int,
-        startZ: Int
+        startZ: Int,
+        solidExport: Boolean
     ) {
         for (x in startX until startX + CHUNK_SIZE) {
             stitchRectanglesToSharedGrid(
@@ -614,8 +631,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     val z = startZ + lz
                     val y = startY + ly
                     val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                    val colorKey = renderMaterialKey(cube)
-                    if (isOccludedBySameMaterial(x + 1, y, z, colorKey)) null else colorKey
+                    val colorKey = faceKeyFor(cube, solidExport)
+                    if (isFaceOccluded(x + 1, y, z, colorKey, solidExport)) null else colorKey
                 }
             ).forEach { rect ->
                 val z0 = startZ + rect.u
@@ -641,7 +658,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
         facesByColor: MutableMap<Int, MutableList<MergedFace>>,
         startX: Int,
         startY: Int,
-        startZ: Int
+        startZ: Int,
+        solidExport: Boolean
     ) {
         for (x in startX until startX + CHUNK_SIZE) {
             stitchRectanglesToSharedGrid(
@@ -649,8 +667,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
                     val z = startZ + lz
                     val y = startY + ly
                     val cube = cubeAtInt(x, y, z) ?: return@collectRectangles null
-                    val colorKey = renderMaterialKey(cube)
-                    if (isOccludedBySameMaterial(x - 1, y, z, colorKey)) null else colorKey
+                    val colorKey = faceKeyFor(cube, solidExport)
+                    if (isFaceOccluded(x - 1, y, z, colorKey, solidExport)) null else colorKey
                 }
             ).forEach { rect ->
                 val z0 = startZ + rect.u
@@ -823,6 +841,14 @@ class SceneController(val modelBuilder: ModelBuilder) {
 
     private fun renderMaterialKey(cube: Cube): Int {
         return Color.rgba8888(cube.color)
+    }
+
+    private fun faceKeyFor(cube: Cube, solidExport: Boolean): Int {
+        return if (solidExport) SOLID_EXPORT_KEY else renderMaterialKey(cube)
+    }
+
+    private fun isFaceOccluded(x: Int, y: Int, z: Int, colorKey: Int, solidExport: Boolean): Boolean {
+        return if (solidExport) hasCubeAt(x, y, z) else isOccludedBySameMaterial(x, y, z, colorKey)
     }
 
     private fun isOccludedBySameMaterial(x: Int, y: Int, z: Int, colorKey: Int): Boolean {
