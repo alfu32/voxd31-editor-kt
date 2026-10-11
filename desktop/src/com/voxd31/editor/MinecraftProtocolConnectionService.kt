@@ -34,6 +34,7 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
     @Volatile private var listener: MinecraftConnectionListener? = null
     @Volatile private var loggedIn = false
     @Volatile private var centerX = 0
+    @Volatile private var centerY = 64.0
     @Volatile private var centerZ = 0
     @Volatile private var minSectionY = -4
     @Volatile private var sectionCount = 24
@@ -69,6 +70,7 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                             packet.xRot
                         ))
                         session.send(ServerboundMovePlayerPosPacket(true, false, position.x, position.y, position.z))
+                        centerY = position.y
                         listener.playerPosition(position.x, position.y, position.z)
                     }
                     is ClientboundSetChunkCacheCenterPacket -> {
@@ -131,13 +133,20 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                     BIOME_REGISTRY_SIZE
                 )
                 val sectionY = minSectionY + sectionIndex
+                val sectionBottom = sectionY * 16
+                if (sectionBottom + 15 < centerY - VERTICAL_BLOCK_RADIUS ||
+                    sectionBottom > centerY + VERTICAL_BLOCK_RADIUS
+                ) {
+                    return@repeat
+                }
                 for (y in 0 until 16) {
                     for (z in 0 until 16) {
                         for (x in 0 until 16) {
-                            if (section.getBlock(x, y, z) != 0) {
+                            val blockY = sectionBottom + y
+                            if (kotlin.math.abs(blockY - centerY) <= VERTICAL_BLOCK_RADIUS && section.getBlock(x, y, z) != 0) {
                                 blocks += MinecraftWorldBlock(
                                     packet.x * 16 + x,
-                                    sectionY * 16 + y,
+                                    blockY,
                                     packet.z * 16 + z,
                                     MinecraftMaterials.default.id
                                 )
@@ -193,6 +202,7 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         private const val DEFAULT_PORT = 25565
         private const val BLOCK_STATE_REGISTRY_SIZE = 32768
         private const val BIOME_REGISTRY_SIZE = 64
-        private const val MAX_CHUNK_RADIUS = 5
+        private const val MAX_CHUNK_RADIUS = 1
+        private const val VERTICAL_BLOCK_RADIUS = 16
     }
 }
