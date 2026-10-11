@@ -19,6 +19,7 @@ logo.1.x300.png
 logo.png
 logo.svg
 logo.voxd
+minecraft/block-states-26.3.tsv
 shaders/voxcraft-default.fragment.glsl
 shaders/voxcraft-default.vertex.glsl
 uiskin (1).json

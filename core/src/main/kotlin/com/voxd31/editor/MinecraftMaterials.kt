@@ -40,19 +40,42 @@ object MinecraftMaterials {
     fun colorFor(id: String?): Color {
         val name = id?.substringAfter(':') ?: return Color.WHITE.cpy()
         val color = when {
-            name.contains("grass") || name.contains("leaves") || name.contains("moss") -> "70a84b"
-            name.contains("water") || name.contains("prismarine") || name.contains("ice") -> "72b6d0"
-            name.contains("sand") || name.contains("sandstone") -> "d6c18a"
-            name.contains("wood") || name.contains("log") || name.contains("planks") || name.contains("stem") -> "9b704a"
+            name == "air" -> "ffffff"
+            name.contains("grass") || name.contains("leaves") || name.contains("moss") ||
+                name.contains("fern") || name.contains("azalea") -> "70a84b"
+            name.contains("water") || name.contains("prismarine") -> "4d9db4"
+            name.contains("sand") -> "d6c18a"
+            name.contains("dirt") || name.contains("mud") || name.contains("podzol") ||
+                name.contains("mycelium") || name.contains("rooted_dirt") -> "805738"
+            name.contains("wood") || name.contains("log") || name.contains("planks") ||
+                name.contains("stem") || name.contains("hyphae") -> "9b704a"
             name.contains("glass") -> "a9d8e3"
-            name.contains("wool") || name.contains("concrete") || name.contains("terracotta") -> "c6c0b8"
+            name.contains("wool") || name.contains("concrete") || name.contains("terracotta") ||
+                name.contains("candle") || name.contains("shulker") -> dyeColor(name) ?: "c6c0b8"
             name.contains("gold") || name.contains("hay") -> "e0bd4c"
             name.contains("diamond") || name.contains("emerald") -> "42c99a"
-            name.contains("redstone") || name.contains("nether") || name.contains("netherrack") -> "a84e42"
+            name.contains("redstone") || name.contains("nether") || name.contains("netherrack") ||
+                name.contains("cinnabar") -> "a84e42"
             name.contains("amethyst") || name.contains("purpur") -> "a77bc1"
-            name == "air" -> "ffffff"
-            else -> "858585"
+            name.contains("ice") || name.contains("snow") -> "a9d8e3"
+            name.contains("copper") -> "b8734f"
+            name.contains("ore") || name.contains("stone") || name.contains("deepslate") ||
+                name.contains("basalt") || name.contains("tuff") || name.contains("calcite") ||
+                name.contains("bedrock") -> "858585"
+            else -> "a0a0a0"
         }
         return Color.valueOf(color)
+    }
+
+    private fun dyeColor(name: String): String? {
+        val colors = mapOf(
+            "white" to "e8e5dc", "orange" to "e58b35", "magenta" to "b856b8",
+            "light_blue" to "6ca6d9", "yellow" to "e5d34b", "lime" to "8dc342",
+            "pink" to "e58da7", "gray" to "686868", "light_gray" to "a9a9a1",
+            "cyan" to "398b8b", "purple" to "8155a6", "blue" to "465bb6",
+            "brown" to "795338", "green" to "557d35", "red" to "b9413b",
+            "black" to "303033"
+        )
+        return colors.entries.firstOrNull { (color, _) -> name.startsWith("${color}_") }?.value
     }
 }

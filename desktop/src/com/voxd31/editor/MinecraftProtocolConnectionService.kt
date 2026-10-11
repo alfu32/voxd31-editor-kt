@@ -23,6 +23,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.Clien
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundSetChunkCacheCenterPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundClientTickEndPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundPlayerLoadedPacket
 import org.geysermc.mcprotocollib.protocol.packet.common.serverbound.ServerboundClientInformationPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket
@@ -46,6 +47,7 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
     @Volatile private var sectionCount = 24
     @Volatile private var lastRequestedChunkX = Int.MIN_VALUE
     @Volatile private var lastRequestedChunkZ = Int.MIN_VALUE
+    @Volatile private var lastViewMoveNanos = 0L
 
     override fun connect(address: String, username: String, listener: MinecraftConnectionListener) {
         close()
@@ -90,7 +92,7 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                             packet.yRot,
                             packet.xRot
                         ))
-                        session.send(ServerboundMovePlayerPosPacket(true, false, position.x, position.y, position.z))
+                        session.send(ServerboundClientTickEndPacket.INSTANCE)
                         centerY = position.y
                         lastRequestedChunkX = floor(position.x).toInt() shr 4
                         lastRequestedChunkZ = floor(position.z).toInt() shr 4
@@ -112,7 +114,7 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                             entry.position.x,
                             entry.position.y,
                             entry.position.z,
-                            if (entry.block == 0) "minecraft:air" else MinecraftMaterials.default.id
+                            MinecraftBlockStateNames.nameFor(entry.block)
                         ))
                     }
                     is ClientboundChunkBatchFinishedPacket -> session.send(ServerboundChunkBatchReceivedPacket(8f))
@@ -146,10 +148,14 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         val chunkX = Math.floorDiv(floor(x).toInt(), 16)
         val chunkZ = Math.floorDiv(floor(z).toInt(), 16)
         if (chunkX == lastRequestedChunkX && chunkZ == lastRequestedChunkZ) return
+        val now = System.nanoTime()
+        if (now - lastViewMoveNanos < MIN_VIEW_MOVE_INTERVAL_NANOS) return
         lastRequestedChunkX = chunkX
         lastRequestedChunkZ = chunkZ
+        lastViewMoveNanos = now
         centerY = y
         session.send(ServerboundMovePlayerPosPacket(false, false, x, y, z))
+        session.send(ServerboundClientTickEndPacket.INSTANCE)
     }
 
     override fun close() {
@@ -178,12 +184,13 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                     for (z in 0 until 16) {
                         for (x in 0 until 16) {
                             val blockY = sectionBottom + y
-                            if (kotlin.math.abs(blockY - centerY) <= VERTICAL_BLOCK_RADIUS && section.getBlock(x, y, z) != 0) {
+                            val stateId = section.getBlock(x, y, z)
+                            if (kotlin.math.abs(blockY - centerY) <= VERTICAL_BLOCK_RADIUS && stateId != 0) {
                                 blocks += MinecraftWorldBlock(
                                     packet.x * 16 + x,
                                     blockY,
                                     packet.z * 16 + z,
-                                    MinecraftMaterials.default.id
+                                    MinecraftBlockStateNames.nameFor(stateId)
                                 )
                             }
                         }
@@ -240,5 +247,6 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         private const val SERVER_RENDER_DISTANCE = 2
         private const val MAX_CHUNK_RADIUS = 1
         private const val VERTICAL_BLOCK_RADIUS = 16
+        private const val MIN_VIEW_MOVE_INTERVAL_NANOS = 150_000_000L
     }
 }
