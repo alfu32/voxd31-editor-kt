@@ -33,6 +33,7 @@ import com.kotcrab.vis.ui.widget.color.ColorPickerListener
 import com.voxd31.editor.CameraInteractionMode
 import com.voxd31.editor.CameraMode
 import com.voxd31.editor.ModelSettings
+import com.voxd31.editor.MinecraftMaterial
 import com.voxd31.editor.OrthographicView
 import com.voxd31.editor.ToolOperator
 import kotlin.math.max
@@ -44,6 +45,9 @@ class VoxcraftUiOverlay(
     private val toolOperatorsProvider: () -> List<ToolOperator>,
     private val currentColorProvider: () -> Color,
     private val colorSelected: (Color) -> Unit,
+    private val minecraftMaterialsProvider: () -> List<MinecraftMaterial>,
+    private val minecraftMaterialSelected: (MinecraftMaterial?) -> Unit,
+    private val selectedMinecraftMaterialProvider: () -> String?,
     private val addModeProvider: () -> String,
     private val addModeChanged: (String) -> Unit,
     private val cameraModeProvider: () -> CameraMode,
@@ -52,6 +56,10 @@ class VoxcraftUiOverlay(
     private val cameraInteractionModeChanged: (CameraInteractionMode) -> Unit,
     private val orthographicViewChanged: (OrthographicView) -> Unit,
     private val openAction: () -> Unit,
+    private val connectMinecraftAction: (String) -> Unit,
+    private val minecraftUsernameProvider: () -> String,
+    private val minecraftSessionActiveProvider: () -> Boolean,
+    private val disconnectMinecraftAction: () -> Unit,
     private val importAction: () -> Unit,
     private val saveAction: () -> Unit,
     private val saveAsAction: () -> Unit,
@@ -248,6 +256,7 @@ class VoxcraftUiOverlay(
     private val toolbarAutoCollapseCheck = VisCheckBox("Auto-collapse toolbars")
     private lateinit var inToolOperatorsContent: VisTable
     private var colorPicker: ColorPicker? = null
+    private var minecraftConnectDialog: CollapsibleWindow? = null
     private var exportDialog: VisWindow? = null
     private var hoverPopover: VisWindow? = null
     private var toolOperatorsSignature = ""
@@ -399,6 +408,9 @@ class VoxcraftUiOverlay(
         content.defaults().pad(0f)
         val actors = listOf(
             imageAction("Open", "file_open", openAction),
+            imageAction("Minecraft connection", "minecraft") {
+                if (minecraftSessionActiveProvider()) disconnectMinecraftAction() else showMinecraftConnectDialog()
+            },
             imageAction("Import VXDI", "file_open", importAction),
             imageAction("Save", "file_save", saveAction),
             imageAction("Save As", "file_save", saveAsAction),
@@ -537,8 +549,50 @@ class VoxcraftUiOverlay(
         rightDockContent.top().left()
         rightDockContent.defaults().growX().padBottom(4f)
         rightDockContent.add(buildModelSettingsPanel()).growX().row()
+        rightDockContent.add(buildMinecraftMaterialsPanel()).growX().row()
         rightDockContent.add(buildUiSettingsPanel()).growX().row()
         stage.addActor(rightDockWindow)
+    }
+
+    private fun buildMinecraftMaterialsPanel(): DockSection {
+        val content = VisTable()
+        content.background = darkPanelDrawable()
+        content.defaults().pad(4f).left().growX()
+        val search = VisTextField("")
+        val list = VisTable()
+        list.defaults().growX().left().pad(2f)
+        fun rebuildResults() {
+            list.clearChildren()
+            val query = search.text.trim().lowercase()
+            val current = selectedMinecraftMaterialProvider()
+            val legacyButton = VisTextButton(if (current == null) "✓ Legacy color" else "Legacy color")
+            legacyButton.addListener(onChange { minecraftMaterialSelected(null) })
+            list.add(legacyButton).row()
+            minecraftMaterialsProvider().asSequence()
+                .filter { query.isEmpty() || it.id.contains(query) || it.label.lowercase().contains(query) }
+                .take(120)
+                .forEach { material ->
+                    val label = if (material.id == current) "✓ ${material.label}" else material.label
+                    val button = VisTextButton(label)
+                    button.addListener(onChange {
+                        minecraftMaterialSelected(material)
+                        rebuildResults()
+                    })
+                    list.add(button).row()
+                }
+            list.invalidateHierarchy()
+        }
+        search.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) = rebuildResults()
+        })
+        content.add(VisLabel("Search Minecraft materials")).left().row()
+        content.add(search).growX().row()
+        content.add(VisLabel("Selected material is used for newly created cubes.")).left().row()
+        val scroll = VisScrollPane(list)
+        scroll.setFadeScrollBars(false)
+        content.add(scroll).height(300f).growX()
+        rebuildResults()
+        return DockSection("Materials", content).apply { setCollapsedState(false) }
     }
 
     private fun buildModelSettingsPanel(): DockSection {
@@ -673,6 +727,77 @@ class VoxcraftUiOverlay(
             content.add(cancel).pad(8f)
         }
         dialog.add(content).pad(8f)
+        stage.addActor(dialog)
+        dialog.pack()
+        dialog.centerWindow()
+        dialog.toFront()
+    }
+
+    private fun showMinecraftConnectDialog() {
+        minecraftConnectDialog?.remove()
+        val dialog = CollapsibleWindow("Connect to Minecraft", showCloseButton = true).also {
+            it.isModal = true
+            minecraftConnectDialog = it
+        }
+        val content = VisTable(true)
+        val addressField = VisTextField("localhost:25565")
+        val username = VisLabel("Offline username: ${minecraftUsernameProvider()}")
+        content.add(VisLabel("Server hostname or IP:port")).left().row()
+        content.add(addressField).width(320f).left().row()
+        content.add(username).left().padTop(4f).row()
+        val connect = VisTextButton("Connect")
+        val cancel = VisTextButton("Cancel")
+        connect.addListener(onChange {
+            val address = addressField.text.trim()
+            if (address.isNotEmpty()) {
+                dialog.remove()
+                connectMinecraftAction(address)
+            }
+        })
+        cancel.addListener(onChange { dialog.remove() })
+        content.add(connect).padTop(8f).padRight(6f)
+        content.add(cancel).padTop(8f)
+        dialog.add(content).pad(10f)
+        stage.addActor(dialog)
+        dialog.pack()
+        dialog.centerWindow()
+        dialog.toFront()
+        stage.keyboardFocus = addressField
+        addressField.selectAll()
+    }
+
+    fun showMessageDialog(title: String, message: String) {
+        val dialog = CollapsibleWindow(title, showCloseButton = true).also {
+            it.isModal = true
+        }
+        val content = VisTable(true)
+        val messageLabel = VisLabel(message).apply { setWrap(true) }
+        content.add(messageLabel).width(360f).left().row()
+        val close = VisTextButton("OK")
+        close.addListener(onChange { dialog.remove() })
+        content.add(close).right().padTop(8f)
+        dialog.add(content).pad(10f)
+        stage.addActor(dialog)
+        dialog.pack()
+        dialog.centerWindow()
+        dialog.toFront()
+    }
+
+    fun showConfirmDialog(title: String, message: String, confirmAction: () -> Unit) {
+        val dialog = CollapsibleWindow(title, showCloseButton = true).also { it.isModal = true }
+        val content = VisTable(true)
+        val messageLabel = VisLabel(message).apply { setWrap(true) }
+        content.add(messageLabel).width(360f).left().row()
+        val confirm = VisTextButton("Disconnect")
+        val cancel = VisTextButton("Cancel")
+        confirm.addListener(onChange {
+            dialog.remove()
+            confirmAction()
+        })
+        cancel.addListener(onChange { dialog.remove() })
+        content.add(confirm).padTop(8f).padRight(6f)
+        content.add(cancel).padTop(8f)
+        dialog.add(content).pad(10f)
         stage.addActor(dialog)
         dialog.pack()
         dialog.centerWindow()

@@ -16,6 +16,7 @@ class Vox3Event(
     var keyCode: Int? = null,
     var keyDown: Int? = null,
     var screen: Vector2? = null,
+    var screenRaw: Vector2? = null,
     var scroll: Vector2? = null,
     var modelPoint: Vector3? = null,
     var modelVoxel: Vector3? = null,
@@ -23,6 +24,7 @@ class Vox3Event(
     var modelNextVoxel: Vector3? = null,
     var target:Cube? = null,
     var normal: Vector3? = null,
+    var hitType: String? = null,
     var pointer:Int? = null,
     var button:Int? = null,
     var channel:String = "none"
@@ -32,7 +34,7 @@ class Vox3Event(
     var ctrl:Boolean = false
     var shift:Boolean = false
     override fun toString(): String {
-        return "channel:$channel,keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()}"
+        return "channel:$channel,keyDown:$keyDown , screen:$screen , model:$modelPoint ,modelNext:$modelNextPoint , pointer:$pointer , button:$button , target:${target?.getId()} , hitType:$hitType"
     }
 }
 

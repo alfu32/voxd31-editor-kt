@@ -3,6 +3,8 @@ package com.voxd31.editor;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.xovd3i.editor.Voxd31Editor;
+import com.voxd31.editor.DefaultDocumentIoService;
+import com.voxd31.editor.PassthroughInputProcessorDecorator;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher {
@@ -57,6 +59,12 @@ public class DesktopLauncher {
 		));
 		config.setWindowIcon("voxd31.icon.png");
 		// width,height,
-		new Lwjgl3Application(new Voxd31Editor(filename, new DesktopFileDialogService()), config);
+		new Lwjgl3Application(new Voxd31Editor(
+			filename,
+			new DesktopFileDialogService(),
+			DefaultDocumentIoService.INSTANCE,
+			PassthroughInputProcessorDecorator.INSTANCE,
+			new MinecraftProtocolConnectionService()
+		), config);
 	}
 }

@@ -19,7 +19,12 @@ class RayIntersection(
     var normal: Vector3,
     var distance: Float,
 )
-class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color){
+class Cube (
+    val modelBuilder: ModelBuilder,
+    var position: Vector3,
+    var color: Color,
+    var materialId: String? = null
+){
     var instance: ModelInstance = ModelInstance(
         getModel(modelBuilder, color),
         position,
@@ -212,6 +217,7 @@ class Cube (val modelBuilder: ModelBuilder,var position:Vector3,var color:Color)
         modelBuilder = modelBuilder,
         position=position.cpy(),
         color=color.cpy(),
+        materialId=materialId,
     )
 
     override fun toString(): String {

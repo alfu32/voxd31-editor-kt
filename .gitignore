@@ -129,4 +129,7 @@ tmp
 .gradle
 .secrets
 dist
-*.snap
+*.snap.kode.json
+voxkraft_1.8.5_amd64.snap
+/.kotlin
+/.kode.json

@@ -63,7 +63,7 @@ open class EditorTool(
                             scene.addCube(
                                 event.modelNextVoxel!!
                             )
-                            self.commands.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
+                            self.commands.add("/setblock ${a.x} ${a.y} ${a.z} ${scene.currentMaterialId ?: "minecraft:stone"}")
                         }
                     }
                     //currentEvent = event
@@ -577,7 +577,7 @@ open class EditorTool(
                                     voxelRangePlane(points[0],points[1],points[2]){ p ->
                                         scene.addCube(p)
                                         val a=Vector3i.fromFloats(p.x,p.y,p.z)
-                                        self.commands.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
+                                        self.commands.add("/setblock ${a.x} ${a.y} ${a.z} ${scene.currentMaterialId ?: "minecraft:stone"}")
                                     }
                                 }
                                 state=0
@@ -658,7 +658,7 @@ open class EditorTool(
                                     voxelGen!!(points[0],points[1],points[2]){ p ->
                                         scene.addCube(p)
                                         val a=Vector3i.fromFloats(p.x,p.y,p.z)
-                                        self.commands.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
+                                        self.commands.add("/setblock ${a.x} ${a.y} ${a.z} ${scene.currentMaterialId ?: "minecraft:stone"}")
                                     }
                                 }
                                 voxelGen=null

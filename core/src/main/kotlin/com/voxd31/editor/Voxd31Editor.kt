@@ -47,12 +47,21 @@ class Voxd31Editor @JvmOverloads constructor(
     initialFilename: String = "default.vxdi",
     private val fileDialogService: FileDialogService = NoopFileDialogService,
     private val documentIoService: DocumentIoService = DefaultDocumentIoService,
-    private val inputProcessorDecorator: InputProcessorDecorator = PassthroughInputProcessorDecorator
+    private val inputProcessorDecorator: InputProcessorDecorator = PassthroughInputProcessorDecorator,
+    private val minecraftConnectionService: MinecraftConnectionService? = null
 ) : ApplicationAdapter() {
     companion object {
-
+        private const val MAX_PENDING_MINECRAFT_EDITS = 100_000
+        private const val MINECRAFT_RETRY_INTERVAL_SECONDS = 3f
+        private const val MAX_MINECRAFT_COMMANDS_PER_RETRY = 64
     }
-    private data class CubeHistoryState(val x: Float, val y: Float, val z: Float, val colorRgba: Int)
+    private data class CubeHistoryState(
+        val x: Float,
+        val y: Float,
+        val z: Float,
+        val colorRgba: Int,
+        val materialId: String?
+    )
 
     private data class EditorHistoryState(
         val cubes: List<CubeHistoryState>,
@@ -60,8 +69,10 @@ class Voxd31Editor @JvmOverloads constructor(
         val guides: List<CubeHistoryState>,
         val modelSettings: ModelSettings,
         val currentColorRgba: Int,
+        val currentMaterialId: String?,
         val addMode: String
     )
+    private data class MinecraftBlockPosition(val x: Int, val y: Int, val z: Int)
 
     private val groundPlaneY = -0.5f
     private val gridPlaneY = groundPlaneY + 0.03f
@@ -113,6 +124,15 @@ class Voxd31Editor @JvmOverloads constructor(
     private lateinit var uiOverlay: VoxcraftUiOverlay
     private val versionInfo = Voxd31EditorVersion()
     private var filename: String = initialFilename
+    private var minecraftSessionActive = false
+    private var minecraftConnectionOpen = false
+    private var minecraftConnecting = false
+    private var minecraftServerAddress: String? = null
+    private var minecraftSceneSyncVersion = -1L
+    private var applyingMinecraftSnapshot = false
+    private val minecraftKnownBlocks = mutableMapOf<MinecraftBlockPosition, String>()
+    private val minecraftPendingBlocks = mutableMapOf<MinecraftBlockPosition, String>()
+    private var minecraftRetrySeconds = 0f
     private var modelSettings = ModelSettings()
     private var statusMessage = ""
     private val groundCenter = Vector3()
@@ -270,7 +290,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 val sc = scene.cubes[kv.key]
                 if(sc!=null){
                     val cl=sc.color.cpy()
-                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().add(delta),cl)
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().add(delta),cl,sc.materialId)
                 } else {
                     null
                 }
@@ -283,7 +303,7 @@ class Voxd31Editor @JvmOverloads constructor(
             }
             synchronized(moved){
                 moved.forEach{ (a,m) ->
-                    scene.addCube(m.position,m.color)
+                    scene.addCube(m.position,m.color,m.materialId)
                     selected.addCube(m.position,m.color)
                 }
             }
@@ -316,7 +336,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 val sc = scene.cubes[kv.key]
                 if(sc!=null){
                     val cl=sc.color.cpy()
-                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().add(delta),cl)
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().add(delta),cl,sc.materialId)
                 } else {
                     null
                 }
@@ -324,7 +344,7 @@ class Voxd31Editor @JvmOverloads constructor(
             selected.clear()
             synchronized(moved){
                 moved.forEach{ (a,m) ->
-                    scene.addCube(m.position,m.color)
+                    scene.addCube(m.position,m.color,m.materialId)
                     selected.addCube(m.position,m.color)
                 }
             }
@@ -360,7 +380,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 val sc = scene.cubes[kv.key]
                 if(sc!=null){
                     val cl=sc.color.cpy()
-                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().mul(rmx),cl)
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().mul(rmx),cl,sc.materialId)
                 } else {
                     null
                 }
@@ -369,7 +389,7 @@ class Voxd31Editor @JvmOverloads constructor(
             synchronized(moved){
                 moved.forEach{ (a,m) ->
                     scene.removeCube(a)
-                    scene.addCube(m.position,m.color)
+                    scene.addCube(m.position,m.color,m.materialId)
                     selected.addCube(m.position,m.color)
                 }
             }
@@ -406,7 +426,7 @@ class Voxd31Editor @JvmOverloads constructor(
                 val sc = scene.cubes[kv.key]
                 if(sc!=null){
                     val cl=sc.color.cpy()
-                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().mul(rmx),cl)
+                    kv.value to Cube(sc.modelBuilder,sc.position.cpy().mul(rmx),cl,sc.materialId)
                 } else {
                     null
                 }
@@ -414,7 +434,7 @@ class Voxd31Editor @JvmOverloads constructor(
             selected.clear()
             synchronized(moved){
                 moved.forEach{ (a,m) ->
-                    scene.addCube(m.position,m.color)
+                    scene.addCube(m.position,m.color,m.materialId)
                     selected.addCube(m.position,m.color)
                 }
             }
@@ -447,7 +467,7 @@ class Voxd31Editor @JvmOverloads constructor(
             voxelRangeSegment(s,e){ p->
                 val a=Vector3i.fromFloats(p.x,p.y,p.z)
                 op(p)
-                list.add("/setblock ${a.x} ${a.y} ${a.z} minecraft:stone")
+                list.add("/setblock ${a.x} ${a.y} ${a.z} ${minecraftMaterialForOperations()}")
             }
             list
         })
@@ -469,7 +489,7 @@ class Voxd31Editor @JvmOverloads constructor(
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf(
                 "# Circle ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
                 "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
             )
         })
@@ -479,7 +499,7 @@ class Voxd31Editor @JvmOverloads constructor(
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf(
                 "# Circle ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
                 "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
             )
         })
@@ -489,7 +509,7 @@ class Voxd31Editor @JvmOverloads constructor(
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf(
                 "# Circle ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
                 "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
             )
         })
@@ -499,18 +519,18 @@ class Voxd31Editor @JvmOverloads constructor(
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf(
                 "# Frame ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${a.x} ${b.y} ${a.z} minecraft:stone",
-                "/fill ${a.x} ${b.y} ${a.z} ${b.x} ${b.y} ${a.z} minecraft:stone",
-                "/fill ${b.x} ${b.y} ${a.z} ${b.x} ${a.y} ${a.z} minecraft:stone",
-                "/fill ${b.x} ${a.y} ${a.z} ${a.x} ${a.y} ${a.z} minecraft:stone",
-                "/fill ${a.x} ${a.y} ${a.z} ${a.x} ${a.y} ${b.z} minecraft:stone",
-                "/fill ${a.x} ${b.y} ${a.z} ${a.x} ${b.y} ${b.z} minecraft:stone",
-                "/fill ${b.x} ${b.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
-                "/fill ${b.x} ${a.y} ${a.z} ${b.x} ${a.y} ${b.z} minecraft:stone",
-                "/fill ${a.x} ${a.y} ${b.z} ${a.x} ${b.y} ${b.z} minecraft:stone",
-                "/fill ${a.x} ${b.y} ${b.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
-                "/fill ${b.x} ${b.y} ${b.z} ${b.x} ${a.y} ${b.z} minecraft:stone",
-                "/fill ${b.x} ${a.y} ${b.z} ${a.x} ${a.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${a.z} ${a.x} ${b.y} ${a.z} ${minecraftMaterialForOperations()}",
+                "/fill ${a.x} ${b.y} ${a.z} ${b.x} ${b.y} ${a.z} ${minecraftMaterialForOperations()}",
+                "/fill ${b.x} ${b.y} ${a.z} ${b.x} ${a.y} ${a.z} ${minecraftMaterialForOperations()}",
+                "/fill ${b.x} ${a.y} ${a.z} ${a.x} ${a.y} ${a.z} ${minecraftMaterialForOperations()}",
+                "/fill ${a.x} ${a.y} ${a.z} ${a.x} ${a.y} ${b.z} ${minecraftMaterialForOperations()}",
+                "/fill ${a.x} ${b.y} ${a.z} ${a.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
+                "/fill ${b.x} ${b.y} ${a.z} ${b.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
+                "/fill ${b.x} ${a.y} ${a.z} ${b.x} ${a.y} ${b.z} ${minecraftMaterialForOperations()}",
+                "/fill ${a.x} ${a.y} ${b.z} ${a.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
+                "/fill ${a.x} ${b.y} ${b.z} ${b.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
+                "/fill ${b.x} ${b.y} ${b.z} ${b.x} ${a.y} ${b.z} ${minecraftMaterialForOperations()}",
+                "/fill ${b.x} ${a.y} ${b.z} ${a.x} ${a.y} ${b.z} ${minecraftMaterialForOperations()}",
             )
         })
         tools.add(EditorTool.makeTwoInputEditor("Shell",scene,feedback){ s:Vector3,e:Vector3,op:(p:Vector3)->Unit ->
@@ -519,7 +539,7 @@ class Voxd31Editor @JvmOverloads constructor(
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf(
                 "# Shell ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
                 "/fill ${a.x+1} ${a.y+1} ${a.z+1} ${b.x-1} ${b.y-1} ${b.z-1} air replace\n ",
             )
         })
@@ -529,7 +549,7 @@ class Voxd31Editor @JvmOverloads constructor(
             val b=Vector3i.fromFloats(e.x,e.y,e.z)
             listOf(
                 "# Volume ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${scene.currentColor}",
-                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} minecraft:stone",
+                "/fill ${a.x} ${a.y} ${a.z} ${b.x} ${b.y} ${b.z} ${minecraftMaterialForOperations()}",
             )
         })
 
@@ -545,6 +565,13 @@ class Voxd31Editor @JvmOverloads constructor(
             toolOperatorsProvider = { contextualToolOperators() },
             currentColorProvider = { toolbarColor() },
             colorSelected = { color -> applyToolbarColor(color) },
+            connectMinecraftAction = { address -> connectToMinecraft(address) },
+            minecraftUsernameProvider = { minecraftOfflineUsername() },
+            minecraftSessionActiveProvider = { minecraftSessionActive },
+            disconnectMinecraftAction = { requestMinecraftDisconnect() },
+            minecraftMaterialsProvider = { MinecraftMaterials.all },
+            minecraftMaterialSelected = { material -> applyToolbarMaterial(material) },
+            selectedMinecraftMaterialProvider = { scene.currentMaterialId },
             addModeProvider = { scene.addMode },
             addModeChanged = { mode -> scene.addMode = mode },
             cameraModeProvider = { activeCameraMode },
@@ -1097,8 +1124,13 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun updateWindowTitle() {
+        val documentLabel = if (minecraftSessionActive) {
+            "Minecraft: ${minecraftServerAddress ?: "connected"}"
+        } else {
+            displayFileName(filename)
+        }
         Gdx.graphics.setTitle(
-            "voxcraft   version : ${versionInfo.buildVersion}   file : [${displayFileName(filename)}]"
+            "voxcraft   version : ${versionInfo.buildVersion}   file : [$documentLabel]"
         )
     }
 
@@ -1109,6 +1141,7 @@ class Voxd31Editor @JvmOverloads constructor(
             guides = captureCubeStates(guides),
             modelSettings = modelSettings.copy(),
             currentColorRgba = Color.rgba8888(scene.currentColor),
+            currentMaterialId = scene.currentMaterialId,
             addMode = scene.addMode
         )
     }
@@ -1119,7 +1152,8 @@ class Voxd31Editor @JvmOverloads constructor(
                 x = floor(cube.position.x),
                 y = floor(cube.position.y),
                 z = floor(cube.position.z),
-                colorRgba = Color.rgba8888(cube.color)
+                colorRgba = Color.rgba8888(cube.color),
+                materialId = cube.materialId
             )
         }.sortedWith(compareBy<CubeHistoryState> { it.x }.thenBy { it.y }.thenBy { it.z }.thenBy { it.colorRgba })
     }
@@ -1190,6 +1224,7 @@ class Voxd31Editor @JvmOverloads constructor(
             restoreCubeStates(guides, state.guides)
             modelSettings = state.modelSettings.copy()
             scene.currentColor = colorFromRgba(state.currentColorRgba)
+            scene.currentMaterialId = state.currentMaterialId
             scene.addMode = state.addMode
             feedback.clear()
             lastPickedSelectionCubeId = selected.cubes.keys.firstOrNull()
@@ -1203,6 +1238,7 @@ class Voxd31Editor @JvmOverloads constructor(
 
     private fun restoreCubeStates(controller: SceneController, states: List<CubeHistoryState>) {
         states.forEach { state ->
+            controller.currentMaterialId = state.materialId
             controller.addOrReplaceCube(Vector3(state.x, state.y, state.z), colorFromRgba(state.colorRgba))
         }
     }
@@ -1248,6 +1284,7 @@ class Voxd31Editor @JvmOverloads constructor(
 
     private fun applyToolbarColor(color: Color) {
         if (selected.cubes.isEmpty()) {
+            scene.currentMaterialId = null
             scene.currentColor = Color(color)
             return
         }
@@ -1257,7 +1294,7 @@ class Voxd31Editor @JvmOverloads constructor(
         selected.clear()
         selectedCubes.forEach { cube ->
             scene.removeCube(cube)
-            scene.addOrReplaceCube(cube.position, color)
+            scene.addOrReplaceCube(cube.position, color, materialId = null)
             selected.addCube(cube.position, color)
         }
         commitHistoryState(before)
@@ -1265,6 +1302,32 @@ class Voxd31Editor @JvmOverloads constructor(
         rebuildGroundPlane(force = true)
         setStatusMessage("Recolored ${selectedCubes.size} selected cube(s).")
     }
+
+    private fun applyToolbarMaterial(material: MinecraftMaterial?) {
+        val materialColor = material?.let { MinecraftMaterials.colorFor(it.id) }
+        if (selected.cubes.isEmpty()) {
+            scene.currentMaterialId = material?.id
+            if (materialColor != null) scene.currentColor = materialColor
+        } else {
+            val before = captureHistoryState()
+            val selectedCubes = selected.cubes.values.mapNotNull { selectedCube ->
+                scene.cubes[selectedCube.getId()]
+            }
+            selected.clear()
+            selectedCubes.forEach { cube ->
+                scene.removeCube(cube)
+                val color = materialColor ?: cube.color
+                scene.addOrReplaceCube(cube.position, color, material?.id)
+                selected.addCube(cube.position, color)
+            }
+            commitHistoryState(before)
+            rebuildGroundPlane(force = true)
+        }
+        setStatusMessage("Material: ${material?.id ?: "legacy color"}")
+    }
+
+    private fun minecraftMaterialForOperations(): String =
+        scene.currentMaterialId ?: MinecraftMaterials.default.id
 
     private fun updateLastPickedSelectionColor(event: Vox3Event) {
         val target = event.target ?: return
@@ -1377,15 +1440,21 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun loadModelFromDisk(path: String, announce: Boolean = true) {
+        if (minecraftSessionActive) {
+            setStatusMessage("File loading is disabled while a Minecraft world is active.")
+            return
+        }
         val exists = documentIoService.exists(path)
         val loaded = loadModelFromCsv(path, documentIoService)
         scene.clear()
         selected.clear()
         guides.clear()
         feedback.clear()
-        loaded.cubes.forEach { (position, color) ->
-            scene.addCube(position, color)
+        loaded.cubes.forEach { cube ->
+            scene.currentMaterialId = cube.materialId
+            scene.addCube(cube.position, cube.color)
         }
+        scene.currentMaterialId = null
         modelSettings = normalizedModelSettings(loaded.settings)
         filename = path
         undoQueue.clear()
@@ -1402,7 +1471,11 @@ class Voxd31Editor @JvmOverloads constructor(
         }
     }
 
-    private fun saveCurrentModel(announce: Boolean = true) {
+    private fun saveCurrentModel(announce: Boolean = true, force: Boolean = false): Boolean {
+        if (minecraftSessionActive && !force) {
+            if (announce) setStatusMessage("Edits are being sent to Minecraft; file saving is disabled for this session.")
+            return false
+        }
         try {
             saveModelAsCsv(scene.cubes.values.toList(), filename, modelSettings, documentIoService)
             rebuildGroundPlane(force = true)
@@ -1410,9 +1483,232 @@ class Voxd31Editor @JvmOverloads constructor(
             if (announce) {
                 setStatusMessage("Saved ${displayFileName(filename)}")
             }
+            return true
         } catch (t: Throwable) {
             if (announce) {
                 setStatusMessage("Save failed: ${t.message ?: t.javaClass.simpleName}")
+            }
+            return false
+        }
+    }
+
+    private fun minecraftOfflineUsername(): String {
+        val localName = System.getProperty("user.name", "user")
+        val safeName = ("vx" + localName.filter { it.isLetterOrDigit() || it == '_' })
+            .filter { it.code < 128 }
+            .take(16)
+            .ifBlank { "vxuser" }
+        return if (safeName.length >= 3) safeName else safeName.padEnd(3, '_')
+    }
+
+    private fun connectToMinecraft(address: String) {
+        val connection = minecraftConnectionService
+        if (connection == null) {
+            uiOverlay.showMessageDialog("Minecraft connection failed", "The Minecraft Java connector is only available in the desktop application.")
+            return
+        }
+        if (minecraftConnecting || minecraftSessionActive) {
+            uiOverlay.showMessageDialog("Minecraft connection", "A Minecraft world is already active.")
+            return
+        }
+        minecraftConnecting = true
+        setStatusMessage("Connecting to $address…")
+        try {
+            connection.connect(address, minecraftOfflineUsername(), object : MinecraftConnectionListener {
+                override fun connected(serverAddress: String) {
+                    Gdx.app.postRunnable {
+                        minecraftConnecting = false
+                        if (!saveCurrentModel(announce = false, force = true)) {
+                            connection.close()
+                            uiOverlay.showMessageDialog("Minecraft connection failed", "The current model could not be saved, so the server world was not loaded.")
+                            return@postRunnable
+                        }
+                        minecraftSessionActive = true
+                        minecraftConnectionOpen = true
+                        minecraftServerAddress = serverAddress
+                        minecraftKnownBlocks.clear()
+                        minecraftPendingBlocks.clear()
+                        scene.clear()
+                        selected.clear()
+                        guides.clear()
+                        feedback.clear()
+                        undoQueue.clear()
+                        redoQueue.clear()
+                        activeTool?.reset()
+                        minecraftSceneSyncVersion = scene.changeVersion
+                        rebuildGroundPlane(force = true)
+                        updateWindowTitle()
+                        setStatusMessage("Connected to $serverAddress as ${minecraftOfflineUsername()}. Waiting for world chunks; operator permission is required to edit.")
+                    }
+                }
+
+                override fun playerPosition(x: Double, y: Double, z: Double) {
+                    Gdx.app.postRunnable { centerCamerasOn(x, y, z) }
+                }
+
+                override fun chunkReceived(chunk: MinecraftWorldChunk) {
+                    Gdx.app.postRunnable { applyMinecraftChunk(chunk) }
+                }
+
+                override fun blockUpdated(block: MinecraftWorldBlock) {
+                    Gdx.app.postRunnable { applyMinecraftBlockUpdate(block) }
+                }
+
+                override fun message(text: String) {
+                    Gdx.app.postRunnable {
+                        setStatusMessage("Minecraft: $text")
+                        val normalized = text.lowercase()
+                        if (normalized.contains("permission") || normalized.contains("operator") || normalized.contains("unknown command")) {
+                            uiOverlay.showMessageDialog("Minecraft server message", "$text\n\nVoxcraft needs operator permission to edit blocks.")
+                        }
+                    }
+                }
+
+                override fun disconnected(message: String) {
+                    Gdx.app.postRunnable {
+                        if (!minecraftConnecting && !minecraftConnectionOpen) return@postRunnable
+                        val wasConnected = minecraftSessionActive
+                        minecraftConnecting = false
+                        minecraftConnectionOpen = false
+                        setStatusMessage("Minecraft disconnected: $message")
+                        uiOverlay.showMessageDialog(
+                            if (wasConnected) "Minecraft disconnected" else "Minecraft connection failed",
+                            message
+                        )
+                    }
+                }
+            })
+        } catch (t: Throwable) {
+            minecraftConnecting = false
+            val reason = t.message ?: t.javaClass.simpleName
+            setStatusMessage("Minecraft connection failed: $reason")
+            uiOverlay.showMessageDialog("Minecraft connection failed", reason)
+        }
+    }
+
+    private fun applyMinecraftChunk(chunk: MinecraftWorldChunk) {
+        if (!minecraftSessionActive) return
+        applyingMinecraftSnapshot = true
+        try {
+            val oldPositions = minecraftKnownBlocks.keys.filter { it.x shr 4 == chunk.x && it.z shr 4 == chunk.z }
+            oldPositions.forEach { position ->
+                minecraftKnownBlocks.remove(position)
+                scene.removeCube(Vector3(position.x.toFloat(), position.y.toFloat(), position.z.toFloat()))
+            }
+            chunk.blocks.forEach { block ->
+                val position = MinecraftBlockPosition(block.x, block.y, block.z)
+                if (block.materialId == "minecraft:air") {
+                    minecraftKnownBlocks.remove(position)
+                    scene.removeCube(Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()))
+                } else {
+                    minecraftKnownBlocks[position] = block.materialId
+                    scene.addOrReplaceCube(
+                        Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()),
+                        MinecraftMaterials.colorFor(block.materialId),
+                        block.materialId
+                    )
+                }
+            }
+            minecraftSceneSyncVersion = scene.changeVersion
+            rebuildGroundPlane(force = true)
+        } finally {
+            applyingMinecraftSnapshot = false
+        }
+    }
+
+    private fun applyMinecraftBlockUpdate(block: MinecraftWorldBlock) {
+        if (!minecraftSessionActive) return
+        val position = MinecraftBlockPosition(block.x, block.y, block.z)
+        applyingMinecraftSnapshot = true
+        try {
+            if (block.materialId == "minecraft:air") {
+                minecraftKnownBlocks.remove(position)
+                scene.removeCube(Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()))
+            } else {
+                minecraftKnownBlocks[position] = block.materialId
+                scene.addOrReplaceCube(
+                    Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()),
+                    MinecraftMaterials.colorFor(block.materialId),
+                    block.materialId
+                )
+            }
+            if (minecraftPendingBlocks[position] == block.materialId) minecraftPendingBlocks.remove(position)
+            minecraftSceneSyncVersion = scene.changeVersion
+        } finally {
+            applyingMinecraftSnapshot = false
+        }
+    }
+
+    private fun centerCamerasOn(x: Double, y: Double, z: Double) {
+        if (!::activeCamera.isInitialized) return
+        val target = Vector3(x.toFloat(), y.toFloat(), z.toFloat())
+        cameraTarget.set(target)
+        orbitCameraController.target.set(target)
+        orbitCamera.position.set(target.x + 10f, target.y + 10f, target.z + 10f)
+        orbitCamera.lookAt(target)
+        orbitCamera.update()
+        walkCamera.position.set(target.x + 10f, target.y + 10f, target.z + 10f)
+        walkCamera.direction.set(target).sub(walkCamera.position).nor()
+        walkCamera.update()
+        orthoCamera.position.set(target.x, target.y, target.z)
+        orthoCamera.update()
+    }
+
+    private fun requestMinecraftDisconnect() {
+        val pendingCount = minecraftPendingBlocks.size
+        if (pendingCount > 0) {
+            uiOverlay.showConfirmDialog(
+                "Disconnect from Minecraft?",
+                "$pendingCount block change(s) have not been confirmed by the server. Disconnect anyway?"
+            ) { disconnectFromMinecraft() }
+        } else {
+            disconnectFromMinecraft()
+        }
+    }
+
+    private fun disconnectFromMinecraft() {
+        minecraftConnecting = false
+        minecraftConnectionOpen = false
+        minecraftConnectionService?.close()
+        minecraftSessionActive = false
+        minecraftServerAddress = null
+        minecraftKnownBlocks.clear()
+        minecraftPendingBlocks.clear()
+        minecraftSceneSyncVersion = -1L
+        try {
+            loadModelFromDisk(filename, announce = false)
+            setStatusMessage("Disconnected from Minecraft and restored ${displayFileName(filename)}.")
+        } catch (t: Throwable) {
+            setStatusMessage("Disconnected from Minecraft. Model restore failed: ${t.message ?: t.javaClass.simpleName}")
+            uiOverlay.showMessageDialog("Model restore failed", t.message ?: t.javaClass.simpleName)
+        }
+    }
+
+    private fun syncMinecraftEdits(deltaTime: Float) {
+        if (!minecraftSessionActive || !minecraftConnectionOpen || applyingMinecraftSnapshot) return
+        if (scene.changeVersion != minecraftSceneSyncVersion) {
+            val current = scene.cubes.values.associateBy { cube ->
+                MinecraftBlockPosition(cube.position.x.toInt(), cube.position.y.toInt(), cube.position.z.toInt())
+            }
+            (minecraftKnownBlocks.keys + current.keys).toSet().forEach { position ->
+                val desired = current[position]?.materialId?.takeUnless { it == "minecraft:air" }
+                    ?: if (current.containsKey(position)) MinecraftMaterials.default.id else null
+                val actual = minecraftKnownBlocks[position]
+                if (desired != actual) {
+                    val material = desired ?: "minecraft:air"
+                    minecraftPendingBlocks[position] = material
+                    if (minecraftPendingBlocks.size <= MAX_PENDING_MINECRAFT_EDITS) {
+                        minecraftConnectionService?.sendCommand("setblock ${position.x} ${position.y} ${position.z} $material")
+                    }
+                }
+            }
+            minecraftSceneSyncVersion = scene.changeVersion
+        }
+        minecraftRetrySeconds += deltaTime
+        if (minecraftRetrySeconds >= MINECRAFT_RETRY_INTERVAL_SECONDS) {
+            minecraftRetrySeconds = 0f
+            minecraftPendingBlocks.entries.take(MAX_MINECRAFT_COMMANDS_PER_RETRY).forEach { (position, material) ->
+                minecraftConnectionService?.sendCommand("setblock ${position.x} ${position.y} ${position.z} $material")
             }
         }
     }
@@ -1451,6 +1747,10 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun openModelDialog() {
+        if (minecraftSessionActive) {
+            setStatusMessage("File opening is disabled while a Minecraft world is active.")
+            return
+        }
         if (!fileDialogService.isSupported()) {
             setStatusMessage("Open dialog is unavailable in this runtime.")
             return
@@ -1479,6 +1779,10 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun importModelDialog() {
+        if (minecraftSessionActive) {
+            setStatusMessage("File import is disabled while a Minecraft world is active.")
+            return
+        }
         if (!fileDialogService.isSupported()) {
             setStatusMessage("Import dialog is unavailable in this runtime.")
             return
@@ -1505,8 +1809,8 @@ class Voxd31Editor @JvmOverloads constructor(
                     return@runNativeFileDialog
                 }
                 pendingImportCubes.clear()
-                pendingImportCubes += loaded.cubes.map { (position, color) ->
-                    Vector3(position) to Color(color)
+                pendingImportCubes += loaded.cubes.map { cube ->
+                    Vector3(cube.position) to Color(cube.color)
                 }
                 selected.clear()
                 feedback.clear()
@@ -1519,6 +1823,10 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     private fun saveModelAsDialog() {
+        if (minecraftSessionActive) {
+            setStatusMessage("File saving is disabled while a Minecraft world is active.")
+            return
+        }
         if (!fileDialogService.isSupported()) {
             setStatusMessage("Save As dialog is unavailable in this runtime.")
             return
@@ -1885,7 +2193,7 @@ class Voxd31Editor @JvmOverloads constructor(
             append(currentEvent.screen ?: "-")
         }
         return VoxcraftUiOverlay.StatusSnapshot(
-            fileName = filename,
+            fileName = if (minecraftSessionActive) "Minecraft: ${minecraftServerAddress ?: "connected"}" else filename,
             cameraMode = activeCameraMode.displayName,
             activeTool = activeTool?.name ?: "-",
             cubeCount = scene.cubes.size,
@@ -1899,6 +2207,7 @@ class Voxd31Editor @JvmOverloads constructor(
 
     override fun render() {
         updateActiveCamera(Gdx.graphics.deltaTime)
+        syncMinecraftEdits(Gdx.graphics.deltaTime)
         rebuildGroundPlane()
         renderShadowPass()
 
@@ -2139,7 +2448,10 @@ class Voxd31Editor @JvmOverloads constructor(
     }
 
     override fun dispose() {
-        saveCurrentModel(announce = false)
+        if (!minecraftSessionActive) {
+            saveCurrentModel(announce = false)
+        }
+        minecraftConnectionService?.close()
         modelBatch.dispose()
         shadowBatch.dispose()
         shapeRenderer.dispose()
@@ -2158,9 +2470,11 @@ class Voxd31Editor @JvmOverloads constructor(
             Gdx.input.inputProcessor = null
         }
         val text = tools.flatMap { tool -> tool.commands }.joinToString("\n")
-        documentIoService.sidecarPath(filename, ".mccmd")?.let { sidecarPath ->
-            if (text.isNotEmpty()) {
-                documentIoService.writeUtf8(sidecarPath, text, append = true)
+        if (!minecraftSessionActive) {
+            documentIoService.sidecarPath(filename, ".mccmd")?.let { sidecarPath ->
+                if (text.isNotEmpty()) {
+                    documentIoService.writeUtf8(sidecarPath, text, append = true)
+                }
             }
         }
         Cube.disposeSharedModels()

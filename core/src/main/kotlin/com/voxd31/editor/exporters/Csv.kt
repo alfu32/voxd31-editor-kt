@@ -9,8 +9,10 @@ import com.voxd31.gdxui.Cube
 
 data class LoadedVoxelModel(
     val settings: ModelSettings = ModelSettings(),
-    val cubes: List<Pair<Vector3, Color>> = emptyList()
+    val cubes: List<LoadedVoxelCube> = emptyList()
 )
+
+data class LoadedVoxelCube(val position: Vector3, val color: Color, val materialId: String? = null)
 
 fun saveModelAsCsv(cubes: List<Cube>, filename: String, settings: ModelSettings = ModelSettings()) {
     saveModelAsCsv(cubes, filename, settings, DefaultDocumentIoService)
@@ -28,7 +30,7 @@ fun saveModelAsCsv(
         append("#voxcraft;unitSuffix;${settings.unitSuffix}\n")
         cubes.forEach { cube ->
             append("${cube.position.x};${cube.position.y};${cube.position.z};")
-            append("${cube.color.r};${cube.color.g};${cube.color.b};${cube.color.a}\n")
+            append("${cube.color.r};${cube.color.g};${cube.color.b};${cube.color.a};${cube.materialId.orEmpty()}\n")
         }
     }
     documentIoService.writeUtf8(filename, out, append = false)
@@ -45,7 +47,7 @@ fun loadModelFromCsv(filename: String, documentIoService: DocumentIoService): Lo
     }
 
     val settings = ModelSettings()
-    val cubes = mutableListOf<Pair<Vector3, Color>>()
+    val cubes = mutableListOf<LoadedVoxelCube>()
     documentIoService.readUtf8(filename).lineSequence().forEach { line ->
         if (line.startsWith("#voxcraft;")) {
             val parts = line.split(";", limit = 3)
@@ -62,7 +64,7 @@ fun loadModelFromCsv(filename: String, documentIoService: DocumentIoService): Lo
         if (parts.size >= 7) {
             val position = Vector3(parts[0].toFloat(), parts[1].toFloat(), parts[2].toFloat())
             val color = Color(parts[3].toFloat(), parts[4].toFloat(), parts[5].toFloat(), parts[6].toFloat())
-            cubes += position to color
+            cubes += LoadedVoxelCube(position, color, parts.getOrNull(7)?.takeIf { it.isNotBlank() })
         }
     }
     return LoadedVoxelModel(settings = settings, cubes = cubes)
@@ -73,7 +75,7 @@ fun saveCubesAsCsv(cubes: List<Cube>, filename: String) {
 }
 
 fun readCubesCsv(filename: String, onCubeData: (p: Vector3, c: Color) -> Unit) {
-    loadModelFromCsv(filename).cubes.forEach { (position, color) ->
-        onCubeData(position, color)
+    loadModelFromCsv(filename).cubes.forEach { cube ->
+        onCubeData(cube.position, cube.color)
     }
 }

@@ -56,6 +56,8 @@ class SceneController(val modelBuilder: ModelBuilder) {
     var cubes: HashMap<String, Cube> = hashMapOf()
     var cubesInt: HashMap<String,Cube> = hashMapOf()
     var currentColor: Color = Color.RED
+    var currentMaterialId: String? = null
+    var changeVersion: Long = 0
     private var renderCacheDirty = true
     private val cachedModels = mutableListOf<Model>()
     private val cachedRenderInstances = mutableListOf<ModelInstance>()
@@ -98,36 +100,36 @@ class SceneController(val modelBuilder: ModelBuilder) {
             )
         }
     }
-    fun addCube(position: Vector3,color:Color? = null) {
+    fun addCube(position: Vector3,color:Color? = null, materialId: String? = currentMaterialId) {
         when(addMode){
             "addWithoutReplace" ->{
-                add(position,color)
+                add(position,color,materialId)
             }
             "addOrReplace" ->{
-                addOrReplaceCube(position,color)
+                addOrReplaceCube(position,color,materialId)
             }
             "replaceCube" ->{
-                replaceCube(position,color)
+                replaceCube(position,color,materialId)
             }
         }
     }
-    fun add(position: Vector3,color:Color? = null) {
-        val cube = createCubeAt(position,color)
+    fun add(position: Vector3,color:Color? = null, materialId: String? = currentMaterialId) {
+        val cube = createCubeAt(position,color,materialId)
         if(cubes[cube.getId()] == null ) {
             cubes[cube.getId()] = cube
             cubesInt[cube.getIntId()] = cube
             invalidateRenderCache()
         }/// println("cubes : ${cubes.size}")
     }
-    fun addOrReplaceCube(position: Vector3,color:Color? = null) {
-        val cube = createCubeAt(position,color)
+    fun addOrReplaceCube(position: Vector3,color:Color? = null, materialId: String? = currentMaterialId) {
+        val cube = createCubeAt(position,color,materialId)
         cubes[cube.getId()]=cube
         cubesInt[cube.getIntId()]=cube
         invalidateRenderCache()
         /// println("cubes : ${cubes.size}")
     }
-    fun replaceCube(position: Vector3,color:Color? = null) {
-        val cube = createCubeAt(position,color)
+    fun replaceCube(position: Vector3,color:Color? = null, materialId: String? = currentMaterialId) {
+        val cube = createCubeAt(position,color,materialId)
         if(cubes[cube.getId()] != null ) {
             cubes[cube.getId()] = cube
             cubesInt[cube.getIntId()]=cube
@@ -140,10 +142,12 @@ class SceneController(val modelBuilder: ModelBuilder) {
         cubesInt.remove(c.getIntId())
         invalidateRenderCache()
     }
-    fun createCubeAt(p:Vector3,color:Color? = null): Cube {
+    fun createCubeAt(p:Vector3,color:Color? = null, materialId: String? = currentMaterialId): Cube {
         // Implementation to create a cube ModelInstance at the specified coordinates
         // Placeholder implementation
-        return Cube(modelBuilder, position = Vector3(floor(p.x),floor(p.y),floor(p.z)), color ?: currentColor)
+        val cube = Cube(modelBuilder, position = Vector3(floor(p.x),floor(p.y),floor(p.z)), color ?: currentColor)
+        cube.materialId = materialId
+        return cube
     }
     fun clear() {
         cubes = hashMapOf()
@@ -283,6 +287,7 @@ class SceneController(val modelBuilder: ModelBuilder) {
 
     private fun invalidateRenderCache() {
         renderCacheDirty = true
+        changeVersion++
     }
 
     private fun collectFaceEdges(
