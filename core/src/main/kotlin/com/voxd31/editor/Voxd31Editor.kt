@@ -126,6 +126,7 @@ class Voxd31Editor @JvmOverloads constructor(
     private var filename: String = initialFilename
     private var minecraftSessionActive = false
     private var minecraftConnectionOpen = false
+    private var minecraftInitialPositionReceived = false
     private var minecraftConnecting = false
     private var minecraftServerAddress: String? = null
     private var minecraftSceneSyncVersion = -1L
@@ -1512,6 +1513,7 @@ class Voxd31Editor @JvmOverloads constructor(
             return
         }
         minecraftConnecting = true
+        minecraftInitialPositionReceived = false
         setStatusMessage("Connecting to $address…")
         try {
             connection.connect(address, minecraftOfflineUsername(), object : MinecraftConnectionListener {
@@ -1543,7 +1545,12 @@ class Voxd31Editor @JvmOverloads constructor(
                 }
 
                 override fun playerPosition(x: Double, y: Double, z: Double) {
-                    Gdx.app.postRunnable { centerCamerasOn(x, y, z) }
+                    Gdx.app.postRunnable {
+                        if (!minecraftInitialPositionReceived) {
+                            minecraftInitialPositionReceived = true
+                            centerCamerasOn(x, y, z)
+                        }
+                    }
                 }
 
                 override fun chunkReceived(chunk: MinecraftWorldChunk) {
@@ -2207,6 +2214,9 @@ class Voxd31Editor @JvmOverloads constructor(
 
     override fun render() {
         updateActiveCamera(Gdx.graphics.deltaTime)
+        if (minecraftSessionActive) {
+            minecraftConnectionService?.updateViewPosition(cameraTarget.x.toDouble(), cameraTarget.y.toDouble(), cameraTarget.z.toDouble())
+        }
         syncMinecraftEdits(Gdx.graphics.deltaTime)
         rebuildGroundPlane()
         renderShadowPass()

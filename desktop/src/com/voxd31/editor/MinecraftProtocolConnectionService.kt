@@ -24,9 +24,15 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.Clien
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundSetChunkCacheCenterPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundPlayerLoadedPacket
+import org.geysermc.mcprotocollib.protocol.packet.common.serverbound.ServerboundClientInformationPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundChunkBatchReceivedPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosPacket
+import org.geysermc.mcprotocollib.protocol.data.game.entity.player.HandPreference
+import org.geysermc.mcprotocollib.protocol.data.game.setting.ChatVisibility
+import org.geysermc.mcprotocollib.protocol.data.game.setting.ParticleStatus
+import org.geysermc.mcprotocollib.protocol.data.game.setting.SkinPart
+import kotlin.math.floor
 import java.util.concurrent.atomic.AtomicReference
 
 class MinecraftProtocolConnectionService : MinecraftConnectionService {
@@ -38,6 +44,8 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
     @Volatile private var centerZ = 0
     @Volatile private var minSectionY = -4
     @Volatile private var sectionCount = 24
+    @Volatile private var lastRequestedChunkX = Int.MIN_VALUE
+    @Volatile private var lastRequestedChunkZ = Int.MIN_VALUE
 
     override fun connect(address: String, username: String, listener: MinecraftConnectionListener) {
         close()
@@ -56,6 +64,19 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                         updateDimension(packet.commonPlayerSpawnInfo.worldName.toString())
                         loggedIn = true
                         listener.connected("$host:$port")
+                        session.send(
+                            ServerboundClientInformationPacket(
+                                "en_us",
+                                SERVER_RENDER_DISTANCE,
+                                ChatVisibility.FULL,
+                                true,
+                                SkinPart.VALUES.toList(),
+                                HandPreference.RIGHT_HAND,
+                                false,
+                                true,
+                                ParticleStatus.MINIMAL
+                            )
+                        )
                         session.send(ServerboundPlayerLoadedPacket.INSTANCE)
                     }
                     is ClientboundRespawnPacket -> updateDimension(packet.commonPlayerSpawnInfo.worldName.toString())
@@ -71,6 +92,8 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                         ))
                         session.send(ServerboundMovePlayerPosPacket(true, false, position.x, position.y, position.z))
                         centerY = position.y
+                        lastRequestedChunkX = floor(position.x).toInt() shr 4
+                        lastRequestedChunkZ = floor(position.z).toInt() shr 4
                         listener.playerPosition(position.x, position.y, position.z)
                     }
                     is ClientboundSetChunkCacheCenterPacket -> {
@@ -115,6 +138,18 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         if (loggedIn && session.isConnected) {
             session.send(ServerboundChatCommandPacket(command.removePrefix("/")))
         }
+    }
+
+    override fun updateViewPosition(x: Double, y: Double, z: Double) {
+        val session = activeSession.get() ?: return
+        if (!loggedIn || !session.isConnected) return
+        val chunkX = Math.floorDiv(floor(x).toInt(), 16)
+        val chunkZ = Math.floorDiv(floor(z).toInt(), 16)
+        if (chunkX == lastRequestedChunkX && chunkZ == lastRequestedChunkZ) return
+        lastRequestedChunkX = chunkX
+        lastRequestedChunkZ = chunkZ
+        centerY = y
+        session.send(ServerboundMovePlayerPosPacket(false, false, x, y, z))
     }
 
     override fun close() {
@@ -202,6 +237,7 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         private const val DEFAULT_PORT = 25565
         private const val BLOCK_STATE_REGISTRY_SIZE = 32768
         private const val BIOME_REGISTRY_SIZE = 64
+        private const val SERVER_RENDER_DISTANCE = 2
         private const val MAX_CHUNK_RADIUS = 1
         private const val VERTICAL_BLOCK_RADIUS = 16
     }

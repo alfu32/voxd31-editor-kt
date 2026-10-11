@@ -15,6 +15,7 @@ interface MinecraftConnectionListener {
 
 interface MinecraftConnectionService {
     fun connect(address: String, username: String, listener: MinecraftConnectionListener)
+    fun updateViewPosition(x: Double, y: Double, z: Double)
     fun sendCommand(command: String)
     fun close()
 }
