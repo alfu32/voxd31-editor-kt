@@ -1028,7 +1028,7 @@ class Voxd31Editor @JvmOverloads constructor(
                     dir.set(0f, -1f, 0f)
                 }
                 target.position.set(cameraTarget).sub(dir.scl(12f))
-                target.up.set(source.up).nor()
+                target.up.set(Vector3.Y)
                 target.lookAt(cameraTarget)
             }
 
@@ -1651,10 +1651,12 @@ class Voxd31Editor @JvmOverloads constructor(
         val target = Vector3(x.toFloat(), y.toFloat(), z.toFloat())
         cameraTarget.set(target)
         orbitCameraController.target.set(target)
+        orbitCamera.up.set(Vector3.Y)
         orbitCamera.position.set(target.x + 10f, target.y + 10f, target.z + 10f)
         orbitCamera.lookAt(target)
         orbitCamera.update()
         walkCamera.position.set(target.x + 10f, target.y + 10f, target.z + 10f)
+        walkCamera.up.set(Vector3.Y)
         walkCamera.direction.set(target).sub(walkCamera.position).nor()
         walkCamera.update()
         orthoCamera.position.set(target.x, target.y, target.z)
