@@ -40,6 +40,7 @@ import com.voxd31.gdxui.Cube
 import com.voxd31.gdxui.Vox3Event
 import com.kotcrab.vis.ui.VisUI
 import java.lang.StringBuilder
+import kotlin.math.abs
 import kotlin.math.floor
 
 
@@ -131,8 +132,13 @@ class Voxd31Editor @JvmOverloads constructor(
     private var minecraftServerAddress: String? = null
     private var minecraftSceneSyncVersion = -1L
     private var applyingMinecraftSnapshot = false
+    private var minecraftVisibilityDirty = false
     private val minecraftKnownBlocks = mutableMapOf<MinecraftBlockPosition, String>()
+    private val minecraftVisibleBlocks = mutableMapOf<MinecraftBlockPosition, String>()
     private val minecraftPendingBlocks = mutableMapOf<MinecraftBlockPosition, String>()
+    private val minecraftLastVisibilityPosition = Vector3(Float.NaN, Float.NaN, Float.NaN)
+    private val minecraftLastVisibilityDirection = Vector3(Float.NaN, Float.NaN, Float.NaN)
+    private var minecraftLastVisibilityMatrix: FloatArray? = null
     private var minecraftRetrySeconds = 0f
     private var modelSettings = ModelSettings()
     private var statusMessage = ""
@@ -1529,6 +1535,7 @@ class Voxd31Editor @JvmOverloads constructor(
                         minecraftConnectionOpen = true
                         minecraftServerAddress = serverAddress
                         minecraftKnownBlocks.clear()
+                        minecraftVisibleBlocks.clear()
                         minecraftPendingBlocks.clear()
                         scene.clear()
                         selected.clear()
@@ -1538,6 +1545,7 @@ class Voxd31Editor @JvmOverloads constructor(
                         redoQueue.clear()
                         activeTool?.reset()
                         minecraftSceneSyncVersion = scene.changeVersion
+                        minecraftVisibilityDirty = true
                         rebuildGroundPlane(force = true)
                         updateWindowTitle()
                         setStatusMessage("Connected to $serverAddress as ${minecraftOfflineUsername()}. Waiting for world chunks; operator permission is required to edit.")
@@ -1595,52 +1603,64 @@ class Voxd31Editor @JvmOverloads constructor(
 
     private fun applyMinecraftChunk(chunk: MinecraftWorldChunk) {
         if (!minecraftSessionActive) return
-        applyingMinecraftSnapshot = true
-        try {
-            val oldPositions = minecraftKnownBlocks.keys.filter { it.x shr 4 == chunk.x && it.z shr 4 == chunk.z }
-            oldPositions.forEach { position ->
-                minecraftKnownBlocks.remove(position)
-                scene.removeCube(Vector3(position.x.toFloat(), position.y.toFloat(), position.z.toFloat()))
-            }
-            chunk.blocks.forEach { block ->
-                val position = MinecraftBlockPosition(block.x, block.y, block.z)
-                if (block.materialId == "minecraft:air") {
-                    minecraftKnownBlocks.remove(position)
-                    scene.removeCube(Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()))
-                } else {
-                    minecraftKnownBlocks[position] = block.materialId
-                    scene.addOrReplaceCube(
-                        Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()),
-                        MinecraftMaterials.colorFor(block.materialId),
-                        block.materialId
-                    )
-                }
-            }
-            minecraftSceneSyncVersion = scene.changeVersion
-            rebuildGroundPlane(force = true)
-        } finally {
-            applyingMinecraftSnapshot = false
-        }
+        minecraftKnownBlocks.keys.removeAll { it.x shr 4 == chunk.x && it.z shr 4 == chunk.z }
+        chunk.blocks.asSequence()
+            .filter { it.materialId != "minecraft:air" }
+            .forEach { block -> minecraftKnownBlocks[MinecraftBlockPosition(block.x, block.y, block.z)] = block.materialId }
+        minecraftVisibilityDirty = true
     }
 
     private fun applyMinecraftBlockUpdate(block: MinecraftWorldBlock) {
         if (!minecraftSessionActive) return
         val position = MinecraftBlockPosition(block.x, block.y, block.z)
+        if (block.materialId == "minecraft:air") minecraftKnownBlocks.remove(position)
+        else minecraftKnownBlocks[position] = block.materialId
+        if (minecraftPendingBlocks[position] == block.materialId) minecraftPendingBlocks.remove(position)
+        minecraftVisibilityDirty = true
+    }
+
+    /** Materialize only buffered blocks that intersect the current viewport frustum. */
+    private fun refreshMinecraftVisibleBlocks() {
+        if (!minecraftSessionActive || !::activeCamera.isInitialized) return
+        val combined = activeCamera.combined.`val`
+        val lastCombined = minecraftLastVisibilityMatrix
+        val projectionChanged = lastCombined == null || combined.indices.any { abs(combined[it] - lastCombined[it]) > 0.0001f }
+        val cameraMoved = !minecraftLastVisibilityPosition.epsilonEquals(activeCamera.position, 0.001f) ||
+            !minecraftLastVisibilityDirection.epsilonEquals(activeCamera.direction, 0.0001f) || projectionChanged
+        if (!minecraftVisibilityDirty && !cameraMoved) return
+
+        minecraftLastVisibilityPosition.set(activeCamera.position)
+        minecraftLastVisibilityDirection.set(activeCamera.direction)
+        minecraftLastVisibilityMatrix = combined.copyOf()
+        val visible = HashMap<MinecraftBlockPosition, String>()
+        val bounds = BoundingBox()
+        minecraftKnownBlocks.forEach { (position, materialId) ->
+            bounds.set(
+                Vector3(position.x - 0.5f, position.y - 0.5f, position.z - 0.5f),
+                Vector3(position.x + 0.5f, position.y + 0.5f, position.z + 0.5f)
+            )
+            if (activeCamera.frustum.boundsInFrustum(bounds)) visible[position] = materialId
+        }
+
         applyingMinecraftSnapshot = true
         try {
-            if (block.materialId == "minecraft:air") {
-                minecraftKnownBlocks.remove(position)
-                scene.removeCube(Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()))
-            } else {
-                minecraftKnownBlocks[position] = block.materialId
-                scene.addOrReplaceCube(
-                    Vector3(block.x.toFloat(), block.y.toFloat(), block.z.toFloat()),
-                    MinecraftMaterials.colorFor(block.materialId),
-                    block.materialId
-                )
+            (minecraftVisibleBlocks.keys - visible.keys).forEach { position ->
+                scene.removeCube(Vector3(position.x.toFloat(), position.y.toFloat(), position.z.toFloat()))
+                minecraftVisibleBlocks.remove(position)
             }
-            if (minecraftPendingBlocks[position] == block.materialId) minecraftPendingBlocks.remove(position)
+            visible.forEach { (position, materialId) ->
+                if (minecraftVisibleBlocks[position] != materialId) {
+                    scene.addOrReplaceCube(
+                        Vector3(position.x.toFloat(), position.y.toFloat(), position.z.toFloat()),
+                        MinecraftMaterials.colorFor(materialId),
+                        materialId
+                    )
+                    minecraftVisibleBlocks[position] = materialId
+                }
+            }
+            minecraftVisibilityDirty = false
             minecraftSceneSyncVersion = scene.changeVersion
+            rebuildGroundPlane(force = true)
         } finally {
             applyingMinecraftSnapshot = false
         }
@@ -1692,7 +1712,9 @@ class Voxd31Editor @JvmOverloads constructor(
         minecraftSessionActive = false
         minecraftServerAddress = null
         minecraftKnownBlocks.clear()
+        minecraftVisibleBlocks.clear()
         minecraftPendingBlocks.clear()
+        minecraftVisibilityDirty = false
         minecraftSceneSyncVersion = -1L
         try {
             loadModelFromDisk(filename, announce = false)
@@ -1709,10 +1731,10 @@ class Voxd31Editor @JvmOverloads constructor(
             val current = scene.cubes.values.associateBy { cube ->
                 MinecraftBlockPosition(cube.position.x.toInt(), cube.position.y.toInt(), cube.position.z.toInt())
             }
-            (minecraftKnownBlocks.keys + current.keys).toSet().forEach { position ->
+            (minecraftVisibleBlocks.keys + current.keys).toSet().forEach { position ->
                 val desired = current[position]?.materialId?.takeUnless { it == "minecraft:air" }
                     ?: if (current.containsKey(position)) MinecraftMaterials.default.id else null
-                val actual = minecraftKnownBlocks[position]
+                val actual = minecraftVisibleBlocks[position]
                 if (desired != actual) {
                     val material = desired ?: "minecraft:air"
                     minecraftPendingBlocks[position] = material
@@ -2231,6 +2253,7 @@ class Voxd31Editor @JvmOverloads constructor(
             minecraftConnectionService?.updateViewPosition(viewCenter.x.toDouble(), viewCenter.y.toDouble(), viewCenter.z.toDouble())
         }
         syncMinecraftEdits(Gdx.graphics.deltaTime)
+        refreshMinecraftVisibleBlocks()
         rebuildGroundPlane()
         renderShadowPass()
 
