@@ -1603,6 +1603,12 @@ class Voxd31Editor @JvmOverloads constructor(
         chunk.blocks.asSequence()
             .filter { it.materialId != "minecraft:air" }
             .forEach { block -> minecraftKnownBlocks[MinecraftBlockPosition(block.x, block.y, block.z)] = block.materialId }
+        minecraftPendingBlocks.keys
+            .filter { it.x shr 4 == chunk.x && it.z shr 4 == chunk.z }
+            .forEach { position ->
+                val serverMaterial = minecraftKnownBlocks[position] ?: "minecraft:air"
+                if (minecraftPendingBlocks[position] == serverMaterial) minecraftPendingBlocks.remove(position)
+            }
         minecraftSceneDirty = true
     }
 
