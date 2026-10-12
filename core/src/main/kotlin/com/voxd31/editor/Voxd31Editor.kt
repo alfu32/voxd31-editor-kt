@@ -1666,14 +1666,7 @@ class Voxd31Editor @JvmOverloads constructor(
     private fun minecraftChunkViewCenter(): Vector3 {
         return when (activeCameraMode) {
             CameraMode.ORBIT -> {
-                val cameraToTarget = Vector3(cameraTarget).sub(orbitCamera.position)
-                val distance = cameraToTarget.len()
-                if (distance <= 1e-4f) {
-                    Vector3(cameraTarget)
-                } else {
-                    cameraToTarget.scl(1f / distance)
-                    Vector3(orbitCamera.position).mulAdd(cameraToTarget, (distance - 8f).coerceAtLeast(0f))
-                }
+                Vector3(orbitCamera.position).lerp(cameraTarget, 0.5f)
             }
             CameraMode.WALKTHROUGH -> Vector3(walkCamera.position).mulAdd(walkCamera.direction, 8f)
             CameraMode.ORTHOGRAPHIC -> Vector3(cameraTarget)

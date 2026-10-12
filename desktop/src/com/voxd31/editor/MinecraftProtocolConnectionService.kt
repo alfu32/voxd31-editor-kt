@@ -244,8 +244,8 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         private const val DEFAULT_PORT = 25565
         private const val BLOCK_STATE_REGISTRY_SIZE = 32768
         private const val BIOME_REGISTRY_SIZE = 64
-        private const val SERVER_RENDER_DISTANCE = 2
-        private const val MAX_CHUNK_RADIUS = 1
+        private const val SERVER_RENDER_DISTANCE = 3
+        private const val MAX_CHUNK_RADIUS = 2
         private const val VERTICAL_BLOCK_RADIUS = 16
         private const val MIN_VIEW_MOVE_INTERVAL_NANOS = 150_000_000L
     }
