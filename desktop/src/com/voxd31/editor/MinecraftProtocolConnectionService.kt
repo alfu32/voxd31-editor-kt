@@ -21,7 +21,6 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.Clien
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundChunkBatchFinishedPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundForgetLevelChunkPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket
-import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundSetChunkCacheCenterPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundClientTickEndPacket
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundPlayerLoadedPacket
@@ -40,9 +39,6 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
     private val activeSession = AtomicReference<ClientSession?>()
     @Volatile private var listener: MinecraftConnectionListener? = null
     @Volatile private var loggedIn = false
-    @Volatile private var centerX = 0
-    @Volatile private var centerY = 64.0
-    @Volatile private var centerZ = 0
     @Volatile private var minSectionY = -4
     @Volatile private var sectionCount = 24
     @Volatile private var lastRequestedChunkX = Int.MIN_VALUE
@@ -93,19 +89,12 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                             packet.xRot
                         ))
                         session.send(ServerboundClientTickEndPacket.INSTANCE)
-                        centerY = position.y
                         lastRequestedChunkX = floor(position.x).toInt() shr 4
                         lastRequestedChunkZ = floor(position.z).toInt() shr 4
                         listener.playerPosition(position.x, position.y, position.z)
                     }
-                    is ClientboundSetChunkCacheCenterPacket -> {
-                        centerX = packet.chunkX
-                        centerZ = packet.chunkZ
-                    }
                     is ClientboundLevelChunkWithLightPacket -> {
-                        if (kotlin.math.abs(packet.x - centerX) <= MAX_CHUNK_RADIUS && kotlin.math.abs(packet.z - centerZ) <= MAX_CHUNK_RADIUS) {
-                            listener.chunkReceived(decodeChunk(packet))
-                        }
+                        listener.chunkReceived(decodeChunk(packet))
                     }
                     is ClientboundForgetLevelChunkPacket -> listener.chunkReceived(MinecraftWorldChunk(packet.x, packet.z, emptyList()))
                     is ClientboundBlockUpdatePacket -> {
@@ -153,7 +142,6 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         lastRequestedChunkX = chunkX
         lastRequestedChunkZ = chunkZ
         lastViewMoveNanos = now
-        centerY = y
         session.send(ServerboundMovePlayerPosPacket(false, false, x, y, z))
         session.send(ServerboundClientTickEndPacket.INSTANCE)
     }
@@ -174,18 +162,12 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
                     BIOME_REGISTRY_SIZE
                 )
                 val sectionY = minSectionY + sectionIndex
-                val sectionBottom = sectionY * 16
-                if (sectionBottom + 15 < centerY - VERTICAL_BLOCK_RADIUS ||
-                    sectionBottom > centerY + VERTICAL_BLOCK_RADIUS
-                ) {
-                    return@repeat
-                }
                 for (y in 0 until 16) {
                     for (z in 0 until 16) {
                         for (x in 0 until 16) {
-                            val blockY = sectionBottom + y
+                            val blockY = sectionY * 16 + y
                             val stateId = section.getBlock(x, y, z)
-                            if (kotlin.math.abs(blockY - centerY) <= VERTICAL_BLOCK_RADIUS && stateId != 0) {
+                            if (stateId != 0) {
                                 blocks += MinecraftWorldBlock(
                                     packet.x * 16 + x,
                                     blockY,
@@ -245,11 +227,9 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         private const val BLOCK_STATE_REGISTRY_SIZE = 32768
         private const val BIOME_REGISTRY_SIZE = 64
         private const val SERVER_RENDER_DISTANCE = 3
-        private const val MAX_CHUNK_RADIUS = 2
-        private const val VERTICAL_BLOCK_RADIUS = 16
         // Camera focus can jump several blocks in a single editor input event.
         // Debounce these synthetic player updates so the server has time to
         // process each movement and its matching client_tick_end packet.
-        private const val MIN_VIEW_MOVE_INTERVAL_NANOS = 350_000_000L
+        private const val MIN_VIEW_MOVE_INTERVAL_NANOS = 1_750_000_000L
     }
 }
