@@ -2,10 +2,11 @@ plugins {
     id 'java-library'
 }
 
-java.sourceCompatibility = 17
-java.targetCompatibility = 17
+def compatVersion = (project.findProperty('javaCompatVersion') ?: '17').toString()
+java.sourceCompatibility = JavaVersion.toVersion(compatVersion)
+java.targetCompatibility = JavaVersion.toVersion(compatVersion)
 if (JavaVersion.current().isJava9Compatible()) {
-    compileJava.options.release.set(17)
+    compileJava.options.release.set(Integer.parseInt(compatVersion))
 }
 
 def bundleVersion = (project.findProperty("releaseNumber") ?: project.version).toString()

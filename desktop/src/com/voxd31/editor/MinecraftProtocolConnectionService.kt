@@ -247,6 +247,9 @@ class MinecraftProtocolConnectionService : MinecraftConnectionService {
         private const val SERVER_RENDER_DISTANCE = 3
         private const val MAX_CHUNK_RADIUS = 2
         private const val VERTICAL_BLOCK_RADIUS = 16
-        private const val MIN_VIEW_MOVE_INTERVAL_NANOS = 150_000_000L
+        // Camera focus can jump several blocks in a single editor input event.
+        // Debounce these synthetic player updates so the server has time to
+        // process each movement and its matching client_tick_end packet.
+        private const val MIN_VIEW_MOVE_INTERVAL_NANOS = 350_000_000L
     }
 }
