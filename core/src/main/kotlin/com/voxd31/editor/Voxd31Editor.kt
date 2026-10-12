@@ -1661,6 +1661,23 @@ class Voxd31Editor @JvmOverloads constructor(
         orthoCamera.update()
     }
 
+    private fun minecraftChunkViewCenter(): Vector3 {
+        return when (activeCameraMode) {
+            CameraMode.ORBIT -> {
+                val cameraToTarget = Vector3(cameraTarget).sub(orbitCamera.position)
+                val distance = cameraToTarget.len()
+                if (distance <= 1e-4f) {
+                    Vector3(cameraTarget)
+                } else {
+                    cameraToTarget.scl(1f / distance)
+                    Vector3(orbitCamera.position).mulAdd(cameraToTarget, (distance - 8f).coerceAtLeast(0f))
+                }
+            }
+            CameraMode.WALKTHROUGH -> Vector3(walkCamera.position).mulAdd(walkCamera.direction, 8f)
+            CameraMode.ORTHOGRAPHIC -> Vector3(cameraTarget)
+        }
+    }
+
     private fun requestMinecraftDisconnect() {
         val pendingCount = minecraftPendingBlocks.size
         if (pendingCount > 0) {
@@ -2215,7 +2232,8 @@ class Voxd31Editor @JvmOverloads constructor(
     override fun render() {
         updateActiveCamera(Gdx.graphics.deltaTime)
         if (minecraftSessionActive) {
-            minecraftConnectionService?.updateViewPosition(cameraTarget.x.toDouble(), cameraTarget.y.toDouble(), cameraTarget.z.toDouble())
+            val viewCenter = minecraftChunkViewCenter()
+            minecraftConnectionService?.updateViewPosition(viewCenter.x.toDouble(), viewCenter.y.toDouble(), viewCenter.z.toDouble())
         }
         syncMinecraftEdits(Gdx.graphics.deltaTime)
         rebuildGroundPlane()

@@ -1,0 +1,95 @@
+# Plane 20 0 -13 20 0 -7 14 6 -13  a0a0a0ff
+/setblock 14 6 -13 minecraft:granite
+/setblock 15 5 -13 minecraft:granite
+/setblock 16 4 -13 minecraft:granite
+/setblock 17 3 -13 minecraft:granite
+/setblock 18 2 -13 minecraft:granite
+/setblock 19 1 -13 minecraft:granite
+/setblock 20 0 -13 minecraft:granite
+/setblock 14 6 -12 minecraft:granite
+/setblock 15 5 -12 minecraft:granite
+/setblock 16 4 -12 minecraft:granite
+/setblock 17 3 -12 minecraft:granite
+/setblock 18 2 -12 minecraft:granite
+/setblock 19 1 -12 minecraft:granite
+/setblock 20 0 -12 minecraft:granite
+/setblock 14 6 -11 minecraft:granite
+/setblock 15 5 -11 minecraft:granite
+/setblock 16 4 -11 minecraft:granite
+/setblock 17 3 -11 minecraft:granite
+/setblock 18 2 -11 minecraft:granite
+/setblock 19 1 -11 minecraft:granite
+/setblock 20 0 -11 minecraft:granite
+/setblock 14 6 -10 minecraft:granite
+/setblock 15 5 -10 minecraft:granite
+/setblock 16 4 -10 minecraft:granite
+/setblock 17 3 -10 minecraft:granite
+/setblock 18 2 -10 minecraft:granite
+/setblock 19 1 -10 minecraft:granite
+/setblock 20 0 -10 minecraft:granite
+/setblock 14 6 -9 minecraft:granite
+/setblock 15 5 -9 minecraft:granite
+/setblock 16 4 -9 minecraft:granite
+/setblock 17 3 -9 minecraft:granite
+/setblock 18 2 -9 minecraft:granite
+/setblock 19 1 -9 minecraft:granite
+/setblock 20 0 -9 minecraft:granite
+/setblock 14 6 -8 minecraft:granite
+/setblock 15 5 -8 minecraft:granite
+/setblock 16 4 -8 minecraft:granite
+/setblock 17 3 -8 minecraft:granite
+/setblock 18 2 -8 minecraft:granite
+/setblock 19 1 -8 minecraft:granite
+/setblock 20 0 -8 minecraft:granite
+/setblock 14 6 -7 minecraft:granite
+/setblock 15 5 -7 minecraft:granite
+/setblock 16 4 -7 minecraft:granite
+/setblock 17 3 -7 minecraft:granite
+/setblock 18 2 -7 minecraft:granite
+/setblock 19 1 -7 minecraft:granite
+/setblock 20 0 -7 minecraft:granite
+# Frame -12 10 22 -2 1 12 a0a0a0ff
+/fill -12 10 22 -12 1 22 minecraft:granite
+/fill -12 1 22 -2 1 22 minecraft:granite
+/fill -2 1 22 -2 10 22 minecraft:granite
+/fill -2 10 22 -12 10 22 minecraft:granite
+/fill -12 10 22 -12 10 12 minecraft:granite
+/fill -12 1 22 -12 1 12 minecraft:granite
+/fill -2 1 22 -2 1 12 minecraft:granite
+/fill -2 10 22 -2 10 12 minecraft:granite
+/fill -12 10 12 -12 1 12 minecraft:granite
+/fill -12 1 12 -2 1 12 minecraft:granite
+/fill -2 1 12 -2 10 12 minecraft:granite
+/fill -2 10 12 -12 10 12 minecraft:granite
+# Frame 114 0 -45 94 0 -18 a0a0a0ff
+/fill 114 0 -45 114 0 -45 minecraft:stone
+/fill 114 0 -45 94 0 -45 minecraft:stone
+/fill 94 0 -45 94 0 -45 minecraft:stone
+/fill 94 0 -45 114 0 -45 minecraft:stone
+/fill 114 0 -45 114 0 -18 minecraft:stone
+/fill 114 0 -45 114 0 -18 minecraft:stone
+/fill 94 0 -45 94 0 -18 minecraft:stone
+/fill 94 0 -45 94 0 -18 minecraft:stone
+/fill 114 0 -18 114 0 -18 minecraft:stone
+/fill 114 0 -18 94 0 -18 minecraft:stone
+/fill 94 0 -18 94 0 -18 minecraft:stone
+/fill 94 0 -18 114 0 -18 minecraft:stone
+# Frame 13 0 14 -10 8 -13 a0a0a0ff
+/fill 13 0 14 13 8 14 minecraft:stone
+/fill 13 8 14 -10 8 14 minecraft:stone
+/fill -10 8 14 -10 0 14 minecraft:stone
+/fill -10 0 14 13 0 14 minecraft:stone
+/fill 13 0 14 13 0 -13 minecraft:stone
+/fill 13 8 14 13 8 -13 minecraft:stone
+/fill -10 8 14 -10 8 -13 minecraft:stone
+/fill -10 0 14 -10 0 -13 minecraft:stone
+/fill 13 0 -13 13 8 -13 minecraft:stone
+/fill 13 8 -13 -10 8 -13 minecraft:stone
+/fill -10 8 -13 -10 0 -13 minecraft:stone
+/fill -10 0 -13 13 0 -13 minecraft:stone
+# Volume -26 0 35 17 0 -26 858585ff
+/fill -26 0 35 17 0 -26 minecraft:stone
+# Volume -9 8 13 12 8 -12 a0a0a0ff
+/fill -9 8 13 12 8 -12 minecraft:diorite
+# Volume 32 0 28 -15 0 -22 858585ff
+/fill 32 0 28 -15 0 -22 minecraft:cobbled_deepslate
